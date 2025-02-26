@@ -1,0 +1,27 @@
+.custom-button {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 16px;
+	border: none;
+	border-radius: 20px; /* Rounded shape */
+	background-color: transparent;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background 0.2s ease-in-out;
+}
+
+/* Default state */
+.custom-button.default {
+	background-color: #f0f0f0;
+}
+
+/* Hover effect */
+.custom-button:hover {
+	background-color: #e0e0e0;
+}
+
+/* Active state */
+.custom-button.active {
+	background-color: #f0f0f0;
+}

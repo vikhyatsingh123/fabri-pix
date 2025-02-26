@@ -1,1 +1,1 @@
-export { ImageEditor } from './components/ImageEditor';
+export { ImageEditorWrapper } from './components/ImageEditorWrapper';

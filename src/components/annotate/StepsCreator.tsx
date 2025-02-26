@@ -3,15 +3,13 @@
  * Steps creator for image editor
  */
 
-import { OrderedList } from '@icon-park/react';
-import { Button } from 'antd';
 import { Canvas, Rect } from 'fabric';
 import React, { useCallback, useEffect, useRef } from 'react';
-import { multiSelectAnnotation, SubMenu } from '../utils/utils';
-import imageEditorShapes from '../utils/imageEditorShapes';
-import { ulid } from 'ulid';
-import { useActiveAnnotation, useImageEditorActions, useStepCreator } from '../store/ImageEditorStore';
-import _ from 'lodash';
+
+import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
+import imageEditorShapes from '../../utils/imageEditorShapes';
+import { useActiveAnnotation, useImageEditorActions, useStepCreator } from '../../store/ImageEditorStore';
+import OrderedListIcon from 'src/icons/OrderedListIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -70,7 +68,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 	};
 
 	const createStepCircle = (x: number, y: number, number: number) => {
-		const id = ulid();
+		const id = crypto.randomUUID();
 		const coordinates = stepRectRef.current?.getCoords();
 
 		let circleLeft = 0,
@@ -139,11 +137,11 @@ const StepsCreator: React.FC<IProps> = (props) => {
 
 	const handleMouseUp = useCallback((e: any) => {
 		if (isDrawing.current && stepRectRef.current) {
-			const target = canvas.current.findTarget(e.e);
+			const target = canvas.current.findTarget(e.e) as any;
 			if (target) {
-				const size = _.size(_.get(target, '_objects', []));
+				const size = target._objects ? target._objects.length : 0;
 				if (size > 0) {
-					canvas.current.setActiveObject(_.get(target, '_objects', [])[size - 1]);
+					canvas.current.setActiveObject(target._objects ? target._objects[size - 1] : null);
 					canvas.current.requestRenderAll();
 				}
 			}
@@ -228,7 +226,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			canvas.current.off('mouse:down', handleMouseDown);
 			canvas.current.off('mouse:move', handleMouseMove);
 			canvas.current.defaultCursor = 'default';
-			if (!_.includes(multiSelectAnnotation, activeAnnotation)) {
+			if (!multiSelectAnnotation.includes(activeAnnotation)) {
 				canvas.current.selection = true;
 			}
 		}
@@ -272,15 +270,13 @@ const StepsCreator: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<Button
-			icon={<OrderedList />}
-			type={activeAnnotation === SubMenu.STEPS_CREATOR ? 'default' : 'text'}
-			shape='round'
-			className={activeAnnotation === SubMenu.STEPS_CREATOR ? '!bg-[#F0F0F0]' : ''}
+		<button
+			className={`custom-button ${activeAnnotation === SubMenu.STEPS_CREATOR ? 'active' : ''}`}
 			onClick={handleStepsCreator}
 		>
-			Steps Creator
-		</Button>
+			<OrderedListIcon />
+			Arrow Tool
+		</button>
 	);
 };
 

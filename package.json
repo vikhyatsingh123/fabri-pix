@@ -1,35 +1,40 @@
 {
-  "name": "fabripix",
-  "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "author": "Vikhyat Singh",
-  "license": "MIT",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "peerDependencies": {
-    "react": ">=17.0.0",
-    "react-dom": ">=17.0.0",
-    "fabric": ">=6.0.0"
-  },
-  "devDependencies": {
-    "fabric": "^6.6.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "@eslint/js": "^9.19.0",
-    "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3",
-    "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.19.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-react-refresh": "^0.4.18",
-    "globals": "^15.14.0",
-    "typescript": "~5.7.2",
-    "typescript-eslint": "^8.22.0",
-    "vite": "^6.1.0"
-  }
+	"name": "fabri-pix",
+	"version": "1.0.0",
+	"description": "A React image editor using Fabric.js",
+	"type": "module",
+	"main": "dist/fabri-pix.cjs.js",
+	"module": "dist/fabri-pix.es.js",
+	"files": [
+		"dist"
+	],
+	"author": "Vikhyat Singh",
+	"license": "MIT",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"lint": "eslint .",
+		"preview": "vite preview"
+	},
+	"peerDependencies": {
+		"react": ">=17.0.0",
+		"react-dom": ">=17.0.0",
+		"fabric": ">=6.0.0"
+	},
+	"devDependencies": {
+		"fabric": "^6.6.1",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"@eslint/js": "^9.19.0",
+		"@types/react": "^19.0.8",
+		"@types/react-dom": "^19.0.3",
+		"@vitejs/plugin-react": "^4.3.4",
+		"eslint": "^9.19.0",
+		"eslint-plugin-react-hooks": "^5.0.0",
+		"eslint-plugin-react-refresh": "^0.4.18",
+		"globals": "^15.14.0",
+		"typescript": "~5.7.2",
+		"typescript-eslint": "^8.22.0",
+		"vite": "^6.1.0"
+	}
 }

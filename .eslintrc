@@ -1,0 +1,141 @@
+{
+	"root": true,
+	"env": {
+		"browser": true,
+		"commonjs": true,
+		"es6": true,
+		"jest/globals": true,
+		"node": true
+	},
+	"ignorePatterns": [
+		"vite.config.ts",
+		"buildUtils",
+		"*.test.*",
+		"*.spec.*",
+		"packages/**/public"
+	],
+	"settings": { "react": { "version": "detect" } },
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"ecmaFeatures": { "jsx": true },
+		"ecmaVersion": "latest",
+		"sourceType": "module",
+		"project": "tsconfig.json"
+	},
+	"plugins": [
+		"@typescript-eslint",
+		"eslint-plugin-import",
+		"eslint-plugin-jest",
+		"eslint-plugin-jsdoc",
+		"eslint-plugin-prefer-arrow",
+		"eslint-plugin-react",
+		"github",
+		"react",
+		"react-hooks"
+	],
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/recommended",
+		"plugin:@typescript-eslint/recommended-requiring-type-checking",
+		"plugin:github/react",
+		"plugin:jsdoc/recommended",
+		"plugin:react-hooks/recommended",
+		"plugin:react/recommended",
+		"prettier"
+	],
+	"rules": {
+		// L1 Required
+		"@typescript-eslint/array-type": "error",
+		"@typescript-eslint/consistent-type-assertions": [
+			"error",
+			{ "assertionStyle": "as", "objectLiteralTypeAssertions": "allow" }
+		],
+		"@typescript-eslint/dot-notation": "error",
+		"@typescript-eslint/naming-convention": [
+			"warn",
+			{
+				"selector": "variable",
+				"format": ["camelCase", "PascalCase", "UPPER_CASE"]
+			}
+		],
+		"@typescript-eslint/no-shadow": ["warn", { "hoist": "all" }],
+		"@typescript-eslint/no-unused-vars": ["error"],
+		"@typescript-eslint/no-use-before-define": "error",
+		"@typescript-eslint/quotes": [
+			"warn",
+			"single",
+			{ "avoidEscape": true }
+		],
+		"@typescript-eslint/semi": ["warn", "always"],
+		"arrow-parens": ["warn", "always"],
+		"comma-dangle": ["warn", "always-multiline"],
+		"comma-spacing": "warn",
+		"consistent-return": ["error", { "treatUndefinedAsUnspecified": true }],
+		"curly": "error",
+		"eol-last": "error",
+		"eqeqeq": ["error", "smart"],
+		"header/header": [2, "block", { "pattern": ".*" }],
+		"jsdoc/check-indentation": "warn",
+		"key-spacing": "warn",
+		"max-classes-per-file": ["error", 1],
+		"max-len": [
+			"warn",
+			{
+				"code": 120,
+				"ignoreStrings": true,
+				"ignoreTemplateLiterals": true
+			}
+		],
+		"new-parens": "warn",
+		"no-bitwise": "error",
+		"no-caller": "error",
+		"no-console": "error",
+		"no-duplicate-imports": ["error", { "includeExports": true }],
+		"no-empty-function": "error",
+		"no-eval": "error",
+		"no-multi-spaces": "error",
+		"no-multiple-empty-lines": "error",
+		"no-new-wrappers": "error",
+		"no-trailing-spaces": "error",
+		"no-undef-init": "warn",
+		"no-underscore-dangle": "warn",
+		"no-unused-expressions": "error",
+		"no-var": "error",
+		"object-shorthand": "error",
+		"prefer-arrow/prefer-arrow-functions": "warn",
+		"prefer-const": "error",
+		"quote-props": ["warn", "as-needed"],
+		"radix": "error",
+		"react/display-name": 0,
+		"react/prop-types": 0,
+		"react/self-closing-comp": [
+			"error",
+			{ "component": true, "html": true }
+		],
+		"spaced-comment": ["warn", "always"],
+		"react-hooks/rules-of-hooks": "error",
+
+		// L2 Remove if possible
+		"@typescript-eslint/explicit-module-boundary-types": [
+			"error",
+			{ "allowArgumentsExplicitlyTypedAsAny": true }
+		],
+		"@typescript-eslint/no-base-to-string": 0,
+		"@typescript-eslint/no-duplicate-type-constituents": 0,
+		"@typescript-eslint/no-explicit-any": 0,
+		"@typescript-eslint/no-namespace": 0,
+		"@typescript-eslint/no-redundant-type-constituents": 0,
+		"@typescript-eslint/no-unsafe-argument": 0,
+		"@typescript-eslint/no-unsafe-assignment": 0,
+		"@typescript-eslint/no-unsafe-call": 0,
+		"@typescript-eslint/no-unsafe-member-access": 0,
+		"@typescript-eslint/no-unsafe-return": 0,
+		"@typescript-eslint/no-var-requires": 0, // require being used in importing images
+		"@typescript-eslint/restrict-template-expressions": 0,
+		"jsdoc/require-param": 0,
+		"jsdoc/require-param-description": 0,
+		"jsdoc/require-param-type": 0,
+		"jsdoc/require-returns": 0,
+		"jsdoc/require-returns-type": 0
+	}
+}

@@ -1,0 +1,59 @@
+{
+	"compilerOptions": {
+		// Type checking
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"strict": true,
+		"strictNullChecks": false,
+		// "exactOptionalPropertyTypes": true,
+		// "noImplicitAny": false,
+		// "noImplicitOverride": true,
+		// "noImplicitReturns": true,
+		// "noPropertyAccessFromIndexSignature": true,
+
+		// Modules
+		"module": "esnext",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+
+		// Emit
+		"outDir": "./dist",
+		"removeComments": true,
+		"sourceMap": true,
+
+		// Javascript Support
+		"allowJs": false,
+
+		// Editor Support
+
+		// Interop Constraints
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": false,
+
+		// Backwards Compatibility
+
+		// Language and Environment
+		"experimentalDecorators": true,
+		"jsx": "react",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"target": "es6",
+
+		// Compiler Diagnostics
+
+		// Projects
+
+		// Output Formatting
+
+		// Completeness
+		"skipLibCheck": true
+
+		// Command Line
+
+		// Watch Options
+	}
+}

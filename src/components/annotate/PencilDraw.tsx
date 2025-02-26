@@ -5,11 +5,10 @@
 
 import React, { useEffect } from 'react';
 import { Canvas, PencilBrush } from 'fabric';
-import { Button } from 'antd';
-import { WritingFluently } from '@icon-park/react';
 
-import { SubMenu } from '../utils/utils';
-import { useActiveAnnotation, useImageEditorActions, useFreeDrawingBrush } from '../store/ImageEditorStore';
+import { SubMenu } from '../../utils/utils';
+import { useActiveAnnotation, useImageEditorActions, useFreeDrawingBrush } from '../../store/ImageEditorStore';
+import WritingFluentlyIcon from 'src/icons/WritingFluently';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -123,15 +122,10 @@ const PencilDraw: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<Button
-			icon={<WritingFluently />}
-			shape='round'
-			onClick={handleDraw}
-			className={activeAnnotation === SubMenu.DRAW ? '!bg-[#F0F0F0]' : ''}
-			type={activeAnnotation === SubMenu.DRAW ? 'default' : 'text'}
-		>
-			Draw
-		</Button>
+		<button className={`custom-button ${activeAnnotation === SubMenu.DRAW ? 'active' : ''}`} onClick={handleDraw}>
+			<WritingFluentlyIcon />
+			Arrow Tool
+		</button>
 	);
 };
 

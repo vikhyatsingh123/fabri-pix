@@ -3,16 +3,13 @@
  * Line path for image editor
  */
 
-import { WholeSiteAccelerator } from '@icon-park/react';
-import { Button } from 'antd';
 import { Canvas, Polyline } from 'fabric';
 import React, { useCallback, useEffect, useRef } from 'react';
-import { ulid } from 'ulid';
-import _ from 'lodash';
 
-import { multiSelectAnnotation, SubMenu } from '../utils/utils';
-import imageEditorShapes from '../utils/imageEditorShapes';
+import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
+import imageEditorShapes from '../../utils/imageEditorShapes';
 import { useActiveAnnotation, useImageEditorActions, useLinePath } from '../store/ImageEditorStore';
+import WholeSiteAcceleratorIcon from 'src/icons/WholeSiteAcceleratorIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -49,7 +46,7 @@ const LinePath: React.FC<IProps> = (props) => {
 		}
 
 		if (!isDrawing.current) {
-			const id = ulid();
+			const id = crypto.randomUUID();
 			isDrawing.current = true;
 
 			imageEditorShapes({
@@ -69,7 +66,7 @@ const LinePath: React.FC<IProps> = (props) => {
 
 			polylinePoints.current = [{ x: pointer.x, y: pointer.y }];
 
-			currentPolyline.current = canvas.current.getObjects().find((obj) => _.get(obj, 'id') === id) as Polyline;
+			currentPolyline.current = canvas.current.getObjects().find((obj: any) => obj.id === id) as Polyline;
 		} else if (currentPolyline.current) {
 			const points = currentPolyline.current.points || [];
 			points.push({ x: pointer.x, y: pointer.y });
@@ -113,7 +110,7 @@ const LinePath: React.FC<IProps> = (props) => {
 					stroke: linePathRef.current.stroke,
 					strokeWidth: linePathRef.current.width,
 					points: polylinePoints.current,
-					id: ulid(),
+					id: crypto.randomUUID(),
 				},
 			});
 			polylinePoints.current = [];
@@ -139,7 +136,7 @@ const LinePath: React.FC<IProps> = (props) => {
 			canvas.current.off('mouse:dblclick', handleDoubleClick);
 			window.removeEventListener('keyup', handleKeyPress);
 			canvas.current.defaultCursor = 'default';
-			if (!_.includes(multiSelectAnnotation, activeAnnotation)) {
+			if (!multiSelectAnnotation.includes(activeAnnotation)) {
 				canvas.current.selection = true;
 			}
 		}
@@ -195,15 +192,13 @@ const LinePath: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<Button
-			icon={<WholeSiteAccelerator />}
-			shape='round'
-			type={activeAnnotation === SubMenu.LINE_PATH ? 'default' : 'text'}
-			className={activeAnnotation === SubMenu.LINE_PATH ? '!bg-[#F0F0F0]' : ''}
+		<button
+			className={`custom-button ${activeAnnotation === SubMenu.LINE_PATH ? 'active' : ''}`}
 			onClick={handleLinePath}
 		>
+			<WholeSiteAcceleratorIcon />
 			Path
-		</Button>
+		</button>
 	);
 };
 

@@ -3,22 +3,27 @@
  * Image Annotation for menu
  */
 
-import { CommentOne, DownOne, Plus, Rectangle, RightTwo, Round, Square, Star } from '@icon-park/react';
 import { Dropdown, MenuProps, Upload } from 'antd';
 import { Canvas, Circle, FabricImage, Group, Line, Rect, Triangle } from 'fabric';
-import _ from 'lodash';
 import React, { useCallback, useEffect, useRef } from 'react';
-import { ulid } from 'ulid';
 
 import StepsCreator from './StepsCreator';
 import AdvancedArrowTool from './AdvancedArrowTool';
 import LinePath from './LinePath';
-import { SubMenu } from '../utils/utils';
-import imageEditorShapes from '../utils/imageEditorShapes';
+import { SubMenu } from '../../utils/utils';
+import imageEditorShapes from '../../utils/imageEditorShapes';
 import PencilDraw from './PencilDraw';
 import { useActiveAnnotation, useCommentBox, useImageEditorActions } from '../store/ImageEditorStore';
 import EditorTextbox from './EditorTextbox';
 import EditorEmoji from './EditorEmoji';
+import RectangleIcon from 'src/icons/RectangleIcon';
+import RoundIcon from 'src/icons/RoundIcon';
+import RightTwoIcon from 'src/icons/RightTwoIcon';
+import StarIcon from 'src/icons/StarIcon';
+import CommentOneIcon from 'src/icons/CommentOneIcon';
+import PlusIcon from 'src/icons/PlusIcon';
+import DownOneIcon from 'src/icons/DownOneIcon';
+import SquareIcon from 'src/icons/SquareIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -54,7 +59,12 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		const scaleY = bgImage.scaleY;
 		aiScaledCoordinatesRef.current = aIAnnotation.map((coord: any) => ({
 			...coord,
-			scaledBbox: [coord.bbox[0] * scaleX, coord.bbox[1] * scaleY, coord.bbox[2] * scaleX, coord.bbox[3] * scaleY],
+			scaledBbox: [
+				coord.bbox[0] * scaleX,
+				coord.bbox[1] * scaleY,
+				coord.bbox[2] * scaleX,
+				coord.bbox[3] * scaleY,
+			],
 		}));
 	}, [aIAnnotation]);
 
@@ -62,7 +72,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		canvas.current.discardActiveObject();
 		setActiveAnnotation(SubMenu.STAR);
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		const height = canvas.current.getHeight();
 		const width = canvas.current.getWidth();
 
@@ -150,7 +160,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			}
 		}
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		if (hoveredEntry) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
 			imageEditorShapes({
@@ -256,7 +266,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			}
 		}
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		if (hoveredEntry) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
 			imageEditorShapes({
@@ -321,8 +331,8 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			}
 		}
 
-		const obj1 = _.get(hoverRectRef.current, '_objects[1]');
-		const obj2 = _.get(hoverRectRef.current, '_objects[0]');
+		const obj1 = (hoverRectRef.current as any)?._objects[1];
+		const obj2 = (hoverRectRef.current as any)?._objects[0];
 
 		if (hoveredEntry && obj1 && obj2) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
@@ -412,10 +422,10 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			}
 		}
 
-		const obj0 = _.get(hoverRectRef.current, '_objects[0]');
-		const obj1 = _.get(hoverRectRef.current, '_objects[1]');
+		const obj0 = (hoverRectRef.current as any)?._objects[0];
+		const obj1 = (hoverRectRef.current as any)?._objects[1];
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		if (hoveredEntry && obj0 && obj1) {
 			imageEditorShapes({
 				canvas,
@@ -643,7 +653,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		reader.onload = (e) => {
 			const imageUrl = e.target?.result as string;
 			if (imageUrl) {
-				const id = ulid();
+				const id = crypto.randomUUID();
 				const height = canvas.current.getHeight();
 				const width = canvas.current.getWidth();
 
@@ -684,7 +694,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			shapeType: SubMenu.COMMENT_BOX,
 			isNewShape: true,
 			canvasData: {
-				id: ulid(),
+				id: crypto.randomUUID(),
 				top: canvas.current.getHeight() / 2 - 50,
 				left: canvas.current.getWidth() / 2 - 100,
 				borderColor: commentBox.borderColor,
@@ -711,7 +721,11 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 	};
 
 	const handleShapeClick = () => {
-		if (activeAnnotation === SubMenu.RECTANGLE || activeAnnotation === SubMenu.CIRCLE || activeAnnotation === SubMenu.ARROW) {
+		if (
+			activeAnnotation === SubMenu.RECTANGLE ||
+			activeAnnotation === SubMenu.CIRCLE ||
+			activeAnnotation === SubMenu.ARROW
+		) {
 			setActiveAnnotation('');
 			if (hoverRectRef.current) {
 				canvas.current.remove(hoverRectRef.current);
@@ -733,39 +747,46 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			{
 				label: 'Rectangle',
 				key: 'rectangle',
-				icon: <Rectangle />,
+				icon: <RectangleIcon />,
 				onClick: handleRectangularShape,
 			},
 			{
 				label: 'Circle',
 				key: 'circle',
-				icon: <Round />,
+				icon: <RoundIcon />,
 				onClick: handleCircularShape,
 			},
 			{
 				label: 'Arrow',
 				key: 'arrow',
-				icon: <RightTwo />,
+				icon: <RightTwoIcon />,
 				onClick: handleAddArrow,
 			},
 			{
 				label: 'Star',
 				key: 'star',
-				icon: <Star />,
+				icon: <StarIcon />,
 				onClick: handleStarShape,
 			},
 			{
 				label: 'Comment',
 				key: 'comment',
-				icon: <CommentOne />,
+				icon: <CommentOneIcon />,
 				onClick: handleCommentBox,
 			},
 			{
 				label: '',
 				key: 'add-custom',
 				icon: (
-					<Upload accept='image/*' showUploadList={false} beforeUpload={() => false} onChange={handleImageUpload}>
-						<Plus className='mr-0.5' />
+					<Upload
+						accept='image/*'
+						showUploadList={false}
+						beforeUpload={() => false}
+						onChange={handleImageUpload}
+					>
+						<span className='mr-0.5'>
+							<PlusIcon />
+						</span>
 						<span className='ml-2 text-sm'>Add custom</span>
 					</Upload>
 				),
@@ -780,19 +801,39 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			<Dropdown.Button
 				menu={menuProps}
 				type={
-					activeAnnotation === SubMenu.RECTANGLE || activeAnnotation === SubMenu.CIRCLE || activeAnnotation === SubMenu.ARROW
+					activeAnnotation === SubMenu.RECTANGLE ||
+					activeAnnotation === SubMenu.CIRCLE ||
+					activeAnnotation === SubMenu.ARROW
 						? 'default'
 						: 'text'
 				}
 				trigger={['click']}
 				placement='bottom'
-				className={`w-fit shapes-btn ${activeAnnotation === SubMenu.RECTANGLE || activeAnnotation === SubMenu.CIRCLE || activeAnnotation === SubMenu.ARROW ? 'image-shapes-btn' : ''}`}
-				icon={<DownOne theme='filled' size={18} />}
+				className={`w-fit shapes-btn ${
+					activeAnnotation === SubMenu.RECTANGLE ||
+					activeAnnotation === SubMenu.CIRCLE ||
+					activeAnnotation === SubMenu.ARROW
+						? 'image-shapes-btn'
+						: ''
+				}`}
+				icon={<DownOneIcon />}
 				onClick={handleShapeClick}
 			>
-				{activeAnnotation !== SubMenu.CIRCLE && activeAnnotation !== SubMenu.ARROW && <Square className='ml-2' />}
-				{activeAnnotation === SubMenu.CIRCLE && <Round className='ml-2' />}
-				{activeAnnotation === SubMenu.ARROW && <RightTwo className='ml-2' />}
+				{activeAnnotation !== SubMenu.CIRCLE && activeAnnotation !== SubMenu.ARROW && (
+					<span className='ml-2'>
+						<SquareIcon />
+					</span>
+				)}
+				{activeAnnotation === SubMenu.CIRCLE && (
+					<span className='ml-2'>
+						<RoundIcon />
+					</span>
+				)}
+				{activeAnnotation === SubMenu.ARROW && (
+					<span className='ml-2'>
+						<RightTwoIcon />
+					</span>
+				)}
 				<span className='mr-2'>Shapes</span>
 			</Dropdown.Button>
 			<EditorEmoji canvas={canvas} />

@@ -6,9 +6,9 @@
 import { Canvas } from 'fabric';
 import React from 'react';
 import { Menu } from '../utils/utils';
-import ImageAnnotation from './ImageAnnotation';
-import ImageRedact from './ImageRedact';
-import ImageCrop from './ImageCrop';
+import ImageAnnotation from './annotate/ImageAnnotation';
+import ImageRedact from './redact/ImageRedact';
+import ImageCrop from './crop/ImageCrop';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -22,7 +22,9 @@ const EditorSubMenu: React.FC<IProps> = (props) => {
 
 	switch (menu) {
 		case Menu.ANNOTATE:
-			return <ImageAnnotation canvas={canvas} aIAnnotation={aIAnnotation} handleTrackChange={handleTrackChange} />;
+			return (
+				<ImageAnnotation canvas={canvas} aIAnnotation={aIAnnotation} handleTrackChange={handleTrackChange} />
+			);
 		case Menu.BLUR:
 			return <ImageRedact canvas={canvas} handleTrackChange={handleTrackChange} />;
 		case Menu.CROP:

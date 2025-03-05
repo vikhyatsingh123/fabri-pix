@@ -3,22 +3,25 @@
  * Image Annotation for menu
  */
 
-import { CommentOne, DownOne, Plus, Rectangle, RightTwo, Round, Square, Star } from '@icon-park/react';
-import { Dropdown, MenuProps, Upload } from 'antd';
 import { Canvas, Circle, FabricImage, Group, Line, Rect, Triangle } from 'fabric';
-import _ from 'lodash';
-import React, { useCallback, useEffect, useRef } from 'react';
-import { ulid } from 'ulid';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import StepsCreator from './StepsCreator';
 import AdvancedArrowTool from './AdvancedArrowTool';
 import LinePath from './LinePath';
-import { SubMenu } from '../utils/utils';
-import imageEditorShapes from '../utils/imageEditorShapes';
+import { SubMenu } from '../../utils/utils';
+import imageEditorShapes from '../../utils/imageEditorShapes';
 import PencilDraw from './PencilDraw';
 import { useActiveAnnotation, useCommentBox, useImageEditorActions } from '../store/ImageEditorStore';
 import EditorTextbox from './EditorTextbox';
 import EditorEmoji from './EditorEmoji';
+import RectangleIcon from 'src/icons/RectangleIcon';
+import RoundIcon from 'src/icons/RoundIcon';
+import RightTwoIcon from 'src/icons/RightTwoIcon';
+import StarIcon from 'src/icons/StarIcon';
+import CommentOneIcon from 'src/icons/CommentOneIcon';
+import PlusIcon from 'src/icons/PlusIcon';
+import DownOneIcon from 'src/icons/DownOneIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -29,12 +32,16 @@ interface IProps {
 const ImageAnnotation: React.FC<IProps> = (props) => {
 	const { canvas, aIAnnotation, handleTrackChange } = props;
 
+	const [isOpen, setIsOpen] = useState(false);
+
 	const { setActiveAnnotation } = useImageEditorActions();
 	const activeAnnotation = useActiveAnnotation();
 	const { commentBox } = useCommentBox();
 
 	const hoverRectRef = useRef<Rect | Circle | Group | null>(null);
 	const aiScaledCoordinatesRef = useRef<{ bbox: number[]; scaledBbox: number[] }[]>([]);
+	const dropdownRef = useRef<HTMLDivElement | null>(null);
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 	useEffect(() => {
 		setActiveAnnotation('');
@@ -54,7 +61,12 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		const scaleY = bgImage.scaleY;
 		aiScaledCoordinatesRef.current = aIAnnotation.map((coord: any) => ({
 			...coord,
-			scaledBbox: [coord.bbox[0] * scaleX, coord.bbox[1] * scaleY, coord.bbox[2] * scaleX, coord.bbox[3] * scaleY],
+			scaledBbox: [
+				coord.bbox[0] * scaleX,
+				coord.bbox[1] * scaleY,
+				coord.bbox[2] * scaleX,
+				coord.bbox[3] * scaleY,
+			],
 		}));
 	}, [aIAnnotation]);
 
@@ -62,7 +74,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		canvas.current.discardActiveObject();
 		setActiveAnnotation(SubMenu.STAR);
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		const height = canvas.current.getHeight();
 		const width = canvas.current.getWidth();
 
@@ -150,7 +162,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			}
 		}
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		if (hoveredEntry) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
 			imageEditorShapes({
@@ -256,7 +268,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			}
 		}
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		if (hoveredEntry) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
 			imageEditorShapes({
@@ -321,8 +333,8 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			}
 		}
 
-		const obj1 = _.get(hoverRectRef.current, '_objects[1]');
-		const obj2 = _.get(hoverRectRef.current, '_objects[0]');
+		const obj1 = (hoverRectRef.current as any)?._objects[1];
+		const obj2 = (hoverRectRef.current as any)?._objects[0];
 
 		if (hoveredEntry && obj1 && obj2) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
@@ -412,10 +424,10 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			}
 		}
 
-		const obj0 = _.get(hoverRectRef.current, '_objects[0]');
-		const obj1 = _.get(hoverRectRef.current, '_objects[1]');
+		const obj0 = (hoverRectRef.current as any)?._objects[0];
+		const obj1 = (hoverRectRef.current as any)?._objects[1];
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		if (hoveredEntry && obj0 && obj1) {
 			imageEditorShapes({
 				canvas,
@@ -635,7 +647,8 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		canvas.current.on('mouse:move', handleCircleMouseMove);
 	};
 
-	const handleImageUpload = ({ file }: any) => {
+	const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
 		if (!file) {
 			return;
 		}
@@ -643,7 +656,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		reader.onload = (e) => {
 			const imageUrl = e.target?.result as string;
 			if (imageUrl) {
-				const id = ulid();
+				const id = crypto.randomUUID();
 				const height = canvas.current.getHeight();
 				const width = canvas.current.getWidth();
 
@@ -684,7 +697,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			shapeType: SubMenu.COMMENT_BOX,
 			isNewShape: true,
 			canvasData: {
-				id: ulid(),
+				id: crypto.randomUUID(),
 				top: canvas.current.getHeight() / 2 - 50,
 				left: canvas.current.getWidth() / 2 - 100,
 				borderColor: commentBox.borderColor,
@@ -711,7 +724,11 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 	};
 
 	const handleShapeClick = () => {
-		if (activeAnnotation === SubMenu.RECTANGLE || activeAnnotation === SubMenu.CIRCLE || activeAnnotation === SubMenu.ARROW) {
+		if (
+			activeAnnotation === SubMenu.RECTANGLE ||
+			activeAnnotation === SubMenu.CIRCLE ||
+			activeAnnotation === SubMenu.ARROW
+		) {
 			setActiveAnnotation('');
 			if (hoverRectRef.current) {
 				canvas.current.remove(hoverRectRef.current);
@@ -728,73 +745,103 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		handleRectangularShape();
 	};
 
-	const menuProps: MenuProps = {
-		items: [
-			{
-				label: 'Rectangle',
-				key: 'rectangle',
-				icon: <Rectangle />,
-				onClick: handleRectangularShape,
-			},
-			{
-				label: 'Circle',
-				key: 'circle',
-				icon: <Round />,
-				onClick: handleCircularShape,
-			},
-			{
-				label: 'Arrow',
-				key: 'arrow',
-				icon: <RightTwo />,
-				onClick: handleAddArrow,
-			},
-			{
-				label: 'Star',
-				key: 'star',
-				icon: <Star />,
-				onClick: handleStarShape,
-			},
-			{
-				label: 'Comment',
-				key: 'comment',
-				icon: <CommentOne />,
-				onClick: handleCommentBox,
-			},
-			{
-				label: '',
-				key: 'add-custom',
-				icon: (
-					<Upload accept='image/*' showUploadList={false} beforeUpload={() => false} onChange={handleImageUpload}>
-						<Plus className='mr-0.5' />
-						<span className='ml-2 text-sm'>Add custom</span>
-					</Upload>
-				),
-				onClick: handleAddCustom,
-			},
-		],
+	const menuProps = [
+		{
+			label: 'Rectangle',
+			key: 'rectangle',
+			icon: <RectangleIcon />,
+			onClick: handleRectangularShape,
+		},
+		{
+			label: 'Circle',
+			key: 'circle',
+			icon: <RoundIcon />,
+			onClick: handleCircularShape,
+		},
+		{
+			label: 'Arrow',
+			key: 'arrow',
+			icon: <RightTwoIcon />,
+			onClick: handleAddArrow,
+		},
+		{
+			label: 'Star',
+			key: 'star',
+			icon: <StarIcon />,
+			onClick: handleStarShape,
+		},
+		{
+			label: 'Comment',
+			key: 'comment',
+			icon: <CommentOneIcon />,
+			onClick: handleCommentBox,
+		},
+		{
+			label: '',
+			key: 'add-custom',
+			icon: (
+				<div className='inline-flex items-center cursor-pointer bg-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-300'>
+					<input
+						type='file'
+						accept='image/*'
+						ref={fileInputRef}
+						onChange={handleImageUpload}
+						className='hidden'
+					/>
+
+					<button type='button' className='flex items-center' onClick={() => fileInputRef.current?.click()}>
+						<span className='mr-0.5'>
+							<PlusIcon />
+						</span>
+						<span className='ml-2 text-sm'>Add Custom</span>
+					</button>
+				</div>
+			),
+			onClick: handleAddCustom,
+		},
+	];
+
+	const toggleDropdown = () => {
+		handleShapeClick();
+		setIsOpen((prev) => !prev);
 	};
 
 	return (
 		<div className='flex justify-center items-center gap-2 mb-3'>
 			<StepsCreator canvas={canvas} />
-			<Dropdown.Button
-				menu={menuProps}
-				type={
-					activeAnnotation === SubMenu.RECTANGLE || activeAnnotation === SubMenu.CIRCLE || activeAnnotation === SubMenu.ARROW
-						? 'default'
-						: 'text'
-				}
-				trigger={['click']}
-				placement='bottom'
-				className={`w-fit shapes-btn ${activeAnnotation === SubMenu.RECTANGLE || activeAnnotation === SubMenu.CIRCLE || activeAnnotation === SubMenu.ARROW ? 'image-shapes-btn' : ''}`}
-				icon={<DownOne theme='filled' size={18} />}
-				onClick={handleShapeClick}
-			>
-				{activeAnnotation !== SubMenu.CIRCLE && activeAnnotation !== SubMenu.ARROW && <Square className='ml-2' />}
-				{activeAnnotation === SubMenu.CIRCLE && <Round className='ml-2' />}
-				{activeAnnotation === SubMenu.ARROW && <RightTwo className='ml-2' />}
-				<span className='mr-2'>Shapes</span>
-			</Dropdown.Button>
+			<div className='relative inline-block'>
+				<button
+					className='px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 flex items-center'
+					onClick={toggleDropdown}
+				>
+					Shapes
+					<span className='ml-2'>
+						<DownOneIcon />
+					</span>
+					{/* Replace with <DownOneIcon /> */}
+				</button>
+
+				{/* Dropdown Menu */}
+				{isOpen && (
+					<div ref={dropdownRef} className='absolute left-0 mt-2 w-40 bg-white border rounded-lg shadow-lg'>
+						<ul className='py-2'>
+							{menuProps.map((item) => (
+								<li
+									key={item.key}
+									className='px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer'
+									onClick={() => {
+										item.onClick();
+										setIsOpen(false);
+									}}
+								>
+									<span className='mr-2'>{item.icon}</span>
+									{item.label}
+								</li>
+							))}
+						</ul>
+					</div>
+				)}
+			</div>
 			<EditorEmoji canvas={canvas} />
 			<EditorTextbox canvas={canvas} />
 			<PencilDraw canvas={canvas} handleTrackChange={handleTrackChange} />

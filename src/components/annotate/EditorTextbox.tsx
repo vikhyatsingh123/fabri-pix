@@ -3,15 +3,13 @@
  * Textbox for image editor
  */
 
-import { AddText } from '@icon-park/react';
-import { Button } from 'antd';
 import { Canvas } from 'fabric';
 import React, { useCallback, useEffect, useRef } from 'react';
-import { ulid } from 'ulid';
 
-import { SubMenu } from '../utils/utils';
-import imageEditorShapes from '../utils/imageEditorShapes';
+import { SubMenu } from '../../utils/utils';
+import imageEditorShapes from '../../utils/imageEditorShapes';
 import { useActiveAnnotation, useImageEditorActions, useTextBox } from '../store/ImageEditorStore';
+import AddTextIcon from 'src/icons/AddTextIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -77,7 +75,6 @@ const EditorTextbox: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const id = ulid();
 		imageEditorShapes({
 			canvas,
 			shapeType: SubMenu.TEXT,
@@ -88,7 +85,7 @@ const EditorTextbox: React.FC<IProps> = (props) => {
 				fontSize: textBoxRef.current.fontSize,
 				fontStyle: textBoxRef.current.fontStyle,
 				fontWeight: textBoxRef.current.fontWeight,
-				id,
+				id: crypto.randomUUID(),
 				left: pointer.x - 80,
 				scaleX: 1,
 				scaleY: 1,
@@ -150,15 +147,13 @@ const EditorTextbox: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<Button
+		<button
+			className={`custom-button ${activeAnnotation === SubMenu.TEXT ? 'active' : ''}`}
 			onClick={handleAddText}
-			shape='round'
-			icon={<AddText />}
-			type={activeAnnotation === SubMenu.TEXT ? 'default' : 'text'}
-			className={activeAnnotation === SubMenu.TEXT ? '!bg-[#F0F0F0]' : ''}
 		>
+			<AddTextIcon />
 			Text
-		</Button>
+		</button>
 	);
 };
 

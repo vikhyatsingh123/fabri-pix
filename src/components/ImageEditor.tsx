@@ -4,29 +4,25 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { message, Typography } from 'antd';
 import { Canvas, IText, FabricImage, FabricObject } from 'fabric';
-import _ from 'lodash';
 
 import EditorMenu from './EditorMenu';
 import EditorSubMenu from './EditorSubMenu';
 import { Menu, overlaysConstants, SubMenu, AICoordinates } from '../utils/utils';
 import EditorTopMenu from './EditorTopMenu';
-import EditorContextMenu from './EditorContextMenu';
+import EditorContextMenu from './context-menu/EditorContextMenu';
 import { useImageEditorActions } from '../store/ImageEditorStore';
 import ImageEditorFooter from './ImageEditorFooter';
 
 interface IProps {
-	streamId: string;
 	imageUrl?: string | null;
-	assetVersion?: number;
 }
 
 const ImageEditor: React.FC<IProps> = (props) => {
-	const { streamId, imageUrl, assetVersion } = props;
+	const { imageUrl } = props;
 
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	const canvas = useRef<Canvas>() as React.MutableRefObject<Canvas>;
+	const canvas = useRef<Canvas>(null);
 	const undoRedoActive = useRef<boolean>(false);
 
 	const { setActiveAnnotation } = useImageEditorActions();
@@ -49,13 +45,13 @@ const ImageEditor: React.FC<IProps> = (props) => {
 				return;
 			}
 
-			const activeObject = canvas.current?.getActiveObject();
+			const activeObject = canvas.current?.getActiveObject() as any;
 			if (activeObject) {
-				if (_.get(activeObject, 'shapeType') === SubMenu.STEPS_CREATOR) {
+				if (activeObject.shapeType === SubMenu.STEPS_CREATOR) {
 					if (event.key === 'Backspace') {
 						const text = activeObject as IText;
-						const textValue = _.get(activeObject, ['_objects', 1, '_objects', 1, 'text']);
-						if (!_.get(activeObject, ['_objects', 1, '_objects', 1, 'isEditing'])) {
+						const textValue = activeObject._objects?.[1]?._objects?.[1]?.text ?? '';
+						if (!activeObject._objects?.[1]?._objects?.[1]?.isEditing) {
 							canvas.current?.remove(activeObject);
 							canvas.current?.renderAll();
 							return;
@@ -68,9 +64,9 @@ const ImageEditor: React.FC<IProps> = (props) => {
 						canvas.current?.remove(activeObject);
 						canvas.current?.renderAll();
 					}
-				} else if (_.get(activeObject, 'shapeType') === SubMenu.TEXT) {
+				} else if (activeObject.shapeType === SubMenu.TEXT) {
 					const text = activeObject as IText;
-					if (!_.get(activeObject, 'isEditing')) {
+					if (!activeObject.isEditing) {
 						canvas.current?.remove(activeObject);
 						canvas.current?.renderAll();
 						return;
@@ -81,13 +77,13 @@ const ImageEditor: React.FC<IProps> = (props) => {
 						text.text = textValue.slice(0, -1);
 						canvas.current?.renderAll();
 					}
-				} else if (activeObject.type === 'rect' && _.get(activeObject, 'shapeType') === SubMenu.BLUR) {
+				} else if (activeObject.type === 'rect' && activeObject.shapeType === SubMenu.BLUR) {
 					const objects = canvas.current?.getObjects();
 					if (objects) {
-						objects.forEach((object) => {
+						objects.forEach((object: any) => {
 							if (
-								_.get(object, 'shapeType') === SubMenu.BLUR_INNER_PART &&
-								_.get(object, 'id') === _.get(activeObject, 'id') + '-blur'
+								object.shapeType === SubMenu.BLUR_INNER_PART &&
+								object.id === activeObject.id + '-blur'
 							) {
 								canvas.current?.remove(object);
 							}
@@ -95,13 +91,13 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					}
 					canvas.current?.remove(activeObject);
 					canvas.current?.renderAll();
-				} else if (_.get(activeObject, 'shapeType') === SubMenu.CROP_RECTANGLE) {
+				} else if (activeObject.shapeType === SubMenu.CROP_RECTANGLE) {
 					const overlayObjects = canvas.current?.getObjects();
 					if (overlayObjects) {
-						_.forEach(overlayObjects, (object) => {
+						overlayObjects.forEach((object: any) => {
 							if (
-								_.includes(overlaysConstants, _.get(object, 'shapeType')) ||
-								_.get(object, 'shapeType') === SubMenu.CROP_RECTANGLE
+								overlaysConstants.includes(object.shapeType) ||
+								object.shapeType === SubMenu.CROP_RECTANGLE
 							) {
 								canvas.current?.remove(object);
 							}
@@ -109,29 +105,25 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					}
 					setActiveAnnotation(SubMenu.CROP_CLIP_PATH_DELETED);
 					canvas.current?.renderAll();
-				} else if (_.get(activeObject, 'shapeType') === SubMenu.ADVANCED_ARROW) {
-					const arrowHead = _.find(
-						canvas.current?.getObjects(),
-						(obj) => _.get(obj, 'id') === _.get(activeObject, 'id') + '-arrowhead',
-					);
+				} else if (activeObject.shapeType === SubMenu.ADVANCED_ARROW) {
+					const arrowHead = canvas.current
+						?.getObjects()
+						.find((obj: any) => obj.id === activeObject.id + '-arrowhead');
 					if (arrowHead) {
 						canvas.current?.remove(arrowHead);
 					}
 					canvas.current?.remove(activeObject);
 					canvas.current?.renderAll();
-				} else if (_.get(activeObject, 'shapeType') === SubMenu.COMMENT_BOX_TEXTBOX) {
+				} else if (activeObject.shapeType === SubMenu.COMMENT_BOX_TEXTBOX) {
 					const text = activeObject as IText;
 					const textValue = text.text;
 					if (textValue.length > 0) {
 						text.text = textValue.slice(0, -1);
 						canvas.current?.renderAll();
 					}
-				} else if (_.get(activeObject, 'shapeType') === SubMenu.COMMENT_BOX) {
+				} else if (activeObject.shapeType === SubMenu.COMMENT_BOX) {
 					const canvasObject = canvas.current.getObjects();
-					const textboxObj = _.find(
-						canvasObject,
-						(obj) => _.get(obj, 'id') === _.get(activeObject, 'id') + '-text',
-					);
+					const textboxObj = canvasObject.find((obj: any) => obj.id === activeObject.id + '-text');
 					canvas.current?.remove(activeObject);
 					canvas.current?.remove(textboxObj);
 					canvas.current?.renderAll();
@@ -165,11 +157,11 @@ const ImageEditor: React.FC<IProps> = (props) => {
 				canvas.current.backgroundImage = image;
 				canvas.current.renderAll();
 			} catch (error) {
-				void message.error('Error loading image');
+				void console.error('Error loading image');
 			}
 		}
 
-		const canvasAsJson = JSON.stringify(_.cloneDeep(canvas.current.toJSON()));
+		const canvasAsJson = JSON.stringify(JSON.parse(JSON.stringify(canvas.current.toJSON())));
 		setMenu(Menu.ANNOTATE);
 		setConfig({
 			canvasState: [canvasAsJson],
@@ -216,9 +208,9 @@ const ImageEditor: React.FC<IProps> = (props) => {
 		}
 
 		const jsonData = canvas.current.toJSON();
-		const canvasAsJson = JSON.stringify(_.cloneDeep(jsonData));
+		const canvasAsJson = JSON.stringify(JSON.parse(JSON.stringify(jsonData)));
 		setConfig((prevConfig) => {
-			let newCanvasState = [..._.cloneDeep(prevConfig.canvasState)];
+			let newCanvasState = [...JSON.parse(JSON.stringify(prevConfig.canvasState))];
 			if (prevConfig.currentStateIndex < newCanvasState.length - 1) {
 				const indexToBeInserted = prevConfig.currentStateIndex + 1;
 				newCanvasState[indexToBeInserted] = canvasAsJson;
@@ -331,12 +323,10 @@ const ImageEditor: React.FC<IProps> = (props) => {
 
 	return (
 		<div>
-			<Typography.Title level={5} className='m-0'>
-				Edit Image
-			</Typography.Title>
+			<h5 className='m-0'>Edit Image</h5>
 			<div className='flex justify-between items-center'>
 				<EditorMenu setMenu={setMenu} menu={menu} />
-				<EditorTopMenu canvas={canvas} config={config} setConfig={setConfig} undoRedoActive={undoRedoActive} />
+				{/* <EditorTopMenu canvas={canvas} config={config} setConfig={setConfig} undoRedoActive={undoRedoActive} /> */}
 			</div>
 			<div className='flex w-full justify-center'>
 				<div
@@ -358,7 +348,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					handleTrackChange={trackChange}
 				/>
 			</div>
-			<ImageEditorFooter canvas={canvas} assetVersion={assetVersion} streamId={streamId} />
+			{/* <ImageEditorFooter canvas={canvas} assetVersion={assetVersion} streamId={streamId} /> */}
 		</div>
 	);
 };

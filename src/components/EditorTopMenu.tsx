@@ -1,17 +1,22 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Image editor for top menu
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import _ from 'lodash';
 import { Canvas, FabricImage, Point, Rect } from 'fabric';
-import { CheckOne, Five, History, Minus, Plus, Redo, Undo } from '@icon-park/react';
-import { Tooltip, Button, Popover, Divider, Col, Row } from 'antd';
 
 import imageEditorShapes from '../utils/imageEditorShapes';
 import { historyLogs, SubMenu } from '../utils/utils';
 import { useActiveAnnotation, useImageEditorActions } from '../store/ImageEditorStore';
+import Popover from './widgets/Popover';
+import PlusIcon from 'src/icons/PlusIcon';
+import HistoryIcon from 'src/icons/HistoryIcon';
+import UndoIcon from 'src/icons/UndoIcon';
+import RedoIcon from 'src/icons/RedoIcon';
+import MinusIcon from 'src/icons/MinusIcon';
+import FiveIcon from 'src/icons/FiveIcon';
+import CheckOneIcon from 'src/icons/CheckOneIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -61,12 +66,12 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 	}, []);
 
 	const handleMouseMove = useCallback((e: any) => {
-		if (!_.get(canvas.current, 'isDragging')) {
+		if (!(canvas.current as any)?.isDragging) {
 			return;
 		}
 		const vpt = canvas.current.viewportTransform;
-		vpt[4] += e.e.clientX - _.get(canvas.current, 'lastPosX', 0);
-		vpt[5] += e.e.clientY - _.get(canvas.current, 'lastPosY', 0);
+		vpt[4] += e.e.clientX - (canvas.current as any)?.lastPosX;
+		vpt[5] += e.e.clientY - (canvas.current as any)?.lastPosY;
 		canvas.current.set({
 			lastPosX: e.e.clientX,
 			lastPosY: e.e.clientY,
@@ -178,7 +183,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 			canvas.current.backgroundImage = newBackgroundImage;
 		}
 
-		if (_.isUndefined(jsonData.clipPath)) {
+		if (!jsonData.clipPath) {
 			canvas.current.clipPath = undefined;
 		} else {
 			const clipPath = new Rect({
@@ -193,7 +198,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 			canvas.current.renderAll();
 		}
 
-		_.forEach(jsonData.objects, (obj) => {
+		jsonData.objects.forEach((obj: any) => {
 			imageEditorShapes({
 				canvas,
 				shapeType: obj.shapeType,
@@ -219,7 +224,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		undoRedoActive.current = true;
 
 		const existingBackgroundImage = canvas.current.backgroundImage;
-		const jsonData = JSON.parse(_.cloneDeep(config.canvasState[config.currentStateIndex - 1]));
+		const jsonData = JSON.parse(JSON.stringify(config.canvasState[config.currentStateIndex - 1]));
 
 		canvas.current.clear();
 
@@ -251,7 +256,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 			canvas.current.renderAll();
 		}
 
-		_.forEach(jsonData.objects, (obj) => {
+		jsonData.objects.forEach((obj: any) => {
 			imageEditorShapes({
 				canvas,
 				shapeType: obj.shapeType,
@@ -277,7 +282,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		undoRedoActive.current = true;
 
 		const existingBackgroundImage = canvas.current.backgroundImage;
-		const jsonData = JSON.parse(_.cloneDeep(state));
+		const jsonData = JSON.parse(JSON.stringify(state));
 
 		canvas.current.clear();
 
@@ -309,7 +314,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 			canvas.current.renderAll();
 		}
 
-		_.forEach(jsonData.objects, (obj) => {
+		jsonData.objects.forEach((obj: any) => {
 			imageEditorShapes({
 				canvas,
 				shapeType: obj.shapeType,
@@ -339,15 +344,15 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 	};
 
 	const detectCanvasChanges = (prevState: any, newState: any) => {
-		const oldObjects = JSON.parse(_.cloneDeep(prevState))?.objects || [];
-		const newObjects = JSON.parse(_.cloneDeep(newState))?.objects || [];
+		const oldObjects = JSON.parse(JSON.stringify(prevState))?.objects || [];
+		const newObjects = JSON.parse(JSON.stringify(newState))?.objects || [];
 
-		const createdObjects = [];
-		const modifiedObjects = [];
-		const deletedObjects = [];
+		const createdObjects: any[] = [];
+		const modifiedObjects: any[] = [];
+		const deletedObjects: any[] = [];
 
-		newObjects.forEach((newObj) => {
-			const existingObj = oldObjects.find((oldObj) => oldObj.id === newObj.id);
+		newObjects.forEach((newObj: any) => {
+			const existingObj = oldObjects.find((oldObj: any) => oldObj.id === newObj.id);
 
 			if (!existingObj) {
 				createdObjects.push(newObj);
@@ -356,8 +361,8 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 			}
 		});
 
-		oldObjects.forEach((oldObj) => {
-			const existsInNew = newObjects.find((newObj) => newObj.id === oldObj.id);
+		oldObjects.forEach((oldObj: any) => {
+			const existsInNew = newObjects.find((newObj: any) => newObj.id === oldObj.id);
 			if (!existsInNew) {
 				deletedObjects.push(oldObj);
 			}
@@ -368,7 +373,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 
 	const history = (
 		<div className='overflow-y-scroll max-h-56 w-60'>
-			{_.map(config.canvasState, (state, index) => {
+			{config.canvasState.map((state, index) => {
 				const prevState = index > 0 ? config.canvasState[index - 1] : null;
 				const changes = prevState ? detectCanvasChanges(prevState, state) : null;
 
@@ -380,49 +385,66 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 								index === config.currentStateIndex ? 'bg-[#e6f4ff] rounded-md' : ''
 							}`}
 						>
-							<Button
-								type='text'
-								className={`w-full ${index === config.currentStateIndex ? 'hover:!bg-[#e6f4ff]' : ''}`}
+							<button
+								className={`custom-button ${index === config.currentStateIndex ? 'active' : ''}`}
 								onClick={() => void handleHistory(state, index)}
 							>
-								<Row className='w-full'>
-									<Col span={3} className='flex items-center'>
+								<div className='flex w-full'>
+									<div className='flex items-center'>
 										<div
-											className={`text-xs ${index === config.currentStateIndex ? 'text-[rgba(0,0,0,0.88)] font-semibold' : ''}`}
+											className={`text-xs ${
+												index === config.currentStateIndex
+													? 'text-[rgba(0,0,0,0.88)] font-semibold'
+													: ''
+											}`}
 										>
 											{index + 1}.
 										</div>
-									</Col>
-									<Col span={17}>
-										{!_.isNull(changes) ? (
+									</div>
+									<div className='flex items-center'>
+										{!changes ? (
 											<div
-												className={`text-xs flex flex-col items-start ${index === config.currentStateIndex ? 'text-[rgba(0,0,0,0.88)] font-semibold' : ''}`}
+												className={`text-xs flex flex-col items-start ${
+													index === config.currentStateIndex
+														? 'text-[rgba(0,0,0,0.88)] font-semibold'
+														: ''
+												}`}
 											>
 												{changes.createdObjects.length > 0 && (
-													<div>{historyLogs[changes.createdObjects[0].shapeType]} Created</div>
+													<div>
+														{historyLogs[changes.createdObjects[0].shapeType]} Created
+													</div>
 												)}
 												{changes.modifiedObjects.length > 0 && (
-													<div>{historyLogs[changes.modifiedObjects[0].shapeType]} Modified</div>
+													<div>
+														{historyLogs[changes.modifiedObjects[0].shapeType]} Modified
+													</div>
 												)}
 												{changes.deletedObjects.length > 0 && (
-													<div>{historyLogs[changes.deletedObjects[0].shapeType]} Deleted</div>
+													<div>
+														{historyLogs[changes.deletedObjects[0].shapeType]} Deleted
+													</div>
 												)}
 											</div>
 										) : (
 											<div
-												className={`text-xs flex flex-col items-start ${index === config.currentStateIndex ? 'text-[rgba(0,0,0,0.88)] font-semibold' : ''}`}
+												className={`text-xs flex flex-col items-start ${
+													index === config.currentStateIndex
+														? 'text-[rgba(0,0,0,0.88)] font-semibold'
+														: ''
+												}`}
 											>
 												Initial State
 											</div>
 										)}
-									</Col>
-									<Col span={4} className='flex items-center justify-center'>
-										{index === config.currentStateIndex && <CheckOne fill={'green'} />}
-									</Col>
-								</Row>
-							</Button>
+									</div>
+									<div className='flex items-center justify-center'>
+										{index === config.currentStateIndex && <CheckOneIcon />}
+									</div>
+								</div>
+							</button>
 						</div>
-						<Divider className='mx-0 my-1' />
+						<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 					</>
 				);
 			})}
@@ -433,85 +455,58 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		<div className='flex items-center justify-between'>
 			<div className='flex justify-center items-center'>
 				<div className='flex justify-center items-center gap-2'>
-					<Tooltip title='History Logs'>
-						<Popover content={history} trigger='click'>
-							<Button
-								icon={<History />}
-								shape='circle'
-								size='small'
-								type='text'
-								className='border-solid border-1 border-[#d9d9d9]'
-								disabled={_.isEmpty(config.canvasState)}
-							/>
-						</Popover>
-					</Tooltip>
+					<Popover content={history} disabled={config.canvasState.length === 0}>
+						<button className='custom-button'>
+							<HistoryIcon />
+						</button>
+					</Popover>
 					<div className='flex border-solid border border-[#d9d9d9] rounded-full overflow-hidden'>
-						<Tooltip title='Undo'>
-							<Button
-								icon={<Undo />}
-								type='text'
-								size='small'
-								className='!px-5'
-								disabled={config.currentStateIndex === 0 || _.isEmpty(config.canvasState)}
-								onClick={() => void handleUndo()}
-							/>
-						</Tooltip>
-						<Divider type='vertical' className='h-auto m-0 bg-[#d9d9d9]' />
-						<Tooltip title='Redo'>
-							<Button
-								icon={<Redo />}
-								type='text'
-								size='small'
-								className='!px-5'
-								disabled={config.currentStateIndex === _.size(config.canvasState) - 1 || _.isEmpty(config.canvasState)}
-								onClick={() => void handleRedo()}
-							/>
-						</Tooltip>
+						<button
+							className='custom-button'
+							disabled={config.currentStateIndex === 0 || config.canvasState.length === 0}
+							onClick={() => void handleUndo()}
+						>
+							<UndoIcon />
+						</button>
+						<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+						<button
+							className='custom-button'
+							disabled={
+								config.currentStateIndex === config.canvasState.length - 1 ||
+								config.canvasState.length === 0
+							}
+							onClick={() => void handleRedo()}
+						>
+							<RedoIcon />
+						</button>
 					</div>
-					<Divider type='vertical' className='h-6 m-0 bg-[#d9d9d9]' />
+					<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 					<div className='flex border-solid border border-[#d9d9d9] rounded-full overflow-hidden'>
-						<Tooltip title='Zoom in'>
-							<Button
-								onClick={() => setZoomValue(zoomValue + 0.1)}
-								disabled={zoomValue >= 4}
-								size='small'
-								className={'border-none'}
-								type='text'
-								icon={<Plus />}
-							/>
-						</Tooltip>
-						<Divider type='vertical' className='h-auto m-0 bg-[#d9d9d9]' />
-						<Tooltip title='Fit'>
-							<Button onClick={handleFit} size='small' className={'border-none text-xs'} type='text'>
-								Fit
-							</Button>
-						</Tooltip>
-						<Divider type='vertical' className='h-auto m-0 bg-[#d9d9d9]' />
-						<Tooltip title='Zoom out'>
-							<Button
-								onClick={() => {
-									setZoomValue(zoomValue - 0.1);
-								}}
-								size='small'
-								disabled={zoomValue <= 1}
-								className={'border-none'}
-								shape='circle'
-								type='text'
-								icon={<Minus />}
-							/>
-						</Tooltip>
+						<button
+							className='custom-button'
+							onClick={() => setZoomValue(zoomValue + 0.1)}
+							disabled={zoomValue >= 4}
+						>
+							<PlusIcon />
+						</button>
+						<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+						<button className='custom-button' onClick={handleFit} disabled={zoomValue <= 1}>
+							Fit
+						</button>
+						<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+						<button
+							className='custom-button'
+							onClick={() => {
+								setZoomValue(zoomValue - 0.1);
+							}}
+							disabled={zoomValue <= 1}
+						>
+							<MinusIcon />
+						</button>
 					</div>
-					<Tooltip title='Free hand'>
-						<Button
-							disabled={zoomValue === 1}
-							icon={<Five />}
-							size='small'
-							type={isPanning ? 'primary' : 'text'}
-							className='border-solid border-1 border-[#d9d9d9]'
-							shape='circle'
-							onClick={handlePanMode}
-						/>
-					</Tooltip>
+					<button className='custom-button' disabled={zoomValue === 1} onClick={handlePanMode}>
+						<FiveIcon />
+					</button>
 				</div>
 			</div>
 		</div>

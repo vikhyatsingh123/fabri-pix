@@ -3,10 +3,10 @@
  * Image editor for menu
  */
 
-import { SubtractSelection, Tailoring, Write } from '@icon-park/react';
-import { Button, theme } from 'antd';
 import React from 'react';
-
+import SubtractSelectionIcon from '../icons/SubtractSelectionIcon';
+import TailoringIcon from '../icons/TailoringIcon';
+import WriteIcon from '../icons/WriteIcon';
 import { Menu } from '../utils/utils';
 
 interface IProps {
@@ -14,44 +14,29 @@ interface IProps {
 	menu: Menu | '';
 }
 
-const { useToken } = theme;
-
 const EditorMenu: React.FC<IProps> = (props) => {
 	const { setMenu, menu } = props;
-	const { token } = useToken();
 	const handleClick = (option: Menu) => () => {
 		setMenu(option);
 	};
 
 	return (
 		<div className='flex items-center gap-2 my-3'>
-			<Button
-				type='text'
-				style={{ color: menu === Menu.ANNOTATE ? token.colorPrimary : '' }}
-				icon={<Write />}
-				size='large'
+			<button
+				className={`custom-button ${menu === Menu.ANNOTATE ? 'active' : ''}`}
 				onClick={handleClick(Menu.ANNOTATE)}
 			>
+				<WriteIcon />
 				Annotate
-			</Button>
-			<Button
-				type='text'
-				style={{ color: menu === Menu.CROP ? token.colorPrimary : '' }}
-				icon={<Tailoring />}
-				size='large'
-				onClick={handleClick(Menu.CROP)}
-			>
+			</button>
+			<button className={`custom-button ${menu === Menu.CROP ? 'active' : ''}`} onClick={handleClick(Menu.CROP)}>
+				<TailoringIcon />
 				Crop
-			</Button>
-			<Button
-				type='text'
-				style={{ color: menu === Menu.BLUR ? token.colorPrimary : '' }}
-				icon={<SubtractSelection />}
-				size='large'
-				onClick={handleClick(Menu.BLUR)}
-			>
+			</button>
+			<button className={`custom-button ${menu === Menu.BLUR ? 'active' : ''}`} onClick={handleClick(Menu.BLUR)}>
+				<SubtractSelectionIcon />
 				Redact
-			</Button>
+			</button>
 		</div>
 	);
 };

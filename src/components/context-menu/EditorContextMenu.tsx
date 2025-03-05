@@ -8,10 +8,9 @@ import React from 'react';
 import ShapesContextMenu from './ShapesContextMenu';
 import TextContextMenu from './TextContextMenu';
 import PencilContextMenu from './PencilContextMenu';
-import _ from 'lodash';
-import { SubMenu } from '../utils/utils';
+import { SubMenu } from '../../utils/utils';
 import StepsCreatorContextMenu from './StepsCreatorContextMenu';
-import { useActiveAnnotation } from '../store/ImageEditorStore';
+import { useActiveAnnotation } from '../../store/ImageEditorStore';
 import ArrowContextMenu from './ArrowContextMenu';
 import AdvancedArrowContextMenu from './AdvancedArrowContextMenu';
 import LineContextMenu from './LineContextMenu';
@@ -26,7 +25,7 @@ const EditorContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject } = props;
 
 	const activeAnnotation = useActiveAnnotation();
-	const type = _.get(selectedObject, 'shapeType') ?? activeAnnotation;
+	const type = (selectedObject as any)?.shapeType ?? activeAnnotation;
 
 	if (type === '') {
 		return null;

@@ -6,7 +6,7 @@
 import React from 'react';
 import { Canvas, Triangle } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button, InputNumber, Divider } from 'antd';
+import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { Delete, HandleRound } from '@icon-park/react';
 import _ from 'lodash';
 
@@ -24,7 +24,10 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 
 	const handleBorderColorChange = (__: Color, val: string) => {
 		const currentObject = canvas.current.getActiveObject();
-		const arrowHead = _.find(canvas.current?.getObjects(), (obj) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead');
+		const arrowHead = _.find(
+			canvas.current?.getObjects(),
+			(obj) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
+		);
 		if (currentObject) {
 			currentObject.set({ stroke: val });
 		}
@@ -39,7 +42,10 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleDeleteAnnotations = () => {
-		const arrowHead = _.find(canvas.current?.getObjects(), (obj) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead');
+		const arrowHead = _.find(
+			canvas.current?.getObjects(),
+			(obj) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
+		);
 		if (arrowHead) {
 			canvas.current?.remove(arrowHead);
 		}
@@ -64,7 +70,10 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 		}
 
 		const currentObject = canvas.current.getActiveObject();
-		const arrowHead = _.find(canvas.current?.getObjects(), (obj) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead');
+		const arrowHead = _.find(
+			canvas.current?.getObjects(),
+			(obj) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
+		);
 
 		if (currentObject) {
 			currentObject.set({ strokeWidth: val });
@@ -109,7 +118,7 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
 				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>

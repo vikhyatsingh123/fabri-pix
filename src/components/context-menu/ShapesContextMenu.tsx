@@ -6,7 +6,7 @@
 import React from 'react';
 import { Canvas } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button, InputNumber, Divider } from 'antd';
+import { ColorPicker, InputNumber } from 'antd';
 import { BackgroundColor, Delete, HandleRound } from '@icon-park/react';
 
 interface IProps {
@@ -51,35 +51,39 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 
 	return (
 		<div className='flex items-center justify-center'>
-			<Tooltip title='Background Color' className='flex items-center justify-center'>
-				<BackgroundColor />
-				<span className='ml-1 mr-2'>Fill</span>
-				<ColorPicker size='small' value={selectedObject.fill} placement='bottomLeft' onChange={handleBackgroundColorChange} />
-			</Tooltip>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<BackgroundColor />
+			<span className='ml-1 mr-2'>Fill</span>
+			<ColorPicker
+				size='small'
+				value={selectedObject.fill}
+				placement='bottomLeft'
+				onChange={handleBackgroundColorChange}
+			/>
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<HandleRound />
 					<span>Stroke</span>
 				</div>
-				<Tooltip title='Border Color'>
-					<ColorPicker size='small' value={selectedObject.stroke} placement='bottomLeft' onChange={handleBorderColorChange} />
-				</Tooltip>
-				<Tooltip title='Border width'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={50}
-						defaultValue={selectedObject.strokeWidth}
-						onChange={handleStrokeWidthChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					size='small'
+					value={selectedObject.stroke}
+					placement='bottomLeft'
+					onChange={handleBorderColorChange}
+				/>
+				<InputNumber
+					size='small'
+					className='w-14'
+					min={1}
+					max={50}
+					defaultValue={selectedObject.strokeWidth}
+					onChange={handleStrokeWidthChange}
+				/>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
-			<Tooltip title='Delete shape'>
-				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
-			</Tooltip>
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<Delete />
+			</button>
 		</div>
 	);
 };

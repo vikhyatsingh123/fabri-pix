@@ -6,7 +6,7 @@
 import React from 'react';
 import { Canvas, Circle, IText } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button, InputNumber, Divider } from 'antd';
+import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { AddTextTwo, BackgroundColor, Delete, HandleRound, ListNumbers } from '@icon-park/react';
 import _ from 'lodash';
 
@@ -133,13 +133,15 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
 					size='small'
-					defaultValue={_.isEmpty(selectedObject) ? stepCreator.backgroundColor : selectedObject._objects?.[1].fill}
+					defaultValue={
+						_.isEmpty(selectedObject) ? stepCreator.backgroundColor : selectedObject._objects?.[1].fill
+					}
 					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
 			</Tooltip>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<HandleRound />
@@ -148,7 +150,9 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Border Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? stepCreator.borderColor : selectedObject._objects?.[0].stroke}
+						value={
+							_.isEmpty(selectedObject) ? stepCreator.borderColor : selectedObject._objects?.[0].stroke
+						}
 						placement='bottomLeft'
 						onChange={handleBorderColorChange}
 						onChangeComplete={handleBorderColorChangeComplete}
@@ -160,12 +164,16 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={15}
-						value={_.isEmpty(selectedObject) ? stepCreator.strokeWidth : selectedObject._objects?.[0].strokeWidth}
+						value={
+							_.isEmpty(selectedObject)
+								? stepCreator.strokeWidth
+								: selectedObject._objects?.[0].strokeWidth
+						}
 						onChange={handleStrokeWidthChange}
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<AddTextTwo />
@@ -174,7 +182,11 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Text Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? stepCreator.fontColor : selectedObject._objects?.[1]._objects?.[1].fill}
+						value={
+							_.isEmpty(selectedObject)
+								? stepCreator.fontColor
+								: selectedObject._objects?.[1]._objects?.[1].fill
+						}
 						placement='bottomLeft'
 						onChange={handleFontColorChange}
 						onChangeComplete={handleFontColorChangeComplete}
@@ -186,12 +198,16 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={100}
-						value={_.isEmpty(selectedObject) ? stepCreator.fontSize : selectedObject._objects?.[1]._objects?.[1].fontSize}
+						value={
+							_.isEmpty(selectedObject)
+								? stepCreator.fontSize
+								: selectedObject._objects?.[1]._objects?.[1].fontSize
+						}
 						onChange={handleFontSizeChange}
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<ListNumbers />
@@ -201,12 +217,16 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<InputNumber
 						size='small'
 						min={1}
-						value={_.isEmpty(selectedObject) ? stepCreator.stepNumber : selectedObject._objects?.[1]._objects?.[1].text}
+						value={
+							_.isEmpty(selectedObject)
+								? stepCreator.stepNumber
+								: selectedObject._objects?.[1]._objects?.[1].text
+						}
 						onChange={handleStartStepNumberChange}
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
 				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>

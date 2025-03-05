@@ -4,7 +4,7 @@
  */
 
 import { Delete, HandleRound } from '@icon-park/react';
-import { ColorPicker, Tooltip, Button, InputNumber, Divider } from 'antd';
+import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { Color } from 'antd/es/color-picker';
 import { Canvas } from 'fabric';
 import React from 'react';
@@ -80,7 +80,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
 				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>

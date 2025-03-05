@@ -326,7 +326,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 			<h5 className='m-0'>Edit Image</h5>
 			<div className='flex justify-between items-center'>
 				<EditorMenu setMenu={setMenu} menu={menu} />
-				{/* <EditorTopMenu canvas={canvas} config={config} setConfig={setConfig} undoRedoActive={undoRedoActive} /> */}
+				<EditorTopMenu canvas={canvas} config={config} setConfig={setConfig} undoRedoActive={undoRedoActive} />
 			</div>
 			<div className='flex w-full justify-center'>
 				<div
@@ -337,9 +337,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					<canvas ref={canvasRef} id='mainCanvas' />
 				</div>
 			</div>
-			<div className='mt-4'>
-				<EditorContextMenu canvas={canvas} selectedObject={selectedObject} />
-			</div>
+			<div className='mt-4'>{/* <EditorContextMenu canvas={canvas} selectedObject={selectedObject} /> */}</div>
 			<div className='absolute left-0 right-0 bottom-8'>
 				<EditorSubMenu
 					canvas={canvas}
@@ -348,7 +346,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					handleTrackChange={trackChange}
 				/>
 			</div>
-			{/* <ImageEditorFooter canvas={canvas} assetVersion={assetVersion} streamId={streamId} /> */}
+			<ImageEditorFooter canvas={canvas} />
 		</div>
 	);
 };

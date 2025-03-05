@@ -6,7 +6,7 @@
 import React from 'react';
 import { Canvas } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button, InputNumber, Divider, Input } from 'antd';
+import { ColorPicker, Tooltip, Button, InputNumber, Input } from 'antd';
 import { AddTextTwo, BackgroundColor, Delete, HandleRound, TextBold, TextItalic } from '@icon-park/react';
 import _ from 'lodash';
 
@@ -132,7 +132,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
 			</Tooltip>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<HandleRound />
@@ -158,7 +158,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-1'>
 				<Tooltip title='Bold'>
 					<Button
@@ -168,7 +168,8 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 						icon={<TextBold />}
 						type='text'
 						className={
-							(_.isEmpty(selectedObject) ? commentBox.fontWeight : selectedObject.test.fontWeight) === 'bold'
+							(_.isEmpty(selectedObject) ? commentBox.fontWeight : selectedObject.test.fontWeight) ===
+							'bold'
 								? 'bg-gray-200 shadow-sm'
 								: ''
 						}
@@ -182,14 +183,15 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 						icon={<TextItalic />}
 						type='text'
 						className={
-							(_.isEmpty(selectedObject) ? commentBox.fontStyle : selectedObject.test.fontStyle) === 'italic'
+							(_.isEmpty(selectedObject) ? commentBox.fontStyle : selectedObject.test.fontStyle) ===
+							'italic'
 								? 'bg-gray-200 shadow-sm'
 								: ''
 						}
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<AddTextTwo />
@@ -222,7 +224,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
 				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>

@@ -5,7 +5,7 @@
 
 import { Canvas, Textbox } from 'fabric';
 import React from 'react';
-import { Button, ColorPicker, Divider, InputNumber, Segmented, Tooltip } from 'antd';
+import { Button, ColorPicker, InputNumber, Segmented, Tooltip } from 'antd';
 import {
 	AddTextTwo,
 	AlignTextCenter,
@@ -124,7 +124,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
 			</Tooltip>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<AddTextTwo />
@@ -150,7 +150,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-1'>
 				<Tooltip title='Bold'>
 					<Button
@@ -181,11 +181,16 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					/>
 				</Tooltip>
 			</div>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Align Text'>
-				<Segmented options={segmentedOptions} size='small' defaultValue={selectedObject.textAlign} onChange={handleAlignChange} />
+				<Segmented
+					options={segmentedOptions}
+					size='small'
+					defaultValue={selectedObject.textAlign}
+					onChange={handleAlignChange}
+				/>
 			</Tooltip>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
 				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>

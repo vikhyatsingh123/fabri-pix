@@ -6,7 +6,7 @@
 import React from 'react';
 import { Canvas } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button, Divider } from 'antd';
+import { ColorPicker, Tooltip, Button } from 'antd';
 import { BackgroundColor, Delete } from '@icon-park/react';
 
 interface IProps {
@@ -42,7 +42,7 @@ const ArrowContextMenu: React.FC<IProps> = (props) => {
 					onChange={handleBackgroundColorChange}
 				/>
 			</Tooltip>
-			<Divider type='vertical' className='mx-3 bg-[#d9d9d9]' />
+			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
 				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>

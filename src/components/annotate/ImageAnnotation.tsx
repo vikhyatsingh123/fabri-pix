@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Image Annotation for menu
  */
 
@@ -12,7 +12,6 @@ import LinePath from './LinePath';
 import { SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
 import PencilDraw from './PencilDraw';
-import { useActiveAnnotation, useCommentBox, useImageEditorActions } from '../store/ImageEditorStore';
 import EditorTextbox from './EditorTextbox';
 import EditorEmoji from './EditorEmoji';
 import RectangleIcon from 'src/icons/RectangleIcon';
@@ -27,16 +26,54 @@ interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
 	aIAnnotation: any;
 	handleTrackChange: (e?: any) => void;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
+	freeDrawingBrushRef: React.RefObject<{ color: string; width: number }>;
+	advancedArrowRef: React.RefObject<{ stroke: string; width: number }>;
+	linePathRef: React.RefObject<{ stroke: string; width: number }>;
+	stepCreatorRef: React.RefObject<{
+		borderColor: string;
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		stepNumber: number;
+		strokeWidth: number;
+	}>;
+	commentBoxRef: React.RefObject<{
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		fontStyle: string;
+		fontWeight: string;
+		strokeWidth: number;
+		borderColor: string;
+		text: string;
+	}>;
+	textBoxRef: React.RefObject<{
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		fontStyle: string;
+		fontWeight: string;
+	}>;
 }
 
 const ImageAnnotation: React.FC<IProps> = (props) => {
-	const { canvas, aIAnnotation, handleTrackChange } = props;
+	const {
+		canvas,
+		aIAnnotation,
+		handleTrackChange,
+		activeAnnotation,
+		setActiveAnnotation,
+		freeDrawingBrushRef,
+		advancedArrowRef,
+		linePathRef,
+		stepCreatorRef,
+		commentBoxRef,
+		textBoxRef,
+	} = props;
 
 	const [isOpen, setIsOpen] = useState(false);
-
-	const { setActiveAnnotation } = useImageEditorActions();
-	const activeAnnotation = useActiveAnnotation();
-	const { commentBox } = useCommentBox();
 
 	const hoverRectRef = useRef<Rect | Circle | Group | null>(null);
 	const aiScaledCoordinatesRef = useRef<{ bbox: number[]; scaledBbox: number[] }[]>([]);
@@ -700,22 +737,22 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 				id: crypto.randomUUID(),
 				top: canvas.current.getHeight() / 2 - 50,
 				left: canvas.current.getWidth() / 2 - 100,
-				borderColor: commentBox.borderColor,
-				fill: commentBox.backgroundColor,
+				borderColor: commentBoxRef.current.borderColor,
+				fill: commentBoxRef.current.backgroundColor,
 				test: {
-					fontStyle: commentBox.fontStyle,
-					fill: commentBox.fontColor,
-					text: commentBox.text,
-					fontSize: commentBox.fontSize,
-					fontWeight: commentBox.fontWeight,
+					fontStyle: commentBoxRef.current.fontStyle,
+					fill: commentBoxRef.current.fontColor,
+					text: commentBoxRef.current.text,
+					fontSize: commentBoxRef.current.fontSize,
+					fontWeight: commentBoxRef.current.fontWeight,
 					textAlign: 'left',
 				},
 				scaleX: 1,
 				scaleY: 1,
 				width: 200,
 				height: 100,
-				strokeWidth: commentBox.strokeWidth,
-				stroke: commentBox.borderColor,
+				strokeWidth: commentBoxRef.current.strokeWidth,
+				stroke: commentBoxRef.current.borderColor,
 			},
 		});
 
@@ -808,7 +845,12 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 
 	return (
 		<div className='flex justify-center items-center gap-2 mb-3'>
-			<StepsCreator canvas={canvas} />
+			<StepsCreator
+				canvas={canvas}
+				activeAnnotation={activeAnnotation}
+				setActiveAnnotation={setActiveAnnotation}
+				stepCreatorRef={stepCreatorRef}
+			/>
 			<div className='relative inline-block'>
 				<button
 					className='px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 flex items-center'
@@ -842,11 +884,38 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 					</div>
 				)}
 			</div>
-			<EditorEmoji canvas={canvas} />
-			<EditorTextbox canvas={canvas} />
-			<PencilDraw canvas={canvas} handleTrackChange={handleTrackChange} />
-			<AdvancedArrowTool canvas={canvas} handleTrackChange={handleTrackChange} />
-			<LinePath canvas={canvas} handleTrackChange={handleTrackChange} />
+			<EditorEmoji
+				canvas={canvas}
+				activeAnnotation={activeAnnotation}
+				setActiveAnnotation={setActiveAnnotation}
+			/>
+			<EditorTextbox
+				canvas={canvas}
+				activeAnnotation={activeAnnotation}
+				setActiveAnnotation={setActiveAnnotation}
+				textBoxRef={textBoxRef}
+			/>
+			<PencilDraw
+				canvas={canvas}
+				handleTrackChange={handleTrackChange}
+				activeAnnotation={activeAnnotation}
+				setActiveAnnotation={setActiveAnnotation}
+				freeDrawingBrushRef={freeDrawingBrushRef}
+			/>
+			<AdvancedArrowTool
+				canvas={canvas}
+				handleTrackChange={handleTrackChange}
+				activeAnnotation={activeAnnotation}
+				setActiveAnnotation={setActiveAnnotation}
+				advancedArrowRef={advancedArrowRef}
+			/>
+			<LinePath
+				canvas={canvas}
+				handleTrackChange={handleTrackChange}
+				activeAnnotation={activeAnnotation}
+				setActiveAnnotation={setActiveAnnotation}
+				linePathRef={linePathRef}
+			/>
 		</div>
 	);
 };

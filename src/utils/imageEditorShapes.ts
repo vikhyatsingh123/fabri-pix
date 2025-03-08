@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * hooks for creating shapes in image editor
  */
 
@@ -183,7 +183,7 @@ const addAdvancedArrow = ({
 					top: canvasData.top,
 					scaleX: canvasData.scaleX,
 					scaleY: canvasData.scaleY,
-				}),
+			  }),
 	});
 
 	const arrowHead = new Triangle({
@@ -202,7 +202,8 @@ const addAdvancedArrow = ({
 	});
 
 	arrowHead.set({
-		shapeType: shapeType === SubMenu.TEMP_ADVANCED_ARROW ? SubMenu.TEMP_ADVANCED_ARROW_HEAD : SubMenu.ADVANCED_ARROW_HEAD,
+		shapeType:
+			shapeType === SubMenu.TEMP_ADVANCED_ARROW ? SubMenu.TEMP_ADVANCED_ARROW_HEAD : SubMenu.ADVANCED_ARROW_HEAD,
 		id: `${canvasData.id}-arrowhead`,
 	});
 
@@ -262,7 +263,7 @@ const addLinePath = ({
 					top: canvasData.top,
 					scaleX: canvasData.scaleX,
 					scaleY: canvasData.scaleY,
-				}),
+			  }),
 	});
 
 	currentPolyline.set({
@@ -424,7 +425,13 @@ const addCircle = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canv
 	canvas.current.setActiveObject(circle);
 };
 
-const createStarPoints = (centerX: number, centerY: number, outerRadius: number, innerRadius: number, points: number) => {
+const createStarPoints = (
+	centerX: number,
+	centerY: number,
+	outerRadius: number,
+	innerRadius: number,
+	points: number,
+) => {
 	const angle = Math.PI / points;
 	const starPoints = [];
 	for (let i = 0; i < 2 * points; i++) {
@@ -634,7 +641,7 @@ const addStepsCreator = ({
 			: {
 					left: canvasData.objects[0].left,
 					top: canvasData.objects[0].top,
-				}),
+			  }),
 	});
 
 	const internalGroup = new Group([circle, text], {
@@ -690,7 +697,9 @@ const addStepsCreator = ({
 
 	group.on('deselected', () => handleDeselectStepsCreator(group, canvas));
 	group.on('mousedblclick', (e) => handleDoubleClickStepsCreator(e, canvas));
-	(_.get(group, ['_objects', '1', '_objects', '1']) as IText).on('changed', () => handleTextChangedStepsCreator(group, canvas));
+	(_.get(group, ['_objects', '1', '_objects', '1']) as IText).on('changed', () =>
+		handleTextChangedStepsCreator(group, canvas),
+	);
 
 	group.setCoords();
 	canvas.current.add(group);
@@ -866,8 +875,8 @@ const lCornerControl = (x: number, y: number, cursor: string, position: string) 
 			cursor === 'ns-resize'
 				? controlsUtils.scalingY
 				: cursor === 'ew-resize'
-					? controlsUtils.scalingX
-					: controlsUtils.scalingEqually,
+				? controlsUtils.scalingX
+				: controlsUtils.scalingEqually,
 		cursorStyle: cursor,
 		sizeX: 20,
 		sizeY: 20,

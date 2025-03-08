@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Emoji for image editor
  */
 
@@ -7,25 +7,22 @@ import { DownOne } from '@icon-park/react';
 import { Dropdown } from 'antd';
 import { Canvas } from 'fabric';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ulid } from 'ulid';
 
-import { SubMenu } from '../utils/utils';
-import imageEditorShapes from '../utils/imageEditorShapes';
-import { useActiveAnnotation, useImageEditorActions } from '../store/ImageEditorStore';
+import { SubMenu } from '../../utils/utils';
+import imageEditorShapes from '../../utils/imageEditorShapes';
 import EmojiPicker from 'emoji-picker-react';
 import _ from 'lodash';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
 }
 
 const EditorEmoji: React.FC<IProps> = (props) => {
-	const { canvas } = props;
+	const { canvas, activeAnnotation, setActiveAnnotation } = props;
 
 	const [openEmojiPicker, setOpenEmojiPicker] = useState<boolean>(false);
-
-	const activeAnnotation = useActiveAnnotation();
-	const { setActiveAnnotation } = useImageEditorActions();
 
 	const emojiIconRef = useRef<any>(null);
 
@@ -61,7 +58,7 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		imageEditorShapes({
 			canvas,
 			shapeType: SubMenu.EMOJI,
@@ -146,13 +143,15 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 
 	return (
 		<Dropdown.Button
-			onOpenChange={(open) => {
+			onOpenChange={(open: boolean) => {
 				if (open) {
 					setOpenEmojiPicker(open);
 				}
 			}}
 			trigger={['click']}
-			dropdownRender={() => <EmojiPicker skinTonesDisabled open={openEmojiPicker} onEmojiClick={handleEmojiClick} />}
+			dropdownRender={() => (
+				<EmojiPicker skinTonesDisabled open={openEmojiPicker} onEmojiClick={handleEmojiClick} />
+			)}
 			type={activeAnnotation === SubMenu.EMOJI ? 'default' : 'text'}
 			className={`w-fit shapes-btn ${activeAnnotation === SubMenu.EMOJI ? 'image-shapes-btn' : ''}`}
 			icon={<DownOne theme='filled' size={18} />}

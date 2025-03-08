@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Context menu for pencil drawing
  */
 
@@ -10,18 +10,17 @@ import { Canvas } from 'fabric';
 import React from 'react';
 import _ from 'lodash';
 
-import { useFreeDrawingBrush, useImageEditorActions } from '../store/ImageEditorStore';
-
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
+	freeDrawingBrushRef: React.RefObject<{
+		color: string;
+		width: number;
+	}>;
 }
 
 const PencilContextMenu: React.FC<IProps> = (props) => {
-	const { canvas, selectedObject } = props;
-
-	const { setFreeDrawingBrush } = useImageEditorActions();
-	const { freeDrawingBrush } = useFreeDrawingBrush();
+	const { canvas, selectedObject, freeDrawingBrushRef } = props;
 
 	const handleStrokeColorChange = (__: Color, val: string) => {
 		const currentObject = canvas.current.getActiveObject();
@@ -32,7 +31,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleStrokeColorChangeComplete = (col: Color) => {
-		setFreeDrawingBrush({ color: col.toHexString(), width: freeDrawingBrush.width });
+		freeDrawingBrushRef.current.color = col.toHexString();
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -44,7 +43,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 		if (currentObject) {
 			currentObject.set({ strokeWidth: val });
 		}
-		setFreeDrawingBrush({ color: freeDrawingBrush.color, width: val });
+		freeDrawingBrushRef.current.width = val;
 		canvas.current.renderAll();
 	};
 
@@ -63,7 +62,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Line Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? freeDrawingBrush.color : selectedObject.stroke}
+						value={_.isEmpty(selectedObject) ? freeDrawingBrushRef.current.color : selectedObject.stroke}
 						placement='bottomLeft'
 						onChange={handleStrokeColorChange}
 						onChangeComplete={handleStrokeColorChangeComplete}
@@ -75,7 +74,9 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={50}
-						value={_.isEmpty(selectedObject) ? freeDrawingBrush.width : selectedObject.strokeWidth}
+						value={
+							_.isEmpty(selectedObject) ? freeDrawingBrushRef.current.width : selectedObject.strokeWidth
+						}
 						onChange={handleStrokeWidthChange}
 					/>
 				</Tooltip>

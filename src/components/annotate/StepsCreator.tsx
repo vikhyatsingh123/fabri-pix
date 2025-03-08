@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Steps creator for image editor
  */
 
@@ -8,36 +8,27 @@ import React, { useCallback, useEffect, useRef } from 'react';
 
 import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { useActiveAnnotation, useImageEditorActions, useStepCreator } from '../../store/ImageEditorStore';
 import OrderedListIcon from 'src/icons/OrderedListIcon';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
+	stepCreatorRef: React.RefObject<{
+		borderColor: string;
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		stepNumber: number;
+		strokeWidth: number;
+	}>;
 }
 const StepsCreator: React.FC<IProps> = (props) => {
-	const { canvas } = props;
-
-	const { setActiveAnnotation } = useImageEditorActions();
-	const { stepCreator } = useStepCreator();
-	const activeAnnotation = useActiveAnnotation();
+	const { canvas, activeAnnotation, setActiveAnnotation, stepCreatorRef } = props;
 
 	const isDrawing = useRef<boolean>(false);
 	const stepRectRef = useRef<Rect | null>(null);
 	const startPointer = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-	const stepContextRef = useRef<{
-		borderColor: string;
-		backgroundColor: string;
-		fontColor: string;
-		stepNumber: number;
-		strokeWidth: number;
-		fontSize: number;
-	}>(stepCreator);
-
-	useEffect(() => {
-		if (stepCreator) {
-			stepContextRef.current = stepCreator;
-		}
-	}, [stepCreator]);
 
 	const updateCustomCursor = (nextStep: number) => {
 		const canvasElement = document.createElement('canvas');
@@ -49,13 +40,13 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		ctx.fillStyle = stepContextRef.current.backgroundColor;
+		ctx.fillStyle = stepCreatorRef.current.backgroundColor;
 		ctx.globalAlpha = 0.5;
 		ctx.beginPath();
 		ctx.arc(30, 30, 25, 0, Math.PI * 2);
 		ctx.fill();
 
-		ctx.fillStyle = stepContextRef.current.fontColor;
+		ctx.fillStyle = stepCreatorRef.current.fontColor;
 		ctx.font = 'bold 18px Arial';
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
@@ -107,20 +98,20 @@ const StepsCreator: React.FC<IProps> = (props) => {
 						width: stepRectRef.current?.width,
 						height: stepRectRef.current?.height,
 						fill: 'transparent',
-						stroke: stepContextRef.current.borderColor,
-						strokeWidth: stepContextRef.current.strokeWidth,
+						stroke: stepCreatorRef.current.borderColor,
+						strokeWidth: stepCreatorRef.current.strokeWidth,
 					},
 					{
 						objects: [
 							{
 								left: circleLeft,
 								top: circleTop,
-								fill: stepContextRef.current.backgroundColor,
+								fill: stepCreatorRef.current.backgroundColor,
 							},
 							{
-								fill: stepContextRef.current.fontColor,
+								fill: stepCreatorRef.current.fontColor,
 								text: number.toString(),
-								fontSize: stepContextRef.current.fontSize,
+								fontSize: stepCreatorRef.current.fontSize,
 								angle: 0,
 							},
 						],
@@ -146,9 +137,9 @@ const StepsCreator: React.FC<IProps> = (props) => {
 				}
 			}
 			const pointer = canvas.current.getPointer(e.e);
-			createStepCircle(pointer.x, pointer.y, stepContextRef.current.stepNumber);
+			createStepCircle(pointer.x, pointer.y, stepCreatorRef.current.stepNumber);
 
-			stepContextRef.current.stepNumber += 1;
+			stepCreatorRef.current.stepNumber += 1;
 
 			canvas.current.selection = true;
 			stepRectRef.current = null;
@@ -161,7 +152,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 		if (target) {
 			canvas.current.setCursor('resize');
 		} else {
-			updateCustomCursor(stepContextRef.current.stepNumber);
+			updateCustomCursor(stepCreatorRef.current.stepNumber);
 		}
 
 		if (!isDrawing.current || !stepRectRef.current) {
@@ -198,8 +189,8 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			width: 0,
 			height: 0,
 			fill: 'transparent',
-			stroke: stepContextRef.current.borderColor,
-			strokeWidth: stepContextRef.current.strokeWidth,
+			stroke: stepCreatorRef.current.borderColor,
+			strokeWidth: stepCreatorRef.current.strokeWidth,
 			selectable: false,
 			cornerStyle: 'circle',
 			cornerColor: '#1d7bb9',
@@ -253,7 +244,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			setActiveAnnotation(SubMenu.STEPS_CREATOR);
 			canvas.current.discardActiveObject();
 			canvas.current.defaultCursor = 'crosshair';
-			stepContextRef.current.stepNumber = 1;
+			stepCreatorRef.current.stepNumber = 1;
 			canvas.current.selection = false;
 			canvas.current.on('mouse:up', handleMouseUp);
 			canvas.current.on('mouse:down', handleMouseDown);

@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Context menu for arrow shapes
  */
 
@@ -10,7 +10,7 @@ import { ColorPicker, Tooltip, Button } from 'antd';
 import { BackgroundColor, Delete } from '@icon-park/react';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
 }
 const ArrowContextMenu: React.FC<IProps> = (props) => {

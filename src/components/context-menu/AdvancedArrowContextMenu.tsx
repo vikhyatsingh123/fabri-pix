@@ -5,11 +5,10 @@
 
 import React from 'react';
 import { Canvas, Triangle } from 'fabric';
-import { InputNumber } from 'antd';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import ColorPicker from 'components/widgets/ColorPicker';
-
+import InputNumber from 'components/widgets/InputNumber.tsx';
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
@@ -98,8 +97,6 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleBorderColorChangeComplete}
 				/>
 				<InputNumber
-					size='small'
-					className='w-14'
 					min={1}
 					max={50}
 					value={

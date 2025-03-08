@@ -3,12 +3,12 @@
  * Context menu for pencil drawing
  */
 
-import { InputNumber } from 'antd';
 import ColorPicker from 'components/widgets/ColorPicker';
 import { Canvas } from 'fabric';
 import React from 'react';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
+import InputNumber from 'components/widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -69,8 +69,6 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleStrokeColorChangeComplete}
 				/>
 				<InputNumber
-					size='small'
-					className='w-14'
 					min={1}
 					max={50}
 					value={

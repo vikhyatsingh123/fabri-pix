@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import { InputNumber, Input } from 'antd';
+import { Input } from 'antd';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
@@ -13,6 +13,7 @@ import TextBoldIcon from 'src/icons/TextBoldIcon';
 import TextItalicIcon from 'src/icons/TextItalicIcon';
 import AddTextIcon from 'src/icons/AddTextIcon';
 import ColorPicker from 'components/widgets/ColorPicker';
+import InputNumber from 'components/widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -159,8 +160,6 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleBorderColorChangeComplete}
 				/>
 				<InputNumber
-					size='small'
-					className='w-14'
 					min={1}
 					max={15}
 					value={
@@ -214,8 +213,6 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleFontColorChangeComplete}
 				/>
 				<InputNumber
-					size='small'
-					className='w-24'
 					min={1}
 					max={100}
 					value={

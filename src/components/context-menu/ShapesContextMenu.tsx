@@ -5,11 +5,11 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import { InputNumber } from 'antd';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 import ColorPicker from 'components/widgets/ColorPicker';
+import InputNumber from 'components/widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -34,7 +34,7 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleStrokeWidthChange = (val: number | null) => {
+	const handleStrokeWidthChange = (val: number) => {
 		if (!val) {
 			return;
 		}
@@ -63,14 +63,7 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 					<span>Stroke</span>
 				</div>
 				<ColorPicker value={selectedObject.stroke} onChange={handleBorderColorChange} />
-				<InputNumber
-					size='small'
-					className='w-14'
-					min={1}
-					max={50}
-					defaultValue={selectedObject.strokeWidth}
-					onChange={handleStrokeWidthChange}
-				/>
+				<InputNumber min={1} max={50} value={selectedObject.strokeWidth} onChange={handleStrokeWidthChange} />
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<button className={`custom-button`} onClick={handleDeleteAnnotations}>

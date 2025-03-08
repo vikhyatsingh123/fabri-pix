@@ -5,7 +5,7 @@
 
 import { Canvas, Textbox } from 'fabric';
 import React from 'react';
-import { InputNumber, Segmented } from 'antd';
+import { Segmented } from 'antd';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import AddTextIcon from 'src/icons/AddTextIcon';
@@ -15,7 +15,7 @@ import AlignTextLeftIcon from 'src/icons/AlignTextLeftIcon';
 import AlignTextCenterIcon from 'src/icons/AlignTextCenterIcon';
 import AlignTextRightIcon from 'src/icons/AlignTextRightIcon';
 import ColorPicker from 'components/widgets/ColorPicker';
-
+import InputNumber from 'components/widgets/InputNumber.tsx';
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
@@ -139,8 +139,6 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleFontColorChangeComplete}
 				/>
 				<InputNumber
-					size='small'
-					className='w-14'
 					min={1}
 					max={100}
 					value={

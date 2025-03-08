@@ -39,3 +39,17 @@
 	cursor: pointer;
 	background: none;
 }
+
+.number-input {
+	width: 56px;
+	height: 24px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	text-align: center;
+	font-size: 14px;
+	outline: none;
+}
+
+.number-input:focus {
+	border-color: #1890ff;
+}

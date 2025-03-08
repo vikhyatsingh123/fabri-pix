@@ -5,10 +5,10 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import { InputNumber } from 'antd';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import ColorPicker from 'components/widgets/ColorPicker';
+import InputNumber from 'components/widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -68,8 +68,6 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleBorderColorChangeComplete}
 				/>
 				<InputNumber
-					size='small'
-					className='w-14'
 					min={1}
 					max={50}
 					value={

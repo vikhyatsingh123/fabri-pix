@@ -3,7 +3,6 @@
  * Emoji for image editor
  */
 
-import { DownOne } from '@icon-park/react';
 import { Dropdown } from 'antd';
 import { Canvas } from 'fabric';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -11,6 +10,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
 import EmojiPicker from 'emoji-picker-react';
+import DownOneIcon from 'src/icons/DownOneIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -153,7 +153,7 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 			)}
 			type={activeAnnotation === SubMenu.EMOJI ? 'default' : 'text'}
 			className={`w-fit shapes-btn ${activeAnnotation === SubMenu.EMOJI ? 'image-shapes-btn' : ''}`}
-			icon={<DownOne theme='filled' size={18} />}
+			icon={<DownOneIcon />}
 			placement='bottom'
 			onClick={handleButtonClick}
 		>

@@ -7,7 +7,11 @@ import React from 'react';
 import { Canvas, Circle, IText } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
 import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
-import { AddTextTwo, BackgroundColor, Delete, HandleRound, ListNumbers } from '@icon-park/react';
+import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
+import HandleRoundIcon from 'src/icons/HandleRoundIcon';
+import DeleteIcon from 'src/icons/DeleteIcon';
+import AddTextIcon from 'src/icons/AddTextIcon';
+import ListNumbersIcon from 'src/icons/ListNumbersIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -131,7 +135,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 	return (
 		<div className='flex items-center justify-center'>
 			<Tooltip title='Background Color' className='flex items-center justify-center'>
-				<BackgroundColor />
+				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
 					size='small'
@@ -148,7 +152,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
-					<HandleRound />
+					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
 				<Tooltip title='Border Color'>
@@ -182,7 +186,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
-					<AddTextTwo />
+					<AddTextIcon />
 					<span>Text</span>
 				</div>
 				<Tooltip title='Text Color'>
@@ -216,7 +220,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
-					<ListNumbers />
+					<ListNumbersIcon />
 					<span>Step Number</span>
 				</div>
 				<Tooltip title='Start Step Number'>
@@ -234,7 +238,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
-				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
+				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>
 		</div>
 	);

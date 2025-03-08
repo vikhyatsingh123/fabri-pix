@@ -5,9 +5,14 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import { Color } from 'antd/lib/color-picker';
+import { Color } from 'antd/es/color-picker';
 import { ColorPicker, Button, InputNumber, Input } from 'antd';
-import { AddTextTwo, BackgroundColor, Delete, HandleRound, TextBold, TextItalic } from '@icon-park/react';
+import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
+import HandleRoundIcon from 'src/icons/HandleRoundIcon';
+import DeleteIcon from 'src/icons/DeleteIcon';
+import TextBoldIcon from 'src/icons/TextBoldIcon';
+import TextItalicIcon from 'src/icons/TextItalicIcon';
+import AddTextIcon from 'src/icons/AddTextIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -126,7 +131,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 	return (
 		<div className='flex items-center justify-center'>
 			<div className='flex items-center justify-center'>
-				<BackgroundColor />
+				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
 					size='small'
@@ -143,7 +148,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
-					<HandleRound />
+					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
 				<ColorPicker
@@ -176,7 +181,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					onClick={handleFontTypeChange}
 					style={{ padding: 4 }}
 					size='small'
-					icon={<TextBold />}
+					icon={<TextBoldIcon />}
 					type='text'
 					className={
 						(Object.keys(selectedObject).length === 0
@@ -190,7 +195,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					onClick={handleFontStyleChange}
 					size='small'
 					style={{ padding: 4 }}
-					icon={<TextItalic />}
+					icon={<TextItalicIcon />}
 					type='text'
 					className={
 						(Object.keys(selectedObject).length === 0
@@ -204,7 +209,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
-					<AddTextTwo />
+					<AddTextIcon />
 					<span>Text</span>
 				</div>
 				<ColorPicker
@@ -239,7 +244,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
+			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 		</div>
 	);
 };

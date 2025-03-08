@@ -5,8 +5,7 @@
 
 import { Canvas, Textbox } from 'fabric';
 import React from 'react';
-import { Button, ColorPicker, InputNumber, Segmented } from 'antd';
-import { Color } from 'antd/es/color-picker';
+import { InputNumber, Segmented } from 'antd';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import AddTextIcon from 'src/icons/AddTextIcon';
@@ -15,6 +14,7 @@ import TextItalicIcon from 'src/icons/TextItalicIcon';
 import AlignTextLeftIcon from 'src/icons/AlignTextLeftIcon';
 import AlignTextCenterIcon from 'src/icons/AlignTextCenterIcon';
 import AlignTextRightIcon from 'src/icons/AlignTextRightIcon';
+import ColorPicker from 'components/widgets/ColorPicker';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -37,7 +37,7 @@ const segmentedOptions = [
 const TextContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, textBoxRef } = props;
 
-	const handleFontColorChange = (__: Color, val: string) => {
+	const handleFontColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
 			currentObject.set({ fill: val });
@@ -45,11 +45,11 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleFontColorChangeComplete = (col: Color) => {
-		textBoxRef.current.fontColor = col.toHexString();
+	const handleFontColorChangeComplete = (val: string) => {
+		textBoxRef.current.fontColor = val;
 	};
 
-	const handleBackgroundColorChange = (__: Color, val: string) => {
+	const handleBackgroundColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
 			currentObject.set({ backgroundColor: val });
@@ -57,8 +57,8 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBackgroundColorChangeComplete = (col: Color) => {
-		textBoxRef.current.backgroundColor = col.toHexString();
+	const handleBackgroundColorChangeComplete = (val: string) => {
+		textBoxRef.current.backgroundColor = val;
 	};
 
 	const handleAlignChange = (value: string) => {
@@ -116,13 +116,11 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0
 							? textBoxRef.current.backgroundColor
 							: selectedObject.backgroundColor
 					}
-					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
@@ -134,11 +132,9 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					<span>Text</span>
 				</div>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0 ? textBoxRef.current.fontColor : selectedObject.fill
 					}
-					placement='bottomLeft'
 					onChange={handleFontColorChange}
 					onChangeComplete={handleFontColorChangeComplete}
 				/>
@@ -155,34 +151,30 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-1'>
-				<Button
-					onClick={handleFontTypeChange}
-					style={{ padding: 4 }}
-					size='small'
-					icon={<TextBoldIcon />}
-					type='text'
-					className={
+				<button
+					className={`custom-button ${
 						(Object.keys(selectedObject).length === 0
 							? textBoxRef.current.fontWeight
 							: selectedObject.fontWeight) === 'bold'
 							? 'bg-gray-200 shadow-sm'
 							: ''
-					}
-				/>
-				<Button
-					onClick={handleFontStyleChange}
-					size='small'
-					style={{ padding: 4 }}
-					icon={<TextItalicIcon />}
-					type='text'
-					className={
+					}`}
+					onClick={handleFontTypeChange}
+				>
+					<TextBoldIcon />
+				</button>
+				<button
+					className={`custom-button ${
 						(Object.keys(selectedObject).length === 0
 							? textBoxRef.current.fontStyle
 							: selectedObject.fontStyle) === 'italic'
 							? 'bg-gray-200 shadow-sm'
 							: ''
-					}
-				/>
+					}`}
+					onClick={handleFontStyleChange}
+				>
+					<TextItalicIcon />
+				</button>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Segmented
@@ -192,7 +184,9 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				onChange={handleAlignChange}
 			/>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<DeleteIcon />
+			</button>
 		</div>
 	);
 };

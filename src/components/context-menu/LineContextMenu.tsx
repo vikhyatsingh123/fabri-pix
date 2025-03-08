@@ -5,10 +5,10 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Button, InputNumber } from 'antd';
+import { InputNumber } from 'antd';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
+import ColorPicker from 'components/widgets/ColorPicker';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -21,7 +21,7 @@ interface IProps {
 const LineContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, linePathRef } = props;
 
-	const handleBorderColorChange = (__: Color, val: string) => {
+	const handleBorderColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
 			currentObject.set({ stroke: val });
@@ -29,8 +29,8 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBorderColorChangeComplete = (col: Color) => {
-		linePathRef.current.stroke = col.toHexString();
+	const handleBorderColorChangeComplete = (val: string) => {
+		linePathRef.current.stroke = val;
 	};
 
 	const handleDeleteAnnotations = () => {
@@ -61,11 +61,9 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 					<span>Stroke</span>
 				</div>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0 ? linePathRef.current.stroke : selectedObject.stroke
 					}
-					placement='bottomLeft'
 					onChange={handleBorderColorChange}
 					onChangeComplete={handleBorderColorChangeComplete}
 				/>
@@ -83,7 +81,9 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<DeleteIcon />
+			</button>
 		</div>
 	);
 };

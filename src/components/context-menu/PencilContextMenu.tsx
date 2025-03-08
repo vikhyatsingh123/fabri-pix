@@ -3,8 +3,8 @@
  * Context menu for pencil drawing
  */
 
-import { ColorPicker, Button, InputNumber } from 'antd';
-import { Color } from 'antd/es/color-picker';
+import { InputNumber } from 'antd';
+import ColorPicker from 'components/widgets/ColorPicker';
 import { Canvas } from 'fabric';
 import React from 'react';
 import DeleteIcon from 'src/icons/DeleteIcon';
@@ -22,7 +22,7 @@ interface IProps {
 const PencilContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, freeDrawingBrushRef } = props;
 
-	const handleStrokeColorChange = (__: Color, val: string) => {
+	const handleStrokeColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
 			currentObject.set({ stroke: val });
@@ -30,8 +30,8 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleStrokeColorChangeComplete = (col: Color) => {
-		freeDrawingBrushRef.current.color = col.toHexString();
+	const handleStrokeColorChangeComplete = (val: string) => {
+		freeDrawingBrushRef.current.color = val;
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -60,13 +60,11 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 					<span>Stroke</span>
 				</div>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0
 							? freeDrawingBrushRef.current.color
 							: selectedObject.stroke
 					}
-					placement='bottomLeft'
 					onChange={handleStrokeColorChange}
 					onChangeComplete={handleStrokeColorChangeComplete}
 				/>
@@ -84,7 +82,9 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<DeleteIcon />
+			</button>
 		</div>
 	);
 };

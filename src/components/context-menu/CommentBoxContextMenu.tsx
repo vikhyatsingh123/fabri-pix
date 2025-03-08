@@ -5,14 +5,14 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import { Color } from 'antd/es/color-picker';
-import { ColorPicker, Button, InputNumber, Input } from 'antd';
+import { InputNumber, Input } from 'antd';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import TextBoldIcon from 'src/icons/TextBoldIcon';
 import TextItalicIcon from 'src/icons/TextItalicIcon';
 import AddTextIcon from 'src/icons/AddTextIcon';
+import ColorPicker from 'components/widgets/ColorPicker';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -31,7 +31,7 @@ interface IProps {
 const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, commentBoxRef } = props;
 
-	const handleBorderColorChange = (__: Color, val: string) => {
+	const handleBorderColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
 			currentObject.set({ stroke: val });
@@ -39,11 +39,11 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBorderColorChangeComplete = (col: Color) => {
-		commentBoxRef.current.borderColor = col.toHexString();
+	const handleBorderColorChangeComplete = (val: string) => {
+		commentBoxRef.current.borderColor = val;
 	};
 
-	const handleBackgroundColorChange = (__: Color, val: string) => {
+	const handleBackgroundColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
 			currentObject.set({ fill: val });
@@ -51,8 +51,8 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBackgroundColorChangeComplete = (col: Color) => {
-		commentBoxRef.current.backgroundColor = col.toHexString();
+	const handleBackgroundColorChangeComplete = (val: string) => {
+		commentBoxRef.current.backgroundColor = val;
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -68,7 +68,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleFontColorChange = (__: Color, val: string) => {
+	const handleFontColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
 		if (currentObject) {
 			currentObject.test.set({ fill: val });
@@ -76,8 +76,8 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleFontColorChangeComplete = (col: Color) => {
-		commentBoxRef.current.fontColor = col.toHexString();
+	const handleFontColorChangeComplete = (val: string) => {
+		commentBoxRef.current.fontColor = val;
 	};
 
 	const handleFontSizeChange = (val: number | null) => {
@@ -134,13 +134,11 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0
 							? commentBoxRef.current.backgroundColor
 							: selectedObject.fill
 					}
-					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
@@ -152,13 +150,11 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					<span>Stroke</span>
 				</div>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0
 							? commentBoxRef.current.borderColor
 							: selectedObject.stroke
 					}
-					placement='bottomLeft'
 					onChange={handleBorderColorChange}
 					onChangeComplete={handleBorderColorChangeComplete}
 				/>
@@ -177,34 +173,30 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-1'>
-				<Button
-					onClick={handleFontTypeChange}
-					style={{ padding: 4 }}
-					size='small'
-					icon={<TextBoldIcon />}
-					type='text'
-					className={
+				<button
+					className={`custom-button ${
 						(Object.keys(selectedObject).length === 0
 							? commentBoxRef.current.fontWeight
 							: selectedObject.test.fontWeight) === 'bold'
 							? 'bg-gray-200 shadow-sm'
 							: ''
-					}
-				/>
-				<Button
-					onClick={handleFontStyleChange}
-					size='small'
-					style={{ padding: 4 }}
-					icon={<TextItalicIcon />}
-					type='text'
-					className={
+					}`}
+					onClick={handleFontTypeChange}
+				>
+					<TextBoldIcon />
+				</button>
+				<button
+					className={`custom-button ${
 						(Object.keys(selectedObject).length === 0
 							? commentBoxRef.current.fontStyle
 							: selectedObject.test.fontStyle) === 'italic'
 							? 'bg-gray-200 shadow-sm'
 							: ''
-					}
-				/>
+					}`}
+					onClick={handleFontStyleChange}
+				>
+					<TextItalicIcon />
+				</button>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
@@ -213,13 +205,11 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					<span>Text</span>
 				</div>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0
 							? commentBoxRef.current.fontColor
 							: selectedObject.test.fill
 					}
-					placement='bottomLeft'
 					onChange={handleFontColorChange}
 					onChangeComplete={handleFontColorChangeComplete}
 				/>
@@ -244,7 +234,9 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<DeleteIcon />
+			</button>
 		</div>
 	);
 };

@@ -5,10 +5,10 @@
 
 import React from 'react';
 import { Canvas, Triangle } from 'fabric';
-import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Button, InputNumber } from 'antd';
+import { InputNumber } from 'antd';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
+import ColorPicker from 'components/widgets/ColorPicker';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -21,7 +21,7 @@ interface IProps {
 const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, advancedArrowRef } = props;
 
-	const handleBorderColorChange = (__: Color, val: string) => {
+	const handleBorderColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		const arrowHead = canvas.current?.getObjects().find((obj: any) => obj.id === selectedObject.id + '-arrowhead');
 		if (currentObject) {
@@ -33,8 +33,8 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBorderColorChangeComplete = (col: Color) => {
-		advancedArrowRef.current.stroke = col.toHexString();
+	const handleBorderColorChangeComplete = (val: string) => {
+		advancedArrowRef.current.stroke = val;
 	};
 
 	const handleDeleteAnnotations = () => {
@@ -89,13 +89,11 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 					<span>Stroke</span>
 				</div>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0
 							? advancedArrowRef.current.stroke
 							: selectedObject.stroke
 					}
-					placement='bottomLeft'
 					onChange={handleBorderColorChange}
 					onChangeComplete={handleBorderColorChangeComplete}
 				/>
@@ -113,7 +111,9 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<DeleteIcon />
+			</button>
 		</div>
 	);
 };

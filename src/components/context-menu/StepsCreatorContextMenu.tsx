@@ -5,13 +5,13 @@
 
 import React from 'react';
 import { Canvas, Circle, IText } from 'fabric';
-import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Button, InputNumber } from 'antd';
+import { InputNumber } from 'antd';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import AddTextIcon from 'src/icons/AddTextIcon';
 import ListNumbersIcon from 'src/icons/ListNumbersIcon';
+import ColorPicker from 'components/widgets/ColorPicker';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -28,7 +28,7 @@ interface IProps {
 const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, stepCreatorRef } = props;
 
-	const handleBorderColorChange = (__: Color, val: string) => {
+	const handleBorderColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
 		if (currentObject) {
 			currentObject._objects?.[0].set({ stroke: val });
@@ -36,11 +36,11 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBorderColorChangeComplete = (col: Color) => {
-		stepCreatorRef.current.borderColor = col.toHexString();
+	const handleBorderColorChangeComplete = (val: string) => {
+		stepCreatorRef.current.borderColor = val;
 	};
 
-	const handleBackgroundColorChange = (__: Color, val: string) => {
+	const handleBackgroundColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
 		if (currentObject) {
 			currentObject._objects?.[1]?._objects?.[0]?.set({ fill: val });
@@ -48,8 +48,8 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBackgroundColorChangeComplete = (col: Color) => {
-		stepCreatorRef.current.backgroundColor = col.toHexString();
+	const handleBackgroundColorChangeComplete = (val: string) => {
+		stepCreatorRef.current.backgroundColor = val;
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -65,7 +65,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleFontColorChange = (__: Color, val: string) => {
+	const handleFontColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
 		if (currentObject) {
 			currentObject._objects?.[1]?._objects?.[1]?.set({ fill: val });
@@ -73,8 +73,8 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleFontColorChangeComplete = (col: Color) => {
-		stepCreatorRef.current.fontColor = col.toHexString();
+	const handleFontColorChangeComplete = (val: string) => {
+		stepCreatorRef.current.fontColor = val;
 	};
 
 	const handleSizeChange = (currentObject: any) => {
@@ -138,13 +138,11 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
-					size='small'
-					defaultValue={
+					value={
 						Object.keys(selectedObject).length === 0
 							? stepCreatorRef.current.backgroundColor
 							: selectedObject._objects?.[1].fill
 					}
-					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
@@ -156,13 +154,11 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<span>Stroke</span>
 				</div>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0
 							? stepCreatorRef.current.borderColor
 							: selectedObject._objects?.[0].stroke
 					}
-					placement='bottomLeft'
 					onChange={handleBorderColorChange}
 					onChangeComplete={handleBorderColorChangeComplete}
 				/>
@@ -186,13 +182,11 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<span>Text</span>
 				</div>
 				<ColorPicker
-					size='small'
 					value={
 						Object.keys(selectedObject).length === 0
 							? stepCreatorRef.current.fontColor
 							: selectedObject._objects?.[1]._objects?.[1].fill
 					}
-					placement='bottomLeft'
 					onChange={handleFontColorChange}
 					onChangeComplete={handleFontColorChangeComplete}
 				/>
@@ -227,7 +221,9 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<DeleteIcon />
+			</button>
 		</div>
 	);
 };

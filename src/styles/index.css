@@ -25,3 +25,17 @@
 .custom-button.active {
 	background-color: #f0f0f0;
 }
+
+.color-picker {
+	display: inline-block;
+	position: relative;
+}
+
+.color-input {
+	width: 32px;
+	height: 32px;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	background: none;
+}

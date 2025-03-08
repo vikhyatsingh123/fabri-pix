@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Advanced Arrow Tool for image editor
  */
 
@@ -7,36 +7,24 @@ import { Canvas, Polygon, Triangle } from 'fabric';
 import React, { useCallback, useEffect, useRef } from 'react';
 
 import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
-import { useActiveAnnotation, useAdvancedArrow, useImageEditorActions } from '../store/ImageEditorStore';
 import imageEditorShapes from '../../utils/imageEditorShapes';
 import ArrowRightUpIcon from 'src/icons/ArrowRightUpIcon';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	handleTrackChange: (e?: any) => void;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
+	advancedArrowRef: React.RefObject<{ stroke: string; width: number }>;
 }
 
 const AdvancedArrowTool: React.FC<IProps> = (props) => {
-	const { canvas, handleTrackChange } = props;
-
-	const activeAnnotation = useActiveAnnotation();
-	const { advancedArrow } = useAdvancedArrow();
-	const { setActiveAnnotation } = useImageEditorActions();
+	const { canvas, handleTrackChange, activeAnnotation, setActiveAnnotation, advancedArrowRef } = props;
 
 	const isDrawing = useRef<boolean>(false);
 	const currentPolyline = useRef<Polygon | null>(null);
 	const polylinePoints = useRef<{ x: number; y: number }[]>([]);
 	const arrowHead = useRef<Triangle | null>(null);
-	const advancedArrowRef = useRef<{
-		stroke: string;
-		width: number;
-	}>(advancedArrow);
-
-	useEffect(() => {
-		if (advancedArrow) {
-			advancedArrowRef.current = advancedArrow;
-		}
-	}, [advancedArrow]);
 
 	const handleMouseDown = useCallback((e: any) => {
 		const target = canvas.current.findTarget(e.e);

@@ -1,40 +1,29 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Textbox for image editor
  */
 
 import { Canvas } from 'fabric';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import { SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { useActiveAnnotation, useImageEditorActions, useTextBox } from '../store/ImageEditorStore';
 import AddTextIcon from 'src/icons/AddTextIcon';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
-}
-
-const EditorTextbox: React.FC<IProps> = (props) => {
-	const { canvas } = props;
-
-	const { textBox } = useTextBox();
-	const activeAnnotation = useActiveAnnotation();
-	const { setActiveAnnotation } = useImageEditorActions();
-
-	const textBoxRef = useRef<{
+	canvas: React.RefObject<Canvas>;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
+	textBoxRef: React.RefObject<{
 		backgroundColor: string;
 		fontColor: string;
 		fontSize: number;
 		fontStyle: string;
 		fontWeight: string;
-	}>(textBox);
-
-	useEffect(() => {
-		if (textBox) {
-			textBoxRef.current = textBox;
-		}
-	}, [textBox]);
+	}>;
+}
+const EditorTextbox: React.FC<IProps> = (props) => {
+	const { canvas, activeAnnotation, setActiveAnnotation, textBoxRef } = props;
 
 	const updateTextCursor = () => {
 		const canvasElement = document.createElement('canvas');

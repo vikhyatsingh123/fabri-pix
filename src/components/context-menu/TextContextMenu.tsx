@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Context menu for Text
  */
 
@@ -19,11 +19,16 @@ import {
 import _ from 'lodash';
 import { Color } from 'antd/es/color-picker';
 
-import { useImageEditorActions, useTextBox } from '../store/ImageEditorStore';
-
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
+	textBoxRef: React.RefObject<{
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		fontStyle: string;
+		fontWeight: string;
+	}>;
 }
 
 const segmentedOptions = [
@@ -33,10 +38,7 @@ const segmentedOptions = [
 ];
 
 const TextContextMenu: React.FC<IProps> = (props) => {
-	const { canvas, selectedObject } = props;
-
-	const { setTextBox } = useImageEditorActions();
-	const { textBox } = useTextBox();
+	const { canvas, selectedObject, textBoxRef } = props;
 
 	const handleFontColorChange = (__: Color, val: string) => {
 		const currentObject = canvas.current.getActiveObject();
@@ -47,7 +49,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleFontColorChangeComplete = (col: Color) => {
-		setTextBox({ ...textBox, fontColor: col.toHexString() });
+		textBoxRef.current.fontColor = col.toHexString();
 	};
 
 	const handleBackgroundColorChange = (__: Color, val: string) => {
@@ -59,7 +61,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleBackgroundColorChangeComplete = (col: Color) => {
-		setTextBox({ ...textBox, backgroundColor: col.toHexString() });
+		textBoxRef.current.backgroundColor = col.toHexString();
 	};
 
 	const handleAlignChange = (value: string) => {
@@ -79,7 +81,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				fontStyle: currentObject.fontStyle === 'italic' ? 'normal' : 'italic',
 			});
 		}
-		setTextBox({ ...textBox, fontStyle: textBox.fontStyle === 'italic' ? 'normal' : 'italic' });
+		textBoxRef.current.fontStyle = textBoxRef.current.fontStyle === 'italic' ? 'normal' : 'italic';
 		canvas.current.renderAll();
 	};
 
@@ -91,7 +93,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 		if (currentObject) {
 			currentObject.set({ fontSize: value });
 		}
-		setTextBox({ ...textBox, fontSize: value });
+		textBoxRef.current.fontSize = value;
 		canvas.current.renderAll();
 	};
 
@@ -102,7 +104,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				fontWeight: currentObject.fontWeight === 'bold' ? 'normal' : 'bold',
 			});
 		}
-		setTextBox({ ...textBox, fontWeight: textBox.fontWeight === 'bold' ? 'normal' : 'bold' });
+		textBoxRef.current.fontWeight = textBoxRef.current.fontWeight === 'bold' ? 'normal' : 'bold';
 		canvas.current.renderAll();
 	};
 
@@ -118,7 +120,9 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
 					size='small'
-					value={_.isEmpty(selectedObject) ? textBox.backgroundColor : selectedObject.backgroundColor}
+					value={
+						_.isEmpty(selectedObject) ? textBoxRef.current.backgroundColor : selectedObject.backgroundColor
+					}
 					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
@@ -133,7 +137,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Text Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? textBox.fontColor : selectedObject.fill}
+						value={_.isEmpty(selectedObject) ? textBoxRef.current.fontColor : selectedObject.fill}
 						placement='bottomLeft'
 						onChange={handleFontColorChange}
 						onChangeComplete={handleFontColorChangeComplete}
@@ -145,7 +149,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={100}
-						value={_.isEmpty(selectedObject) ? textBox.fontSize : selectedObject.fontSize}
+						value={_.isEmpty(selectedObject) ? textBoxRef.current.fontSize : selectedObject.fontSize}
 						onChange={handleFontSizeChange}
 					/>
 				</Tooltip>
@@ -160,7 +164,8 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						icon={<TextBold />}
 						type='text'
 						className={
-							(_.isEmpty(selectedObject) ? textBox.fontWeight : selectedObject.fontWeight) === 'bold'
+							(_.isEmpty(selectedObject) ? textBoxRef.current.fontWeight : selectedObject.fontWeight) ===
+							'bold'
 								? 'bg-gray-200 shadow-sm'
 								: ''
 						}
@@ -174,7 +179,8 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						icon={<TextItalic />}
 						type='text'
 						className={
-							(_.isEmpty(selectedObject) ? textBox.fontStyle : selectedObject.fontStyle) === 'italic'
+							(_.isEmpty(selectedObject) ? textBoxRef.current.fontStyle : selectedObject.fontStyle) ===
+							'italic'
 								? 'bg-gray-200 shadow-sm'
 								: ''
 						}

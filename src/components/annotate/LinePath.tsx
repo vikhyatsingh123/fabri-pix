@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Line path for image editor
  */
 
@@ -8,34 +8,22 @@ import React, { useCallback, useEffect, useRef } from 'react';
 
 import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { useActiveAnnotation, useImageEditorActions, useLinePath } from '../store/ImageEditorStore';
 import WholeSiteAcceleratorIcon from 'src/icons/WholeSiteAcceleratorIcon';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	handleTrackChange: (e?: any) => void;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
+	linePathRef: React.RefObject<{ stroke: string; width: number }>;
 }
 
 const LinePath: React.FC<IProps> = (props) => {
-	const { canvas, handleTrackChange } = props;
-
-	const activeAnnotation = useActiveAnnotation();
-	const { linePath } = useLinePath();
-	const { setActiveAnnotation } = useImageEditorActions();
+	const { canvas, handleTrackChange, activeAnnotation, setActiveAnnotation, linePathRef } = props;
 
 	const isDrawing = useRef<boolean>(false);
 	const currentPolyline = useRef<Polyline | null>(null);
 	const polylinePoints = useRef<{ x: number; y: number }[]>([]);
-	const linePathRef = useRef<{
-		stroke: string;
-		width: number;
-	}>(linePath);
-
-	useEffect(() => {
-		if (linePath) {
-			linePathRef.current = linePath;
-		}
-	}, [linePath]);
 
 	const handleMouseDown = useCallback((e: any) => {
 		const pointer = canvas.current.getPointer(e.e);

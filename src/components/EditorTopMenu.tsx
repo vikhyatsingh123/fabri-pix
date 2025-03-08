@@ -8,7 +8,6 @@ import { Canvas, FabricImage, Point, Rect } from 'fabric';
 
 import imageEditorShapes from '../utils/imageEditorShapes';
 import { historyLogs, SubMenu } from '../utils/utils';
-import { useActiveAnnotation, useImageEditorActions } from '../store/ImageEditorStore';
 import Popover from './widgets/Popover';
 import PlusIcon from 'src/icons/PlusIcon';
 import HistoryIcon from 'src/icons/HistoryIcon';
@@ -31,12 +30,12 @@ interface IProps {
 		}>
 	>;
 	undoRedoActive: React.MutableRefObject<boolean>;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
 }
 
 const EditorTopMenu: React.FC<IProps> = (props) => {
-	const { canvas, config, setConfig, undoRedoActive } = props;
-	const activeAnnotation = useActiveAnnotation();
-	const { setActiveAnnotation } = useImageEditorActions();
+	const { canvas, config, setConfig, undoRedoActive, activeAnnotation, setActiveAnnotation } = props;
 
 	const [isPanning, setIsPanning] = useState<boolean>(false);
 	const [zoomValue, setZoomValue] = useState<number>(1);

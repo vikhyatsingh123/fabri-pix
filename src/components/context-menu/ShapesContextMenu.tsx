@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Context menu for shapes
  */
 
@@ -10,7 +10,7 @@ import { ColorPicker, InputNumber } from 'antd';
 import { BackgroundColor, Delete, HandleRound } from '@icon-park/react';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
 }
 const ShapesContextMenu: React.FC<IProps> = (props) => {

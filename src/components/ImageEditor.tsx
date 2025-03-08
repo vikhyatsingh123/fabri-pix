@@ -11,7 +11,6 @@ import EditorSubMenu from './EditorSubMenu';
 import { Menu, overlaysConstants, SubMenu, AICoordinates } from '../utils/utils';
 import EditorTopMenu from './EditorTopMenu';
 import EditorContextMenu from './context-menu/EditorContextMenu';
-import { useImageEditorActions } from '../store/ImageEditorStore';
 import ImageEditorFooter from './ImageEditorFooter';
 
 interface IProps {
@@ -24,9 +23,58 @@ const ImageEditor: React.FC<IProps> = (props) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const canvas = useRef<Canvas>(null);
 	const undoRedoActive = useRef<boolean>(false);
+	const freeDrawingBrushRef = useRef<{ color: string; width: number }>({ color: '#ff0000', width: 1 });
+	const advancedArrowRef = useRef<{ stroke: string; width: number }>({ stroke: '#ff0000', width: 4 });
+	const linePathRef = useRef<{ stroke: string; width: number }>({ stroke: '#ff0000', width: 3 });
+	const stepCreatorRef = useRef<{
+		borderColor: string;
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		stepNumber: number;
+		strokeWidth: number;
+	}>({
+		borderColor: '#ff0000',
+		backgroundColor: '#ff0000',
+		fontColor: '#fff',
+		fontSize: 20,
+		stepNumber: 1,
+		strokeWidth: 2,
+	});
+	const commentBoxRef = useRef<{
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		fontStyle: string;
+		fontWeight: string;
+		strokeWidth: number;
+		borderColor: string;
+		text: string;
+	}>({
+		backgroundColor: '#ff0000',
+		fontColor: '#fff',
+		fontSize: 16,
+		fontStyle: 'normal',
+		fontWeight: 'normal',
+		strokeWidth: 2,
+		borderColor: '#0386B5',
+		text: 'Textbox',
+	});
+	const textBoxRef = useRef<{
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		fontStyle: string;
+		fontWeight: string;
+	}>({
+		backgroundColor: '#fff',
+		fontColor: '#ff0000',
+		fontSize: 20,
+		fontStyle: 'normal',
+		fontWeight: 'normal',
+	});
 
-	const { setActiveAnnotation } = useImageEditorActions();
-
+	const [activeAnnotation, setActiveAnnotation] = useState<SubMenu | ''>('');
 	const [menu, setMenu] = useState<Menu | ''>('');
 	const [selectedObject, setSelectedObject] = useState<any>({});
 
@@ -326,7 +374,14 @@ const ImageEditor: React.FC<IProps> = (props) => {
 			<h5 className='m-0'>Edit Image</h5>
 			<div className='flex justify-between items-center'>
 				<EditorMenu setMenu={setMenu} menu={menu} />
-				<EditorTopMenu canvas={canvas} config={config} setConfig={setConfig} undoRedoActive={undoRedoActive} />
+				<EditorTopMenu
+					canvas={canvas}
+					config={config}
+					setConfig={setConfig}
+					undoRedoActive={undoRedoActive}
+					activeAnnotation={activeAnnotation}
+					setActiveAnnotation={setActiveAnnotation}
+				/>
 			</div>
 			<div className='flex w-full justify-center'>
 				<div
@@ -337,13 +392,33 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					<canvas ref={canvasRef} id='mainCanvas' />
 				</div>
 			</div>
-			<div className='mt-4'>{/* <EditorContextMenu canvas={canvas} selectedObject={selectedObject} /> */}</div>
+			<div className='mt-4'>
+				<EditorContextMenu
+					canvas={canvas}
+					selectedObject={selectedObject}
+					activeAnnotation={activeAnnotation}
+					freeDrawingBrushRef={freeDrawingBrushRef}
+					advancedArrowRef={advancedArrowRef}
+					linePathRef={linePathRef}
+					stepCreatorRef={stepCreatorRef}
+					commentBoxRef={commentBoxRef}
+					textBoxRef={textBoxRef}
+				/>
+			</div>
 			<div className='absolute left-0 right-0 bottom-8'>
 				<EditorSubMenu
 					canvas={canvas}
 					menu={menu}
 					aIAnnotation={AICoordinates}
 					handleTrackChange={trackChange}
+					activeAnnotation={activeAnnotation}
+					setActiveAnnotation={setActiveAnnotation}
+					freeDrawingBrushRef={freeDrawingBrushRef}
+					advancedArrowRef={advancedArrowRef}
+					linePathRef={linePathRef}
+					stepCreatorRef={stepCreatorRef}
+					commentBoxRef={commentBoxRef}
+					textBoxRef={textBoxRef}
 				/>
 			</div>
 			<ImageEditorFooter canvas={canvas} />

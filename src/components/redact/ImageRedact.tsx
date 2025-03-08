@@ -1,25 +1,22 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Image redact for menu
  */
 
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Canvas, Image, Rect } from 'fabric';
-import { ulid } from 'ulid';
-import { SubMenu } from '../utils/utils';
-import imageEditorShapes from '../utils/imageEditorShapes';
-import _ from 'lodash';
-import { useActiveAnnotation, useImageEditorActions } from '../store/ImageEditorStore';
+
+import { SubMenu } from '../../utils/utils';
+import imageEditorShapes from '../../utils/imageEditorShapes';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
 	handleTrackChange: (e?: any) => void;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
 }
 const ImageRedact: React.FC<IProps> = (props) => {
-	const { canvas, handleTrackChange } = props;
-
-	const activeAnnotation = useActiveAnnotation();
-	const { setActiveAnnotation } = useImageEditorActions();
+	const { canvas, handleTrackChange, activeAnnotation, setActiveAnnotation } = props;
 
 	const blurRect = useRef<Rect | null>(null);
 	const isDrawing = useRef<boolean>(false);
@@ -98,7 +95,7 @@ const ImageRedact: React.FC<IProps> = (props) => {
 		const { x, y } = pointer;
 		startPointer.current = { x, y };
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		imageEditorShapes({
 			canvas,
 			shapeType: SubMenu.BLUR,
@@ -112,7 +109,7 @@ const ImageRedact: React.FC<IProps> = (props) => {
 			},
 		});
 
-		const rect = canvas.current.getObjects().find((obj) => _.get(obj, 'id') === id);
+		const rect = canvas.current.getObjects().find((obj: any) => obj.id === id);
 		if (rect) {
 			blurRect.current = rect as Rect;
 		}
@@ -145,9 +142,9 @@ const ImageRedact: React.FC<IProps> = (props) => {
 			} else {
 				const target = canvas.current.findTarget(event.e);
 				if (target) {
-					const size = _.size(_.get(target, '_objects', []));
+					const size = (target as any)._objects.length;
 					if (size > 0) {
-						canvas.current.setActiveObject(_.get(target, '_objects', [])[size - 1]);
+						canvas.current.setActiveObject((target as any)._objects[size - 1]);
 						canvas.current.requestRenderAll();
 					}
 				}

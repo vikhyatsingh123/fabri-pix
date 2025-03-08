@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Pencil draw for image editor
  */
 
@@ -7,22 +7,20 @@ import React, { useEffect } from 'react';
 import { Canvas, PencilBrush } from 'fabric';
 
 import { SubMenu } from '../../utils/utils';
-import { useActiveAnnotation, useImageEditorActions, useFreeDrawingBrush } from '../../store/ImageEditorStore';
 import WritingFluentlyIcon from 'src/icons/WritingFluently';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
 	handleTrackChange: (e?: any) => void;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
+	freeDrawingBrushRef: React.RefObject<{ color: string; width: number }>;
 }
 
 const PencilSVG = `<svg width="23" height="23" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.32497 43.4996L13.81 43.4998L44.9227 12.3871L36.4374 3.90186L5.32471 35.0146L5.32497 43.4996Z" fill="none" stroke="#000000" stroke-width="4" stroke-linejoin="bevel"/><path d="M27.9521 12.3872L36.4374 20.8725" stroke="#000000" stroke-width="4" stroke-linecap="square" stroke-linejoin="bevel"/></svg>`;
 
 const PencilDraw: React.FC<IProps> = (props) => {
-	const { canvas, handleTrackChange } = props;
-
-	const activeAnnotation = useActiveAnnotation();
-	const { setActiveAnnotation } = useImageEditorActions();
-	const { freeDrawingBrush } = useFreeDrawingBrush();
+	const { canvas, handleTrackChange, activeAnnotation, setActiveAnnotation, freeDrawingBrushRef } = props;
 
 	useEffect(() => {
 		if (!canvas.current) {
@@ -31,10 +29,10 @@ const PencilDraw: React.FC<IProps> = (props) => {
 
 		if (activeAnnotation === SubMenu.DRAW) {
 			canvas.current.freeDrawingBrush = new PencilBrush(canvas.current);
-			canvas.current.freeDrawingBrush.color = freeDrawingBrush.color;
-			canvas.current.freeDrawingBrush.width = freeDrawingBrush.width;
+			canvas.current.freeDrawingBrush.color = freeDrawingBrushRef.current.color;
+			canvas.current.freeDrawingBrush.width = freeDrawingBrushRef.current.width;
 		}
-	}, [freeDrawingBrush]);
+	}, [freeDrawingBrushRef]);
 
 	const handlePathCreated = () => {
 		handleTrackChange();
@@ -110,8 +108,8 @@ const PencilDraw: React.FC<IProps> = (props) => {
 		setActiveAnnotation(SubMenu.DRAW);
 		canvas.current.isDrawingMode = true;
 		canvas.current.freeDrawingBrush = new PencilBrush(canvas.current);
-		canvas.current.freeDrawingBrush.color = freeDrawingBrush.color;
-		canvas.current.freeDrawingBrush.width = freeDrawingBrush.width;
+		canvas.current.freeDrawingBrush.color = freeDrawingBrushRef.current.color;
+		canvas.current.freeDrawingBrush.width = freeDrawingBrushRef.current.width;
 		canvas.current.freeDrawingBrush.limitedToCanvasSize = true;
 		canvas.current.discardActiveObject();
 		canvas.current.requestRenderAll();

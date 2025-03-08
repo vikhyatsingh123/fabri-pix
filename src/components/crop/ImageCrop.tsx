@@ -1,32 +1,30 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Image crop for menu
  */
 
 import { Canvas, Rect } from 'fabric';
 import React, { useEffect, useRef, useCallback } from 'react';
-import _ from 'lodash';
-import { ulid } from 'ulid';
-import imageEditorShapes from '../utils/imageEditorShapes';
-import { overlaysConstants, SubMenu } from '../utils/utils';
-import { useActiveAnnotation, useImageEditorActions } from '../store/ImageEditorStore';
+import imageEditorShapes from '../../utils/imageEditorShapes';
+import { overlaysConstants, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
+	activeAnnotation: SubMenu | '';
+	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
 }
 
 const ImageCrop: React.FC<IProps> = (props) => {
-	const { canvas } = props;
-
-	const activeAnnotation = useActiveAnnotation();
-	const { setActiveAnnotation } = useImageEditorActions();
+	const { canvas, activeAnnotation, setActiveAnnotation } = props;
 
 	const cropRect = useRef<Rect | null>(null);
 	const isDrawing = useRef<boolean>(false);
 	const startPointer = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
 	const applyCropMask = () => {
-		const cropRectangle = canvas.current.getObjects().find((obj) => _.get(obj, 'shapeType') === SubMenu.CROP_RECTANGLE) as Rect;
+		const cropRectangle = canvas.current
+			.getObjects()
+			.find((obj: any) => obj?.shapeType === SubMenu.CROP_RECTANGLE) as Rect;
 		if (!canvas.current.backgroundImage || !cropRectangle) {
 			return;
 		}
@@ -37,7 +35,7 @@ const ImageCrop: React.FC<IProps> = (props) => {
 			width: cropRectangle.width * cropRectangle.scaleX,
 			height: cropRectangle.height * cropRectangle.scaleY,
 			absolutePositioned: true,
-			id: ulid(),
+			id: crypto.randomUUID(),
 		});
 
 		canvas.current.clipPath = clipPath;
@@ -58,17 +56,17 @@ const ImageCrop: React.FC<IProps> = (props) => {
 		let overlayLeft: Rect | null = null;
 		let overlayRight: Rect | null = null;
 		let overlayBottom: Rect | null = null;
-		_.forEach(overlayObjects, (obj) => {
-			if (_.get(obj, 'shapeType') === SubMenu.CROP_GREYED_TOP) {
+		overlayObjects.forEach((obj: any) => {
+			if (obj?.shapeType === SubMenu.CROP_GREYED_TOP) {
 				overlayTop = obj as Rect;
 			}
-			if (_.get(obj, 'shapeType') === SubMenu.CROP_GREYED_LEFT) {
+			if (obj?.shapeType === SubMenu.CROP_GREYED_LEFT) {
 				overlayLeft = obj as Rect;
 			}
-			if (_.get(obj, 'shapeType') === SubMenu.CROP_GREYED_RIGHT) {
+			if (obj?.shapeType === SubMenu.CROP_GREYED_RIGHT) {
 				overlayRight = obj as Rect;
 			}
-			if (_.get(obj, 'shapeType') === SubMenu.CROP_GREYED_BOTTOM) {
+			if (obj?.shapeType === SubMenu.CROP_GREYED_BOTTOM) {
 				overlayBottom = obj as Rect;
 			}
 		});
@@ -116,8 +114,8 @@ const ImageCrop: React.FC<IProps> = (props) => {
 
 		const overlayObjects = canvas.current?.getObjects();
 		if (overlayObjects) {
-			_.forEach(overlayObjects, (object) => {
-				if (_.includes(overlaysConstants, _.get(object, 'shapeType')) || _.get(object, 'shapeType') === SubMenu.CROP_RECTANGLE) {
+			overlayObjects.forEach((object: any) => {
+				if (overlaysConstants.includes(object?.shapeType) || object?.shapeType === SubMenu.CROP_RECTANGLE) {
 					canvas.current?.remove(object);
 				}
 			});
@@ -127,7 +125,7 @@ const ImageCrop: React.FC<IProps> = (props) => {
 		const { x, y } = pointer;
 		startPointer.current = { x, y };
 
-		const id = ulid();
+		const id = crypto.randomUUID();
 		imageEditorShapes({
 			canvas,
 			shapeType: SubMenu.CROP_RECTANGLE,
@@ -141,7 +139,7 @@ const ImageCrop: React.FC<IProps> = (props) => {
 			},
 		});
 
-		const rect = canvas.current.getObjects().find((obj) => _.get(obj, 'id') === id);
+		const rect = canvas.current.getObjects().find((obj: any) => obj?.id === id);
 		if (rect) {
 			cropRect.current = rect as Rect;
 		}
@@ -172,11 +170,11 @@ const ImageCrop: React.FC<IProps> = (props) => {
 				canvas.current.remove(cropRect.current);
 				canvas.current.requestRenderAll();
 			} else {
-				const target = canvas.current.findTarget(event.e);
+				const target = canvas.current.findTarget(event.e) as any;
 				if (target) {
-					const size = _.size(_.get(target, '_objects', []));
+					const size = (target?._objects ?? []).length;
 					if (size > 0) {
-						canvas.current.setActiveObject(_.get(target, '_objects', [])[size - 1]);
+						canvas.current.setActiveObject((target?._objects ?? [])[size - 1]);
 						canvas.current.requestRenderAll();
 					}
 				}
@@ -191,7 +189,9 @@ const ImageCrop: React.FC<IProps> = (props) => {
 
 	useEffect(() => {
 		if (!canvas.current?.clipPath) {
-			const cropRectangle = canvas.current.getObjects().find((obj) => _.get(obj, 'shapeType') === SubMenu.CROP_RECTANGLE) as Rect;
+			const cropRectangle = canvas.current
+				.getObjects()
+				.find((obj: any) => obj?.shapeType === SubMenu.CROP_RECTANGLE) as Rect;
 			if (activeAnnotation === SubMenu.FREE_HAND_ENABLED) {
 				canvas.current.selection = true;
 				canvas.current.off('mouse:down', handleMouseDown);
@@ -218,7 +218,7 @@ const ImageCrop: React.FC<IProps> = (props) => {
 				canvas.current.setActiveObject(cropRect.current);
 			}
 		} else {
-			const id = ulid();
+			const id = crypto.randomUUID();
 			imageEditorShapes({
 				canvas,
 				shapeType: SubMenu.CROP_RECTANGLE,
@@ -232,7 +232,9 @@ const ImageCrop: React.FC<IProps> = (props) => {
 				},
 			});
 
-			cropRect.current = canvas.current.getObjects().find((obj) => _.get(obj, 'shapeType') === SubMenu.CROP_RECTANGLE) as Rect;
+			cropRect.current = canvas.current
+				.getObjects()
+				.find((obj: any) => obj?.shapeType === SubMenu.CROP_RECTANGLE) as Rect;
 			canvas.current.clipPath = undefined;
 		}
 	}, [activeAnnotation]);
@@ -249,7 +251,7 @@ const ImageCrop: React.FC<IProps> = (props) => {
 		return () => {
 			const overlayObjects = canvasOverlay.getObjects();
 			overlayObjects.forEach((obj: any) => {
-				if (_.includes(overlaysConstants, _.get(obj, 'shapeType'))) {
+				if (overlaysConstants.includes(obj?.shapeType)) {
 					canvasOverlay.remove(obj);
 				}
 			});

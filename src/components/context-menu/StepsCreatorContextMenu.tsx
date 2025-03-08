@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Context menu for steps creator
  */
 
@@ -10,17 +10,20 @@ import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { AddTextTwo, BackgroundColor, Delete, HandleRound, ListNumbers } from '@icon-park/react';
 import _ from 'lodash';
 
-import { useImageEditorActions, useStepCreator } from '../store/ImageEditorStore';
-
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
+	stepCreatorRef: React.RefObject<{
+		borderColor: string;
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		stepNumber: number;
+		strokeWidth: number;
+	}>;
 }
 const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
-	const { canvas, selectedObject } = props;
-
-	const { stepCreator } = useStepCreator();
-	const { setStepCreator } = useImageEditorActions();
+	const { canvas, selectedObject, stepCreatorRef } = props;
 
 	const handleBorderColorChange = (__: Color, val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
@@ -31,7 +34,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleBorderColorChangeComplete = (col: Color) => {
-		setStepCreator({ ...stepCreator, borderColor: col.toHexString() });
+		stepCreatorRef.current.borderColor = col.toHexString();
 	};
 
 	const handleBackgroundColorChange = (__: Color, val: string) => {
@@ -43,7 +46,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleBackgroundColorChangeComplete = (col: Color) => {
-		setStepCreator({ ...stepCreator, backgroundColor: col.toHexString() });
+		stepCreatorRef.current.backgroundColor = col.toHexString();
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -55,7 +58,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		if (currentObject) {
 			currentObject._objects?.[0].set({ strokeWidth: val });
 		}
-		setStepCreator({ ...stepCreator, strokeWidth: val });
+		stepCreatorRef.current.strokeWidth = val;
 		canvas.current.renderAll();
 	};
 
@@ -68,7 +71,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleFontColorChangeComplete = (col: Color) => {
-		setStepCreator({ ...stepCreator, fontColor: col.toHexString() });
+		stepCreatorRef.current.fontColor = col.toHexString();
 	};
 
 	const handleSizeChange = (currentObject: any) => {
@@ -104,7 +107,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 			currentObject._objects?.[1]?._objects?.[1]?.set({ fontSize: val });
 			handleSizeChange(currentObject);
 		}
-		setStepCreator({ ...stepCreator, fontSize: val });
+		stepCreatorRef.current.fontSize = val;
 		canvas.current.renderAll();
 	};
 
@@ -117,7 +120,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 			currentObject._objects?.[1]?._objects?.[1]?.set({ text: val.toString() });
 			handleSizeChange(currentObject);
 		}
-		setStepCreator({ ...stepCreator, stepNumber: val });
+		stepCreatorRef.current.stepNumber = val;
 		canvas.current.renderAll();
 	};
 
@@ -134,7 +137,9 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 				<ColorPicker
 					size='small'
 					defaultValue={
-						_.isEmpty(selectedObject) ? stepCreator.backgroundColor : selectedObject._objects?.[1].fill
+						_.isEmpty(selectedObject)
+							? stepCreatorRef.current.backgroundColor
+							: selectedObject._objects?.[1].fill
 					}
 					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
@@ -151,7 +156,9 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<ColorPicker
 						size='small'
 						value={
-							_.isEmpty(selectedObject) ? stepCreator.borderColor : selectedObject._objects?.[0].stroke
+							_.isEmpty(selectedObject)
+								? stepCreatorRef.current.borderColor
+								: selectedObject._objects?.[0].stroke
 						}
 						placement='bottomLeft'
 						onChange={handleBorderColorChange}
@@ -166,7 +173,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 						max={15}
 						value={
 							_.isEmpty(selectedObject)
-								? stepCreator.strokeWidth
+								? stepCreatorRef.current.strokeWidth
 								: selectedObject._objects?.[0].strokeWidth
 						}
 						onChange={handleStrokeWidthChange}
@@ -184,7 +191,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 						size='small'
 						value={
 							_.isEmpty(selectedObject)
-								? stepCreator.fontColor
+								? stepCreatorRef.current.fontColor
 								: selectedObject._objects?.[1]._objects?.[1].fill
 						}
 						placement='bottomLeft'
@@ -200,7 +207,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 						max={100}
 						value={
 							_.isEmpty(selectedObject)
-								? stepCreator.fontSize
+								? stepCreatorRef.current.fontSize
 								: selectedObject._objects?.[1]._objects?.[1].fontSize
 						}
 						onChange={handleFontSizeChange}
@@ -219,7 +226,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 						min={1}
 						value={
 							_.isEmpty(selectedObject)
-								? stepCreator.stepNumber
+								? stepCreatorRef.current.stepNumber
 								: selectedObject._objects?.[1]._objects?.[1].text
 						}
 						onChange={handleStartStepNumberChange}

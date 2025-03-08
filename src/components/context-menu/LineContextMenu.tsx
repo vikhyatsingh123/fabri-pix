@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Context menu for line path
  */
 
@@ -10,17 +10,16 @@ import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { Delete, HandleRound } from '@icon-park/react';
 import _ from 'lodash';
 
-import { useImageEditorActions, useLinePath } from '../store/ImageEditorStore';
-
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
+	linePathRef: React.RefObject<{
+		stroke: string;
+		width: number;
+	}>;
 }
 const LineContextMenu: React.FC<IProps> = (props) => {
-	const { canvas, selectedObject } = props;
-
-	const { linePath } = useLinePath();
-	const { setLinePath } = useImageEditorActions();
+	const { canvas, selectedObject, linePathRef } = props;
 
 	const handleBorderColorChange = (__: Color, val: string) => {
 		const currentObject = canvas.current.getActiveObject();
@@ -31,7 +30,7 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleBorderColorChangeComplete = (col: Color) => {
-		setLinePath({ stroke: col.toHexString(), width: linePath.width });
+		linePathRef.current.stroke = col.toHexString();
 	};
 
 	const handleDeleteAnnotations = () => {
@@ -50,7 +49,7 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 			currentObject.setCoords();
 		}
 
-		setLinePath({ stroke: linePath.stroke, width: val });
+		linePathRef.current.width = val;
 		canvas.current.renderAll();
 	};
 
@@ -64,7 +63,7 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Border Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? linePath.stroke : selectedObject.stroke}
+						value={_.isEmpty(selectedObject) ? linePathRef.current.stroke : selectedObject.stroke}
 						placement='bottomLeft'
 						onChange={handleBorderColorChange}
 						onChangeComplete={handleBorderColorChangeComplete}
@@ -76,7 +75,7 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={50}
-						value={_.isEmpty(selectedObject) ? linePath.width : selectedObject.strokeWidth}
+						value={_.isEmpty(selectedObject) ? linePathRef.current.width : selectedObject.strokeWidth}
 						onChange={handleStrokeWidthChange}
 					/>
 				</Tooltip>

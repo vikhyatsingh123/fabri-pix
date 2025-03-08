@@ -1,9 +1,20 @@
 /**
- * @author Vikhyat Singh <vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * @description Custom polygon to achieve callout shapes
  */
 
-import { Canvas, classRegistry, Control, Point, Polygon, Textbox, TMat2D, Transform, TransformActionHandler, util } from 'fabric';
+import {
+	Canvas,
+	classRegistry,
+	Control,
+	Point,
+	Polygon,
+	Textbox,
+	TMat2D,
+	Transform,
+	TransformActionHandler,
+	util,
+} from 'fabric';
 
 export default class CustomFabricPolygon extends Polygon {
 	static type = 'CustomFabricPolygon';
@@ -133,7 +144,10 @@ export default class CustomFabricPolygon extends Polygon {
 			fabricObject.points[this.pointIndex].x - fabricObject.pathOffset.x,
 			fabricObject.points[this.pointIndex].y - fabricObject.pathOffset.y,
 		);
-		const transformMatrix = util.multiplyTransformMatrices(fabricObject.canvas.viewportTransform, fabricObject.calcTransformMatrix());
+		const transformMatrix = util.multiplyTransformMatrices(
+			fabricObject.canvas.viewportTransform,
+			fabricObject.calcTransformMatrix(),
+		);
 		return point.transform(transformMatrix);
 	}
 
@@ -158,7 +172,8 @@ export default class CustomFabricPolygon extends Polygon {
 
 	updateTextboxDimensions(): void {
 		const polygonWidth = (this.points[this.widthPointer.x2].x - this.points[this.widthPointer.x1].x) * this.scaleX;
-		const polygonHeight = (this.points[this.heightPointer.y2].y - this.points[this.heightPointer.y1].y) * this.scaleY;
+		const polygonHeight =
+			(this.points[this.heightPointer.y2].y - this.points[this.heightPointer.y1].y) * this.scaleY;
 		this.test.set({
 			width: polygonWidth - 10,
 			height: polygonHeight - 10,

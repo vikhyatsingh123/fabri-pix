@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Context menu for Advanced Arrow
  */
 
@@ -10,23 +10,22 @@ import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { Delete, HandleRound } from '@icon-park/react';
 import _ from 'lodash';
 
-import { useAdvancedArrow, useImageEditorActions } from '../store/ImageEditorStore';
-
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
+	advancedArrowRef: React.RefObject<{
+		stroke: string;
+		width: number;
+	}>;
 }
 const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
-	const { canvas, selectedObject } = props;
-
-	const { advancedArrow } = useAdvancedArrow();
-	const { setAdvancedArrow } = useImageEditorActions();
+	const { canvas, selectedObject, advancedArrowRef } = props;
 
 	const handleBorderColorChange = (__: Color, val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		const arrowHead = _.find(
 			canvas.current?.getObjects(),
-			(obj) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
+			(obj: any) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
 		);
 		if (currentObject) {
 			currentObject.set({ stroke: val });
@@ -38,13 +37,13 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleBorderColorChangeComplete = (col: Color) => {
-		setAdvancedArrow({ stroke: col.toHexString(), width: advancedArrow.width });
+		advancedArrowRef.current.stroke = col.toHexString();
 	};
 
 	const handleDeleteAnnotations = () => {
 		const arrowHead = _.find(
 			canvas.current?.getObjects(),
-			(obj) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
+			(obj: any) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
 		);
 		if (arrowHead) {
 			canvas.current?.remove(arrowHead);
@@ -72,7 +71,7 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 		const currentObject = canvas.current.getActiveObject();
 		const arrowHead = _.find(
 			canvas.current?.getObjects(),
-			(obj) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
+			(obj: any) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
 		);
 
 		if (currentObject) {
@@ -87,7 +86,7 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 		}
 
 		modifyArrowHeadOnMoving(arrowHead, currentObject?.oCoords);
-		setAdvancedArrow({ stroke: advancedArrow.stroke, width: val });
+		advancedArrowRef.current.width = val;
 		canvas.current.renderAll();
 	};
 
@@ -101,7 +100,7 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Border Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? advancedArrow.stroke : selectedObject.stroke}
+						value={_.isEmpty(selectedObject) ? advancedArrowRef.current.stroke : selectedObject.stroke}
 						placement='bottomLeft'
 						onChange={handleBorderColorChange}
 						onChangeComplete={handleBorderColorChangeComplete}
@@ -113,7 +112,7 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={50}
-						value={_.isEmpty(selectedObject) ? advancedArrow.width : selectedObject.strokeWidth}
+						value={_.isEmpty(selectedObject) ? advancedArrowRef.current.width : selectedObject.strokeWidth}
 						onChange={handleStrokeWidthChange}
 					/>
 				</Tooltip>

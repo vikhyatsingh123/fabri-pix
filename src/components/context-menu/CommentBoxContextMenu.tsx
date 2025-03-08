@@ -1,5 +1,5 @@
 /**
- * @author Vikhyat Singh<vikhyat.singh@314ecorp.com>
+ * @author Vikhyat Singh
  * Context menu for comment box
  */
 
@@ -10,17 +10,22 @@ import { ColorPicker, Tooltip, Button, InputNumber, Input } from 'antd';
 import { AddTextTwo, BackgroundColor, Delete, HandleRound, TextBold, TextItalic } from '@icon-park/react';
 import _ from 'lodash';
 
-import { useCommentBox, useImageEditorActions } from '../store/ImageEditorStore';
-
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
 	selectedObject: any;
+	commentBoxRef: React.MutableRefObject<{
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		fontStyle: string;
+		fontWeight: string;
+		strokeWidth: number;
+		borderColor: string;
+		text: string;
+	}>;
 }
 const CommentBoxContextMenu: React.FC<IProps> = (props) => {
-	const { canvas, selectedObject } = props;
-
-	const { commentBox } = useCommentBox();
-	const { setCommentBox } = useImageEditorActions();
+	const { canvas, selectedObject, commentBoxRef } = props;
 
 	const handleBorderColorChange = (__: Color, val: string) => {
 		const currentObject = canvas.current.getActiveObject();
@@ -31,7 +36,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleBorderColorChangeComplete = (col: Color) => {
-		setCommentBox({ ...commentBox, borderColor: col.toHexString() });
+		commentBoxRef.current.borderColor = col.toHexString();
 	};
 
 	const handleBackgroundColorChange = (__: Color, val: string) => {
@@ -43,7 +48,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleBackgroundColorChangeComplete = (col: Color) => {
-		setCommentBox({ ...commentBox, backgroundColor: col.toHexString() });
+		commentBoxRef.current.backgroundColor = col.toHexString();
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -55,7 +60,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 		if (currentObject) {
 			currentObject.set({ strokeWidth: val });
 		}
-		setCommentBox({ ...commentBox, strokeWidth: val });
+		commentBoxRef.current.strokeWidth = val;
 		canvas.current.renderAll();
 	};
 
@@ -68,7 +73,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleFontColorChangeComplete = (col: Color) => {
-		setCommentBox({ ...commentBox, fontColor: col.toHexString() });
+		commentBoxRef.current.fontColor = col.toHexString();
 	};
 
 	const handleFontSizeChange = (val: number | null) => {
@@ -79,7 +84,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 		if (currentObject) {
 			currentObject.test.set({ fontSize: val });
 		}
-		setCommentBox({ ...commentBox, fontSize: val });
+		commentBoxRef.current.fontSize = val;
 		canvas.current.renderAll();
 	};
 
@@ -88,7 +93,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 		if (currentObject) {
 			currentObject.test.set({ text: e.target.value });
 		}
-		setCommentBox({ ...commentBox, text: e.target.value });
+		commentBoxRef.current.text = e.target.value;
 		canvas.current.renderAll();
 	};
 
@@ -104,7 +109,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 				fontStyle: currentObject.test.fontStyle === 'italic' ? 'normal' : 'italic',
 			});
 		}
-		setCommentBox({ ...commentBox, fontStyle: commentBox.fontStyle === 'italic' ? 'normal' : 'italic' });
+		commentBoxRef.current.fontStyle = commentBoxRef.current.fontStyle === 'italic' ? 'normal' : 'italic';
 		canvas.current.renderAll();
 	};
 
@@ -115,7 +120,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 				fontWeight: currentObject.test.fontWeight === 'bold' ? 'normal' : 'bold',
 			});
 		}
-		setCommentBox({ ...commentBox, fontWeight: commentBox.fontWeight === 'bold' ? 'normal' : 'bold' });
+		commentBoxRef.current.fontWeight = commentBoxRef.current.fontWeight === 'bold' ? 'normal' : 'bold';
 		canvas.current.renderAll();
 	};
 
@@ -126,7 +131,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
 					size='small'
-					value={_.isEmpty(selectedObject) ? commentBox.backgroundColor : selectedObject.fill}
+					value={_.isEmpty(selectedObject) ? commentBoxRef.current.backgroundColor : selectedObject.fill}
 					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
@@ -141,7 +146,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Border Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? commentBox.borderColor : selectedObject.stroke}
+						value={_.isEmpty(selectedObject) ? commentBoxRef.current.borderColor : selectedObject.stroke}
 						placement='bottomLeft'
 						onChange={handleBorderColorChange}
 						onChangeComplete={handleBorderColorChangeComplete}
@@ -153,7 +158,9 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={15}
-						value={_.isEmpty(selectedObject) ? commentBox.strokeWidth : selectedObject.strokeWidth}
+						value={
+							_.isEmpty(selectedObject) ? commentBoxRef.current.strokeWidth : selectedObject.strokeWidth
+						}
 						onChange={handleStrokeWidthChange}
 					/>
 				</Tooltip>
@@ -168,8 +175,9 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 						icon={<TextBold />}
 						type='text'
 						className={
-							(_.isEmpty(selectedObject) ? commentBox.fontWeight : selectedObject.test.fontWeight) ===
-							'bold'
+							(_.isEmpty(selectedObject)
+								? commentBoxRef.current.fontWeight
+								: selectedObject.test.fontWeight) === 'bold'
 								? 'bg-gray-200 shadow-sm'
 								: ''
 						}
@@ -183,8 +191,9 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 						icon={<TextItalic />}
 						type='text'
 						className={
-							(_.isEmpty(selectedObject) ? commentBox.fontStyle : selectedObject.test.fontStyle) ===
-							'italic'
+							(_.isEmpty(selectedObject)
+								? commentBoxRef.current.fontStyle
+								: selectedObject.test.fontStyle) === 'italic'
 								? 'bg-gray-200 shadow-sm'
 								: ''
 						}
@@ -200,7 +209,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Text Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? commentBox.fontColor : selectedObject.test.fill}
+						value={_.isEmpty(selectedObject) ? commentBoxRef.current.fontColor : selectedObject.test.fill}
 						placement='bottomLeft'
 						onChange={handleFontColorChange}
 						onChangeComplete={handleFontColorChangeComplete}
@@ -212,14 +221,16 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 						className='w-24'
 						min={1}
 						max={100}
-						value={_.isEmpty(selectedObject) ? commentBox.fontSize : selectedObject.test.fontSize}
+						value={
+							_.isEmpty(selectedObject) ? commentBoxRef.current.fontSize : selectedObject.test.fontSize
+						}
 						onChange={handleFontSizeChange}
 					/>
 				</Tooltip>
 				<Tooltip title='Commentbox Text'>
 					<Input
 						size='small'
-						value={_.isEmpty(selectedObject) ? commentBox.text : selectedObject.test.text}
+						value={_.isEmpty(selectedObject) ? commentBoxRef.current.text : selectedObject.test.text}
 						onChange={handleChangeTextboxText}
 					/>
 				</Tooltip>

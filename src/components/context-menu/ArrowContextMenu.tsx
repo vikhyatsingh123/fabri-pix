@@ -6,7 +6,7 @@
 import React from 'react';
 import { Canvas } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button } from 'antd';
+import { ColorPicker, Button } from 'antd';
 
 import DeleteIcon from 'src/icons/DeleteIcon';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
@@ -34,7 +34,7 @@ const ArrowContextMenu: React.FC<IProps> = (props) => {
 
 	return (
 		<div className='flex items-center justify-center'>
-			<Tooltip title='Background Color' className='flex items-center justify-center'>
+			<div className='flex items-center justify-center'>
 				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
@@ -43,11 +43,9 @@ const ArrowContextMenu: React.FC<IProps> = (props) => {
 					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
 				/>
-			</Tooltip>
+			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Tooltip title='Delete shape'>
-				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
-			</Tooltip>
+			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 		</div>
 	);
 };

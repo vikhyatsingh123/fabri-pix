@@ -3,7 +3,7 @@
  * Context menu for pencil drawing
  */
 
-import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
+import { ColorPicker, Button, InputNumber } from 'antd';
 import { Color } from 'antd/es/color-picker';
 import { Canvas } from 'fabric';
 import React from 'react';
@@ -59,38 +59,32 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
-				<Tooltip title='Line Color'>
-					<ColorPicker
-						size='small'
-						value={
-							Object.keys(selectedObject).length === 0
-								? freeDrawingBrushRef.current.color
-								: selectedObject.stroke
-						}
-						placement='bottomLeft'
-						onChange={handleStrokeColorChange}
-						onChangeComplete={handleStrokeColorChangeComplete}
-					/>
-				</Tooltip>
-				<Tooltip title='Line Width'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={50}
-						value={
-							Object.keys(selectedObject).length === 0
-								? freeDrawingBrushRef.current.width
-								: selectedObject.strokeWidth
-						}
-						onChange={handleStrokeWidthChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					size='small'
+					value={
+						Object.keys(selectedObject).length === 0
+							? freeDrawingBrushRef.current.color
+							: selectedObject.stroke
+					}
+					placement='bottomLeft'
+					onChange={handleStrokeColorChange}
+					onChangeComplete={handleStrokeColorChangeComplete}
+				/>
+				<InputNumber
+					size='small'
+					className='w-14'
+					min={1}
+					max={50}
+					value={
+						Object.keys(selectedObject).length === 0
+							? freeDrawingBrushRef.current.width
+							: selectedObject.strokeWidth
+					}
+					onChange={handleStrokeWidthChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Tooltip title='Delete shape'>
-				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
-			</Tooltip>
+			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 		</div>
 	);
 };

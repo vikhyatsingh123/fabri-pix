@@ -5,7 +5,7 @@
 
 import { Canvas, Textbox } from 'fabric';
 import React from 'react';
-import { Button, ColorPicker, InputNumber, Segmented, Tooltip } from 'antd';
+import { Button, ColorPicker, InputNumber, Segmented } from 'antd';
 import { Color } from 'antd/es/color-picker';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
@@ -112,7 +112,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 
 	return (
 		<div className='flex items-center justify-center'>
-			<Tooltip title='Background Color' className='flex items-center justify-center'>
+			<div className='flex items-center justify-center'>
 				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
@@ -126,89 +126,73 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
-			</Tooltip>
+			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<AddTextIcon />
 					<span>Text</span>
 				</div>
-				<Tooltip title='Text Color'>
-					<ColorPicker
-						size='small'
-						value={
-							Object.keys(selectedObject).length === 0
-								? textBoxRef.current.fontColor
-								: selectedObject.fill
-						}
-						placement='bottomLeft'
-						onChange={handleFontColorChange}
-						onChangeComplete={handleFontColorChangeComplete}
-					/>
-				</Tooltip>
-				<Tooltip title='Text Size'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={100}
-						value={
-							Object.keys(selectedObject).length === 0
-								? textBoxRef.current.fontSize
-								: selectedObject.fontSize
-						}
-						onChange={handleFontSizeChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					size='small'
+					value={
+						Object.keys(selectedObject).length === 0 ? textBoxRef.current.fontColor : selectedObject.fill
+					}
+					placement='bottomLeft'
+					onChange={handleFontColorChange}
+					onChangeComplete={handleFontColorChangeComplete}
+				/>
+				<InputNumber
+					size='small'
+					className='w-14'
+					min={1}
+					max={100}
+					value={
+						Object.keys(selectedObject).length === 0 ? textBoxRef.current.fontSize : selectedObject.fontSize
+					}
+					onChange={handleFontSizeChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-1'>
-				<Tooltip title='Bold'>
-					<Button
-						onClick={handleFontTypeChange}
-						style={{ padding: 4 }}
-						size='small'
-						icon={<TextBoldIcon />}
-						type='text'
-						className={
-							(Object.keys(selectedObject).length === 0
-								? textBoxRef.current.fontWeight
-								: selectedObject.fontWeight) === 'bold'
-								? 'bg-gray-200 shadow-sm'
-								: ''
-						}
-					/>
-				</Tooltip>
-				<Tooltip title='Italic'>
-					<Button
-						onClick={handleFontStyleChange}
-						size='small'
-						style={{ padding: 4 }}
-						icon={<TextItalicIcon />}
-						type='text'
-						className={
-							(Object.keys(selectedObject).length === 0
-								? textBoxRef.current.fontStyle
-								: selectedObject.fontStyle) === 'italic'
-								? 'bg-gray-200 shadow-sm'
-								: ''
-						}
-					/>
-				</Tooltip>
+				<Button
+					onClick={handleFontTypeChange}
+					style={{ padding: 4 }}
+					size='small'
+					icon={<TextBoldIcon />}
+					type='text'
+					className={
+						(Object.keys(selectedObject).length === 0
+							? textBoxRef.current.fontWeight
+							: selectedObject.fontWeight) === 'bold'
+							? 'bg-gray-200 shadow-sm'
+							: ''
+					}
+				/>
+				<Button
+					onClick={handleFontStyleChange}
+					size='small'
+					style={{ padding: 4 }}
+					icon={<TextItalicIcon />}
+					type='text'
+					className={
+						(Object.keys(selectedObject).length === 0
+							? textBoxRef.current.fontStyle
+							: selectedObject.fontStyle) === 'italic'
+							? 'bg-gray-200 shadow-sm'
+							: ''
+					}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Tooltip title='Align Text'>
-				<Segmented
-					options={segmentedOptions}
-					size='small'
-					defaultValue={selectedObject.textAlign}
-					onChange={handleAlignChange}
-				/>
-			</Tooltip>
+			<Segmented
+				options={segmentedOptions}
+				size='small'
+				defaultValue={selectedObject.textAlign}
+				onChange={handleAlignChange}
+			/>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Tooltip title='Delete shape'>
-				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
-			</Tooltip>
+			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 		</div>
 	);
 };

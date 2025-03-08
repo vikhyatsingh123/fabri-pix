@@ -6,7 +6,7 @@
 import React from 'react';
 import { Canvas, Circle, IText } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
+import { ColorPicker, Button, InputNumber } from 'antd';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
@@ -134,7 +134,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 
 	return (
 		<div className='flex items-center justify-center'>
-			<Tooltip title='Background Color' className='flex items-center justify-center'>
+			<div className='flex items-center justify-center'>
 				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
@@ -148,40 +148,36 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
-			</Tooltip>
+			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
-				<Tooltip title='Border Color'>
-					<ColorPicker
-						size='small'
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.borderColor
-								: selectedObject._objects?.[0].stroke
-						}
-						placement='bottomLeft'
-						onChange={handleBorderColorChange}
-						onChangeComplete={handleBorderColorChangeComplete}
-					/>
-				</Tooltip>
-				<Tooltip title='Border width'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={15}
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.strokeWidth
-								: selectedObject._objects?.[0].strokeWidth
-						}
-						onChange={handleStrokeWidthChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					size='small'
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.borderColor
+							: selectedObject._objects?.[0].stroke
+					}
+					placement='bottomLeft'
+					onChange={handleBorderColorChange}
+					onChangeComplete={handleBorderColorChangeComplete}
+				/>
+				<InputNumber
+					size='small'
+					className='w-14'
+					min={1}
+					max={15}
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.strokeWidth
+							: selectedObject._objects?.[0].strokeWidth
+					}
+					onChange={handleStrokeWidthChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
@@ -189,33 +185,29 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<AddTextIcon />
 					<span>Text</span>
 				</div>
-				<Tooltip title='Text Color'>
-					<ColorPicker
-						size='small'
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.fontColor
-								: selectedObject._objects?.[1]._objects?.[1].fill
-						}
-						placement='bottomLeft'
-						onChange={handleFontColorChange}
-						onChangeComplete={handleFontColorChangeComplete}
-					/>
-				</Tooltip>
-				<Tooltip title='Text Size'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={100}
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.fontSize
-								: selectedObject._objects?.[1]._objects?.[1].fontSize
-						}
-						onChange={handleFontSizeChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					size='small'
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.fontColor
+							: selectedObject._objects?.[1]._objects?.[1].fill
+					}
+					placement='bottomLeft'
+					onChange={handleFontColorChange}
+					onChangeComplete={handleFontColorChangeComplete}
+				/>
+				<InputNumber
+					size='small'
+					className='w-14'
+					min={1}
+					max={100}
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.fontSize
+							: selectedObject._objects?.[1]._objects?.[1].fontSize
+					}
+					onChange={handleFontSizeChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
@@ -223,23 +215,19 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<ListNumbersIcon />
 					<span>Step Number</span>
 				</div>
-				<Tooltip title='Start Step Number'>
-					<InputNumber
-						size='small'
-						min={1}
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.stepNumber
-								: selectedObject._objects?.[1]._objects?.[1].text
-						}
-						onChange={handleStartStepNumberChange}
-					/>
-				</Tooltip>
+				<InputNumber
+					size='small'
+					min={1}
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.stepNumber
+							: selectedObject._objects?.[1]._objects?.[1].text
+					}
+					onChange={handleStartStepNumberChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Tooltip title='Delete shape'>
-				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
-			</Tooltip>
+			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 		</div>
 	);
 };

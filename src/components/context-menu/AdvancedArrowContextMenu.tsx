@@ -6,7 +6,7 @@
 import React from 'react';
 import { Canvas, Triangle } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
+import { ColorPicker, Button, InputNumber } from 'antd';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
 
@@ -88,38 +88,32 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
-				<Tooltip title='Border Color'>
-					<ColorPicker
-						size='small'
-						value={
-							Object.keys(selectedObject).length === 0
-								? advancedArrowRef.current.stroke
-								: selectedObject.stroke
-						}
-						placement='bottomLeft'
-						onChange={handleBorderColorChange}
-						onChangeComplete={handleBorderColorChangeComplete}
-					/>
-				</Tooltip>
-				<Tooltip title='Border width'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={50}
-						value={
-							Object.keys(selectedObject).length === 0
-								? advancedArrowRef.current.width
-								: selectedObject.strokeWidth
-						}
-						onChange={handleStrokeWidthChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					size='small'
+					value={
+						Object.keys(selectedObject).length === 0
+							? advancedArrowRef.current.stroke
+							: selectedObject.stroke
+					}
+					placement='bottomLeft'
+					onChange={handleBorderColorChange}
+					onChangeComplete={handleBorderColorChangeComplete}
+				/>
+				<InputNumber
+					size='small'
+					className='w-14'
+					min={1}
+					max={50}
+					value={
+						Object.keys(selectedObject).length === 0
+							? advancedArrowRef.current.width
+							: selectedObject.strokeWidth
+					}
+					onChange={handleStrokeWidthChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Tooltip title='Delete shape'>
-				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
-			</Tooltip>
+			<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 		</div>
 	);
 };

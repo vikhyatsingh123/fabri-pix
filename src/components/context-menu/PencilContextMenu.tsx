@@ -3,12 +3,12 @@
  * Context menu for pencil drawing
  */
 
-import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
-import { Color } from 'antd/es/color-picker';
+import ColorPicker from 'components/widgets/ColorPicker';
 import { Canvas } from 'fabric';
 import React from 'react';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
+import InputNumber from 'components/widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -22,7 +22,7 @@ interface IProps {
 const PencilContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, freeDrawingBrushRef } = props;
 
-	const handleStrokeColorChange = (__: Color, val: string) => {
+	const handleStrokeColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
 			currentObject.set({ stroke: val });
@@ -30,8 +30,8 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleStrokeColorChangeComplete = (col: Color) => {
-		freeDrawingBrushRef.current.color = col.toHexString();
+	const handleStrokeColorChangeComplete = (val: string) => {
+		freeDrawingBrushRef.current.color = val;
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -59,38 +59,30 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
-				<Tooltip title='Line Color'>
-					<ColorPicker
-						size='small'
-						value={
-							Object.keys(selectedObject).length === 0
-								? freeDrawingBrushRef.current.color
-								: selectedObject.stroke
-						}
-						placement='bottomLeft'
-						onChange={handleStrokeColorChange}
-						onChangeComplete={handleStrokeColorChangeComplete}
-					/>
-				</Tooltip>
-				<Tooltip title='Line Width'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={50}
-						value={
-							Object.keys(selectedObject).length === 0
-								? freeDrawingBrushRef.current.width
-								: selectedObject.strokeWidth
-						}
-						onChange={handleStrokeWidthChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					value={
+						Object.keys(selectedObject).length === 0
+							? freeDrawingBrushRef.current.color
+							: selectedObject.stroke
+					}
+					onChange={handleStrokeColorChange}
+					onChangeComplete={handleStrokeColorChangeComplete}
+				/>
+				<InputNumber
+					min={1}
+					max={50}
+					value={
+						Object.keys(selectedObject).length === 0
+							? freeDrawingBrushRef.current.width
+							: selectedObject.strokeWidth
+					}
+					onChange={handleStrokeWidthChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Tooltip title='Delete shape'>
-				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
-			</Tooltip>
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<DeleteIcon />
+			</button>
 		</div>
 	);
 };

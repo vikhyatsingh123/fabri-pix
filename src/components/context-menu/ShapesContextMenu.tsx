@@ -5,11 +5,11 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, InputNumber } from 'antd';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
+import ColorPicker from 'components/widgets/ColorPicker';
+import InputNumber from 'components/widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -18,7 +18,7 @@ interface IProps {
 const ShapesContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject } = props;
 
-	const handleBorderColorChange = (__: Color, val: string) => {
+	const handleBorderColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
 			currentObject.set({ stroke: val });
@@ -26,7 +26,7 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBackgroundColorChange = (__: Color, val: string) => {
+	const handleBackgroundColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
 			currentObject.set({ fill: val });
@@ -34,7 +34,7 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleStrokeWidthChange = (val: number | null) => {
+	const handleStrokeWidthChange = (val: number) => {
 		if (!val) {
 			return;
 		}
@@ -55,32 +55,15 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 		<div className='flex items-center justify-center'>
 			<BackgroundColorIcon />
 			<span className='ml-1 mr-2'>Fill</span>
-			<ColorPicker
-				size='small'
-				value={selectedObject.fill}
-				placement='bottomLeft'
-				onChange={handleBackgroundColorChange}
-			/>
+			<ColorPicker value={selectedObject.fill} onChange={handleBackgroundColorChange} />
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
-				<ColorPicker
-					size='small'
-					value={selectedObject.stroke}
-					placement='bottomLeft'
-					onChange={handleBorderColorChange}
-				/>
-				<InputNumber
-					size='small'
-					className='w-14'
-					min={1}
-					max={50}
-					defaultValue={selectedObject.strokeWidth}
-					onChange={handleStrokeWidthChange}
-				/>
+				<ColorPicker value={selectedObject.stroke} onChange={handleBorderColorChange} />
+				<InputNumber min={1} max={50} value={selectedObject.strokeWidth} onChange={handleStrokeWidthChange} />
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<button className={`custom-button`} onClick={handleDeleteAnnotations}>

@@ -5,13 +5,13 @@
 
 import React from 'react';
 import { Canvas, Circle, IText } from 'fabric';
-import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
 import AddTextIcon from 'src/icons/AddTextIcon';
 import ListNumbersIcon from 'src/icons/ListNumbersIcon';
+import ColorPicker from 'components/widgets/ColorPicker';
+import InputNumber from 'components/widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -28,7 +28,7 @@ interface IProps {
 const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, stepCreatorRef } = props;
 
-	const handleBorderColorChange = (__: Color, val: string) => {
+	const handleBorderColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
 		if (currentObject) {
 			currentObject._objects?.[0].set({ stroke: val });
@@ -36,11 +36,11 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBorderColorChangeComplete = (col: Color) => {
-		stepCreatorRef.current.borderColor = col.toHexString();
+	const handleBorderColorChangeComplete = (val: string) => {
+		stepCreatorRef.current.borderColor = val;
 	};
 
-	const handleBackgroundColorChange = (__: Color, val: string) => {
+	const handleBackgroundColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
 		if (currentObject) {
 			currentObject._objects?.[1]?._objects?.[0]?.set({ fill: val });
@@ -48,8 +48,8 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBackgroundColorChangeComplete = (col: Color) => {
-		stepCreatorRef.current.backgroundColor = col.toHexString();
+	const handleBackgroundColorChangeComplete = (val: string) => {
+		stepCreatorRef.current.backgroundColor = val;
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -65,7 +65,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleFontColorChange = (__: Color, val: string) => {
+	const handleFontColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
 		if (currentObject) {
 			currentObject._objects?.[1]?._objects?.[1]?.set({ fill: val });
@@ -73,8 +73,8 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleFontColorChangeComplete = (col: Color) => {
-		stepCreatorRef.current.fontColor = col.toHexString();
+	const handleFontColorChangeComplete = (val: string) => {
+		stepCreatorRef.current.fontColor = val;
 	};
 
 	const handleSizeChange = (currentObject: any) => {
@@ -134,54 +134,44 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 
 	return (
 		<div className='flex items-center justify-center'>
-			<Tooltip title='Background Color' className='flex items-center justify-center'>
+			<div className='flex items-center justify-center'>
 				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
-					size='small'
-					defaultValue={
+					value={
 						Object.keys(selectedObject).length === 0
 							? stepCreatorRef.current.backgroundColor
 							: selectedObject._objects?.[1].fill
 					}
-					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
-			</Tooltip>
+			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
 					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
-				<Tooltip title='Border Color'>
-					<ColorPicker
-						size='small'
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.borderColor
-								: selectedObject._objects?.[0].stroke
-						}
-						placement='bottomLeft'
-						onChange={handleBorderColorChange}
-						onChangeComplete={handleBorderColorChangeComplete}
-					/>
-				</Tooltip>
-				<Tooltip title='Border width'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={15}
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.strokeWidth
-								: selectedObject._objects?.[0].strokeWidth
-						}
-						onChange={handleStrokeWidthChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.borderColor
+							: selectedObject._objects?.[0].stroke
+					}
+					onChange={handleBorderColorChange}
+					onChangeComplete={handleBorderColorChangeComplete}
+				/>
+				<InputNumber
+					min={1}
+					max={15}
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.strokeWidth
+							: selectedObject._objects?.[0].strokeWidth
+					}
+					onChange={handleStrokeWidthChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
@@ -189,33 +179,25 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<AddTextIcon />
 					<span>Text</span>
 				</div>
-				<Tooltip title='Text Color'>
-					<ColorPicker
-						size='small'
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.fontColor
-								: selectedObject._objects?.[1]._objects?.[1].fill
-						}
-						placement='bottomLeft'
-						onChange={handleFontColorChange}
-						onChangeComplete={handleFontColorChangeComplete}
-					/>
-				</Tooltip>
-				<Tooltip title='Text Size'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={100}
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.fontSize
-								: selectedObject._objects?.[1]._objects?.[1].fontSize
-						}
-						onChange={handleFontSizeChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.fontColor
+							: selectedObject._objects?.[1]._objects?.[1].fill
+					}
+					onChange={handleFontColorChange}
+					onChangeComplete={handleFontColorChangeComplete}
+				/>
+				<InputNumber
+					min={1}
+					max={100}
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.fontSize
+							: selectedObject._objects?.[1]._objects?.[1].fontSize
+					}
+					onChange={handleFontSizeChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
@@ -223,23 +205,20 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<ListNumbersIcon />
 					<span>Step Number</span>
 				</div>
-				<Tooltip title='Start Step Number'>
-					<InputNumber
-						size='small'
-						min={1}
-						value={
-							Object.keys(selectedObject).length === 0
-								? stepCreatorRef.current.stepNumber
-								: selectedObject._objects?.[1]._objects?.[1].text
-						}
-						onChange={handleStartStepNumberChange}
-					/>
-				</Tooltip>
+				<InputNumber
+					min={1}
+					value={
+						Object.keys(selectedObject).length === 0
+							? stepCreatorRef.current.stepNumber
+							: selectedObject._objects?.[1]._objects?.[1].text
+					}
+					onChange={handleStartStepNumberChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Tooltip title='Delete shape'>
-				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
-			</Tooltip>
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<DeleteIcon />
+			</button>
 		</div>
 	);
 };

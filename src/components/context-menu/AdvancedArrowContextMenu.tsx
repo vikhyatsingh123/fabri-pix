@@ -5,11 +5,10 @@
 
 import React from 'react';
 import { Canvas, Triangle } from 'fabric';
-import { Color } from 'antd/lib/color-picker';
-import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 import DeleteIcon from 'src/icons/DeleteIcon';
-
+import ColorPicker from 'components/widgets/ColorPicker';
+import InputNumber from 'components/widgets/InputNumber.tsx';
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
@@ -21,7 +20,7 @@ interface IProps {
 const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, advancedArrowRef } = props;
 
-	const handleBorderColorChange = (__: Color, val: string) => {
+	const handleBorderColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		const arrowHead = canvas.current?.getObjects().find((obj: any) => obj.id === selectedObject.id + '-arrowhead');
 		if (currentObject) {
@@ -33,8 +32,8 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
-	const handleBorderColorChangeComplete = (col: Color) => {
-		advancedArrowRef.current.stroke = col.toHexString();
+	const handleBorderColorChangeComplete = (val: string) => {
+		advancedArrowRef.current.stroke = val;
 	};
 
 	const handleDeleteAnnotations = () => {
@@ -88,38 +87,30 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
-				<Tooltip title='Border Color'>
-					<ColorPicker
-						size='small'
-						value={
-							Object.keys(selectedObject).length === 0
-								? advancedArrowRef.current.stroke
-								: selectedObject.stroke
-						}
-						placement='bottomLeft'
-						onChange={handleBorderColorChange}
-						onChangeComplete={handleBorderColorChangeComplete}
-					/>
-				</Tooltip>
-				<Tooltip title='Border width'>
-					<InputNumber
-						size='small'
-						className='w-14'
-						min={1}
-						max={50}
-						value={
-							Object.keys(selectedObject).length === 0
-								? advancedArrowRef.current.width
-								: selectedObject.strokeWidth
-						}
-						onChange={handleStrokeWidthChange}
-					/>
-				</Tooltip>
+				<ColorPicker
+					value={
+						Object.keys(selectedObject).length === 0
+							? advancedArrowRef.current.stroke
+							: selectedObject.stroke
+					}
+					onChange={handleBorderColorChange}
+					onChangeComplete={handleBorderColorChangeComplete}
+				/>
+				<InputNumber
+					min={1}
+					max={50}
+					value={
+						Object.keys(selectedObject).length === 0
+							? advancedArrowRef.current.width
+							: selectedObject.strokeWidth
+					}
+					onChange={handleStrokeWidthChange}
+				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Tooltip title='Delete shape'>
-				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
-			</Tooltip>
+			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+				<DeleteIcon />
+			</button>
 		</div>
 	);
 };

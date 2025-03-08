@@ -7,7 +7,8 @@ import React from 'react';
 import { Canvas } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
 import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
-import { Delete, HandleRound } from '@icon-park/react';
+import DeleteIcon from 'src/icons/DeleteIcon';
+import HandleRoundIcon from 'src/icons/HandleRoundIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -56,7 +57,7 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 		<div className='flex items-center justify-center'>
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
-					<HandleRound />
+					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
 				<Tooltip title='Border Color'>
@@ -89,7 +90,7 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
-				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
+				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>
 		</div>
 	);

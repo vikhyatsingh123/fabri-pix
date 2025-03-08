@@ -6,17 +6,15 @@
 import { Canvas, Textbox } from 'fabric';
 import React from 'react';
 import { Button, ColorPicker, InputNumber, Segmented, Tooltip } from 'antd';
-import {
-	AddTextTwo,
-	AlignTextCenter,
-	AlignTextLeft,
-	AlignTextRight,
-	BackgroundColor,
-	Delete,
-	TextBold,
-	TextItalic,
-} from '@icon-park/react';
 import { Color } from 'antd/es/color-picker';
+import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
+import DeleteIcon from 'src/icons/DeleteIcon';
+import AddTextIcon from 'src/icons/AddTextIcon';
+import TextBoldIcon from 'src/icons/TextBoldIcon';
+import TextItalicIcon from 'src/icons/TextItalicIcon';
+import AlignTextLeftIcon from 'src/icons/AlignTextLeftIcon';
+import AlignTextCenterIcon from 'src/icons/AlignTextCenterIcon';
+import AlignTextRightIcon from 'src/icons/AlignTextRightIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -31,9 +29,9 @@ interface IProps {
 }
 
 const segmentedOptions = [
-	{ value: 'left', label: <AlignTextLeft theme='outline' size='17' fill='#333' className='mt-0.5' /> },
-	{ value: 'center', label: <AlignTextCenter theme='outline' size='17' fill='#333' className='mt-0.5' /> },
-	{ value: 'right', label: <AlignTextRight theme='outline' size='17' fill='#333' className='mt-0.5' /> },
+	{ value: 'left', label: <AlignTextLeftIcon /> },
+	{ value: 'center', label: <AlignTextCenterIcon /> },
+	{ value: 'right', label: <AlignTextRightIcon /> },
 ];
 
 const TextContextMenu: React.FC<IProps> = (props) => {
@@ -115,7 +113,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 	return (
 		<div className='flex items-center justify-center'>
 			<Tooltip title='Background Color' className='flex items-center justify-center'>
-				<BackgroundColor />
+				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
 					size='small'
@@ -132,7 +130,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<div className='flex items-center justify-center gap-2'>
 				<div className='flex gap-1'>
-					<AddTextTwo />
+					<AddTextIcon />
 					<span>Text</span>
 				</div>
 				<Tooltip title='Text Color'>
@@ -170,7 +168,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						onClick={handleFontTypeChange}
 						style={{ padding: 4 }}
 						size='small'
-						icon={<TextBold />}
+						icon={<TextBoldIcon />}
 						type='text'
 						className={
 							(Object.keys(selectedObject).length === 0
@@ -186,7 +184,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						onClick={handleFontStyleChange}
 						size='small'
 						style={{ padding: 4 }}
-						icon={<TextItalic />}
+						icon={<TextItalicIcon />}
 						type='text'
 						className={
 							(Object.keys(selectedObject).length === 0
@@ -209,7 +207,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 			</Tooltip>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
-				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
+				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>
 		</div>
 	);

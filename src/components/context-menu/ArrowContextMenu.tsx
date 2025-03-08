@@ -7,7 +7,9 @@ import React from 'react';
 import { Canvas } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
 import { ColorPicker, Tooltip, Button } from 'antd';
-import { BackgroundColor, Delete } from '@icon-park/react';
+
+import DeleteIcon from 'src/icons/DeleteIcon';
+import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -33,7 +35,7 @@ const ArrowContextMenu: React.FC<IProps> = (props) => {
 	return (
 		<div className='flex items-center justify-center'>
 			<Tooltip title='Background Color' className='flex items-center justify-center'>
-				<BackgroundColor />
+				<BackgroundColorIcon />
 				<span className='ml-1 mr-2'>Fill</span>
 				<ColorPicker
 					size='small'
@@ -44,7 +46,7 @@ const ArrowContextMenu: React.FC<IProps> = (props) => {
 			</Tooltip>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<Tooltip title='Delete shape'>
-				<Button icon={<Delete fill={'red'} />} size='small' type='text' onClick={handleDeleteAnnotations} />
+				<Button icon={<DeleteIcon />} size='small' type='text' onClick={handleDeleteAnnotations} />
 			</Tooltip>
 		</div>
 	);

@@ -16,7 +16,6 @@ import {
 	TextBold,
 	TextItalic,
 } from '@icon-park/react';
-import _ from 'lodash';
 import { Color } from 'antd/es/color-picker';
 
 interface IProps {
@@ -121,7 +120,9 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				<ColorPicker
 					size='small'
 					value={
-						_.isEmpty(selectedObject) ? textBoxRef.current.backgroundColor : selectedObject.backgroundColor
+						Object.keys(selectedObject).length === 0
+							? textBoxRef.current.backgroundColor
+							: selectedObject.backgroundColor
 					}
 					placement='bottomLeft'
 					onChange={handleBackgroundColorChange}
@@ -137,7 +138,11 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Text Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? textBoxRef.current.fontColor : selectedObject.fill}
+						value={
+							Object.keys(selectedObject).length === 0
+								? textBoxRef.current.fontColor
+								: selectedObject.fill
+						}
 						placement='bottomLeft'
 						onChange={handleFontColorChange}
 						onChangeComplete={handleFontColorChangeComplete}
@@ -149,7 +154,11 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={100}
-						value={_.isEmpty(selectedObject) ? textBoxRef.current.fontSize : selectedObject.fontSize}
+						value={
+							Object.keys(selectedObject).length === 0
+								? textBoxRef.current.fontSize
+								: selectedObject.fontSize
+						}
 						onChange={handleFontSizeChange}
 					/>
 				</Tooltip>
@@ -164,8 +173,9 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						icon={<TextBold />}
 						type='text'
 						className={
-							(_.isEmpty(selectedObject) ? textBoxRef.current.fontWeight : selectedObject.fontWeight) ===
-							'bold'
+							(Object.keys(selectedObject).length === 0
+								? textBoxRef.current.fontWeight
+								: selectedObject.fontWeight) === 'bold'
 								? 'bg-gray-200 shadow-sm'
 								: ''
 						}
@@ -179,8 +189,9 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						icon={<TextItalic />}
 						type='text'
 						className={
-							(_.isEmpty(selectedObject) ? textBoxRef.current.fontStyle : selectedObject.fontStyle) ===
-							'italic'
+							(Object.keys(selectedObject).length === 0
+								? textBoxRef.current.fontStyle
+								: selectedObject.fontStyle) === 'italic'
 								? 'bg-gray-200 shadow-sm'
 								: ''
 						}

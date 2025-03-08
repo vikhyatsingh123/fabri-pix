@@ -8,7 +8,6 @@ import { Canvas } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
 import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { Delete, HandleRound } from '@icon-park/react';
-import _ from 'lodash';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -63,7 +62,11 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Border Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? linePathRef.current.stroke : selectedObject.stroke}
+						value={
+							Object.keys(selectedObject).length === 0
+								? linePathRef.current.stroke
+								: selectedObject.stroke
+						}
 						placement='bottomLeft'
 						onChange={handleBorderColorChange}
 						onChangeComplete={handleBorderColorChangeComplete}
@@ -75,7 +78,11 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={50}
-						value={_.isEmpty(selectedObject) ? linePathRef.current.width : selectedObject.strokeWidth}
+						value={
+							Object.keys(selectedObject).length === 0
+								? linePathRef.current.width
+								: selectedObject.strokeWidth
+						}
 						onChange={handleStrokeWidthChange}
 					/>
 				</Tooltip>

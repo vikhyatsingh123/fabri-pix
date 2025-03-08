@@ -8,7 +8,6 @@ import { Canvas, Circle, IText } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
 import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { AddTextTwo, BackgroundColor, Delete, HandleRound, ListNumbers } from '@icon-park/react';
-import _ from 'lodash';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -75,8 +74,8 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleSizeChange = (currentObject: any) => {
-		const textObject = _.get(currentObject, ['_objects', '1', '_objects', '1']) as IText;
-		const circleObject = _.get(currentObject, ['_objects', '1', '_objects', '0']) as Circle;
+		const textObject = currentObject._objects?.[1]._objects?.[1] as IText;
+		const circleObject = currentObject._objects?.[1]._objects?.[0] as Circle;
 		const textWidth = textObject.width;
 		const textHeight = textObject.height;
 		const radius = circleObject.radius;
@@ -137,7 +136,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 				<ColorPicker
 					size='small'
 					defaultValue={
-						_.isEmpty(selectedObject)
+						Object.keys(selectedObject).length === 0
 							? stepCreatorRef.current.backgroundColor
 							: selectedObject._objects?.[1].fill
 					}
@@ -156,7 +155,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<ColorPicker
 						size='small'
 						value={
-							_.isEmpty(selectedObject)
+							Object.keys(selectedObject).length === 0
 								? stepCreatorRef.current.borderColor
 								: selectedObject._objects?.[0].stroke
 						}
@@ -172,7 +171,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 						min={1}
 						max={15}
 						value={
-							_.isEmpty(selectedObject)
+							Object.keys(selectedObject).length === 0
 								? stepCreatorRef.current.strokeWidth
 								: selectedObject._objects?.[0].strokeWidth
 						}
@@ -190,7 +189,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					<ColorPicker
 						size='small'
 						value={
-							_.isEmpty(selectedObject)
+							Object.keys(selectedObject).length === 0
 								? stepCreatorRef.current.fontColor
 								: selectedObject._objects?.[1]._objects?.[1].fill
 						}
@@ -206,7 +205,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 						min={1}
 						max={100}
 						value={
-							_.isEmpty(selectedObject)
+							Object.keys(selectedObject).length === 0
 								? stepCreatorRef.current.fontSize
 								: selectedObject._objects?.[1]._objects?.[1].fontSize
 						}
@@ -225,7 +224,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 						size='small'
 						min={1}
 						value={
-							_.isEmpty(selectedObject)
+							Object.keys(selectedObject).length === 0
 								? stepCreatorRef.current.stepNumber
 								: selectedObject._objects?.[1]._objects?.[1].text
 						}

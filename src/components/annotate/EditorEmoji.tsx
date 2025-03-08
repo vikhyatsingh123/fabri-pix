@@ -11,7 +11,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
 import EmojiPicker from 'emoji-picker-react';
-import _ from 'lodash';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -64,7 +63,7 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 			shapeType: SubMenu.EMOJI,
 			isNewShape: true,
 			canvasData: {
-				text: _.get(emojiIconRef.current, 'emoji'),
+				text: emojiIconRef.current?.emoji,
 				id,
 				left: pointer.x - 20,
 				top: pointer.y - 20,

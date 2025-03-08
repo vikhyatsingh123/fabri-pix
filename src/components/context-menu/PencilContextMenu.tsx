@@ -8,7 +8,6 @@ import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { Color } from 'antd/es/color-picker';
 import { Canvas } from 'fabric';
 import React from 'react';
-import _ from 'lodash';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -62,7 +61,11 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Line Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? freeDrawingBrushRef.current.color : selectedObject.stroke}
+						value={
+							Object.keys(selectedObject).length === 0
+								? freeDrawingBrushRef.current.color
+								: selectedObject.stroke
+						}
 						placement='bottomLeft'
 						onChange={handleStrokeColorChange}
 						onChangeComplete={handleStrokeColorChangeComplete}
@@ -75,7 +78,9 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 						min={1}
 						max={50}
 						value={
-							_.isEmpty(selectedObject) ? freeDrawingBrushRef.current.width : selectedObject.strokeWidth
+							Object.keys(selectedObject).length === 0
+								? freeDrawingBrushRef.current.width
+								: selectedObject.strokeWidth
 						}
 						onChange={handleStrokeWidthChange}
 					/>

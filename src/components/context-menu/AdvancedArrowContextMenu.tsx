@@ -8,7 +8,6 @@ import { Canvas, Triangle } from 'fabric';
 import { Color } from 'antd/lib/color-picker';
 import { ColorPicker, Tooltip, Button, InputNumber } from 'antd';
 import { Delete, HandleRound } from '@icon-park/react';
-import _ from 'lodash';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -23,10 +22,7 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 
 	const handleBorderColorChange = (__: Color, val: string) => {
 		const currentObject = canvas.current.getActiveObject();
-		const arrowHead = _.find(
-			canvas.current?.getObjects(),
-			(obj: any) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
-		);
+		const arrowHead = canvas.current?.getObjects().find((obj: any) => obj.id === selectedObject.id + '-arrowhead');
 		if (currentObject) {
 			currentObject.set({ stroke: val });
 		}
@@ -41,10 +37,7 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleDeleteAnnotations = () => {
-		const arrowHead = _.find(
-			canvas.current?.getObjects(),
-			(obj: any) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
-		);
+		const arrowHead = canvas.current?.getObjects().find((obj: any) => obj.id === selectedObject.id + '-arrowhead');
 		if (arrowHead) {
 			canvas.current?.remove(arrowHead);
 		}
@@ -69,10 +62,7 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 		}
 
 		const currentObject = canvas.current.getActiveObject();
-		const arrowHead = _.find(
-			canvas.current?.getObjects(),
-			(obj: any) => _.get(obj, 'id') === _.get(selectedObject, 'id') + '-arrowhead',
-		);
+		const arrowHead = canvas.current?.getObjects().find((obj: any) => obj.id === selectedObject.id + '-arrowhead');
 
 		if (currentObject) {
 			currentObject.set({ strokeWidth: val });
@@ -100,7 +90,11 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 				<Tooltip title='Border Color'>
 					<ColorPicker
 						size='small'
-						value={_.isEmpty(selectedObject) ? advancedArrowRef.current.stroke : selectedObject.stroke}
+						value={
+							Object.keys(selectedObject).length === 0
+								? advancedArrowRef.current.stroke
+								: selectedObject.stroke
+						}
 						placement='bottomLeft'
 						onChange={handleBorderColorChange}
 						onChangeComplete={handleBorderColorChangeComplete}
@@ -112,7 +106,11 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 						className='w-14'
 						min={1}
 						max={50}
-						value={_.isEmpty(selectedObject) ? advancedArrowRef.current.width : selectedObject.strokeWidth}
+						value={
+							Object.keys(selectedObject).length === 0
+								? advancedArrowRef.current.width
+								: selectedObject.strokeWidth
+						}
 						onChange={handleStrokeWidthChange}
 					/>
 				</Tooltip>

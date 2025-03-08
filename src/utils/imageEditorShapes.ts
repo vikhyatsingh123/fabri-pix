@@ -20,10 +20,8 @@ import {
 	FabricImage,
 	Control,
 } from 'fabric';
-import loglevel from 'loglevel';
 
 import { SubMenu } from './utils';
-import _ from 'lodash';
 import CustomFabricPolygon from './CustomFabricPolygon';
 
 const applyBlurEffect = (canvas: React.MutableRefObject<Canvas>, rect: any) => {
@@ -116,12 +114,13 @@ const addBlurEffect = ({
 	});
 
 	if (!isNewShape) {
-		canvas.current.on(
-			'after:render',
-			_.once(() => {
+		let hasRun = false;
+		canvas.current.on('after:render', () => {
+			if (!hasRun) {
 				applyBlurEffect(canvas, rect);
-			}),
-		);
+				hasRun = true;
+			}
+		});
 	}
 	rect.on('modified', () => {
 		applyBlurEffect(canvas, rect);
@@ -215,16 +214,17 @@ const addAdvancedArrow = ({
 		modifyArrowHeadOnMoving(arrowHead, currentPolyline?.oCoords);
 	});
 
-	currentPolyline.on(
-		'added',
-		_.once(() => {
+	let hasAddedRun = false;
+	currentPolyline.on('added', () => {
+		if (!hasAddedRun) {
 			if (isNewShape) {
 				modifyArrowHeadFirstTime(arrowHead, currentPolyline?.points);
 			} else {
 				modifyArrowHeadOnMoving(arrowHead, currentPolyline?.oCoords);
 			}
-		}),
-	);
+			hasAddedRun = true;
+		}
+	});
 
 	currentPolyline.cornerStyle = 'circle';
 	currentPolyline.cornerColor = 'rgba(0,0,255,0.5)';
@@ -546,8 +546,8 @@ const addCustomShape = async ({ canvas, canvasData }: { canvas: React.MutableRef
 };
 
 const handleTextChangedStepsCreator = (group: Group, canvas: React.MutableRefObject<Canvas>) => {
-	const textObject = _.get(group, ['_objects', '1', '_objects', '1']) as IText;
-	const circleObject = _.get(group, ['_objects', '1', '_objects', '0']) as Circle;
+	const textObject = (group.getObjects()[1] as Group).getObjects()[1] as IText;
+	const circleObject = (group.getObjects()[1] as Group).getObjects()[0] as Circle;
 	const textWidth = textObject.width;
 	const textHeight = textObject.height;
 	const radius = circleObject.radius;
@@ -575,7 +575,7 @@ const handleDoubleClickStepsCreator = (e: any, canvas: React.MutableRefObject<Ca
 
 	if (target?.shapeType === SubMenu.STEPS_CREATOR) {
 		const group = target as Group;
-		const textObject = _.get(group, ['_objects', '1', '_objects', '1']) as IText;
+		const textObject = (group.getObjects()[1] as Group).getObjects()[1] as IText;
 
 		textObject.enterEditing();
 		textObject.selectAll();
@@ -585,7 +585,7 @@ const handleDoubleClickStepsCreator = (e: any, canvas: React.MutableRefObject<Ca
 };
 
 const handleDeselectStepsCreator = (group: Group, canvas: React.MutableRefObject<Canvas>) => {
-	(_.get(group, ['_objects', '1', '_objects', '1']) as IText).exitEditing();
+	((group.getObjects()[1] as Group).getObjects()[1] as IText).exitEditing();
 	canvas.current.requestRenderAll();
 };
 
@@ -697,7 +697,7 @@ const addStepsCreator = ({
 
 	group.on('deselected', () => handleDeselectStepsCreator(group, canvas));
 	group.on('mousedblclick', (e) => handleDoubleClickStepsCreator(e, canvas));
-	(_.get(group, ['_objects', '1', '_objects', '1']) as IText).on('changed', () =>
+	((group.getObjects()[1] as Group).getObjects()[1] as IText).on('changed', () =>
 		handleTextChangedStepsCreator(group, canvas),
 	);
 
@@ -751,13 +751,13 @@ const addCommentBox = ({
 	if (points.points.length === 0) {
 		return;
 	}
-	const clonedPoints = _.cloneDeep(points);
-	const clonedDefaultPoints = _.cloneDeep(defaultPoints);
+	const clonedPoints = JSON.parse(JSON.stringify(points));
+	const clonedDefaultPoints = JSON.parse(JSON.stringify(defaultPoints));
 	const polygon = new CustomFabricPolygon(
 		clonedDefaultPoints.points,
 		{
 			id: canvasData.id,
-			fill: _.get(canvasData, 'fill'),
+			fill: canvasData.fill,
 			scaleX: canvasData.scaleX,
 			scaleY: canvasData.scaleY,
 			lockRotation: true,
@@ -765,26 +765,26 @@ const addCommentBox = ({
 			transparentCorners: false,
 			hasControls: true,
 			evented: true,
-			stroke: _.get(canvasData, 'stroke'),
-			strokeWidth: _.get(canvasData, 'strokeWidth'),
+			stroke: canvasData.stroke,
+			strokeWidth: canvasData.strokeWidth,
 			cornerColor: '#fff',
 			cornerStyle: 'circle',
 			cornerSize: 12,
-			fontStyle: _.get(canvasData, ['test', 'fontStyle']) || 'normal',
+			fontStyle: canvasData.test.fontStyle || 'normal',
 		},
-		new Textbox(_.get(canvasData, ['test', 'text']), {
+		new Textbox(canvasData.test.text, {
 			id: canvasData.id + '-text',
-			fill: _.get(canvasData, ['test', 'fill']),
-			fontSize: _.get(canvasData, ['test', 'fontSize']),
+			fill: canvasData.test.fill,
+			fontSize: canvasData.test.fontSize,
 			fontFamily: 'Inter Roboto',
-			fontWeight: _.get(canvasData, ['test', 'fontWeight']),
-			textAlign: _.get(canvasData, ['test', 'textAlign']),
+			fontWeight: canvasData.test.fontWeight,
+			textAlign: canvasData.test.textAlign,
 			objectCaching: false,
 			hasBorders: false,
 			hasControls: true,
 			evented: true,
 			excludeFromExport: true,
-			fontStyle: _.get(canvasData, ['test', 'fontStyle']) || 'normal',
+			fontStyle: canvasData.test.fontStyle || 'normal',
 			shapeType: SubMenu.COMMENT_BOX_TEXTBOX,
 		}),
 		canvas.current,
@@ -800,7 +800,7 @@ const addCommentBox = ({
 	});
 	canvas.current.add(polygon);
 	polygon.set({
-		points: _.get(canvasData, 'points') ?? _.cloneDeep(clonedPoints.points),
+		points: canvasData.points ?? JSON.parse(JSON.stringify(clonedPoints.points)),
 		pointIndex: clonedPoints.pointIndex,
 		widthPointer: clonedPoints.widthPointer,
 		heightPointer: clonedPoints.heightPointer,
@@ -1020,12 +1020,13 @@ const addCropRectangle = ({
 	};
 
 	if (!isNewShape) {
-		canvas.current.on(
-			'after:render',
-			_.once(() => {
+		let hasRun = false;
+		canvas.current.on('after:render', () => {
+			if (!hasRun) {
 				updateOverlays();
-			}),
-		);
+				hasRun = true;
+			}
+		});
 	}
 
 	cropRect.on('modified', updateOverlays);
@@ -1078,7 +1079,7 @@ const imageEditorShapes = ({
 			addArrow({ canvas, canvasData });
 			break;
 		case SubMenu.CUSTOM_SHAPE:
-			addCustomShape({ canvas, canvasData }).catch((err) => loglevel.error(err));
+			addCustomShape({ canvas, canvasData }).catch((err) => console.error(err));
 			break;
 		case SubMenu.STEPS_CREATOR:
 			addStepsCreator({ canvas, isNewShape, canvasData });

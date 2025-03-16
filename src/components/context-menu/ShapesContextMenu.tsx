@@ -5,11 +5,12 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import HandleRoundIcon from 'src/icons/HandleRoundIcon';
-import DeleteIcon from 'src/icons/DeleteIcon';
-import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
-import ColorPicker from 'components/widgets/ColorPicker';
-import InputNumber from 'components/widgets/InputNumber.tsx';
+
+import HandleRoundIcon from '../../icons/HandleRoundIcon';
+import DeleteIcon from '../../icons/DeleteIcon';
+import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
+import ColorPicker from '../widgets/ColorPicker';
+import InputNumber from '../widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

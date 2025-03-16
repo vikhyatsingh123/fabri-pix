@@ -5,15 +5,15 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import { Input } from 'antd';
-import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
-import HandleRoundIcon from 'src/icons/HandleRoundIcon';
-import DeleteIcon from 'src/icons/DeleteIcon';
-import TextBoldIcon from 'src/icons/TextBoldIcon';
-import TextItalicIcon from 'src/icons/TextItalicIcon';
-import AddTextIcon from 'src/icons/AddTextIcon';
-import ColorPicker from 'components/widgets/ColorPicker';
-import InputNumber from 'components/widgets/InputNumber.tsx';
+
+import HandleRoundIcon from '../../icons/HandleRoundIcon';
+import DeleteIcon from '../../icons/DeleteIcon';
+import TextBoldIcon from '../../icons/TextBoldIcon';
+import TextItalicIcon from '../../icons/TextItalicIcon';
+import AddTextIcon from '../../icons/AddTextIcon';
+import ColorPicker from '../widgets/ColorPicker';
+import InputNumber from '../widgets/InputNumber.tsx';
+import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -222,8 +222,9 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					}
 					onChange={handleFontSizeChange}
 				/>
-				<Input
-					size='small'
+				<input
+					type='text'
+					className='text-input small-input'
 					value={
 						Object.keys(selectedObject).length === 0 ? commentBoxRef.current.text : selectedObject.test.text
 					}

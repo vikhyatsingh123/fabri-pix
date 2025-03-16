@@ -6,9 +6,9 @@
 import React from 'react';
 import { Canvas } from 'fabric';
 
-import DeleteIcon from 'src/icons/DeleteIcon';
-import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
-import ColorPicker from 'components/widgets/ColorPicker';
+import DeleteIcon from '../../icons/DeleteIcon';
+import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
+import ColorPicker from '../widgets/ColorPicker';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

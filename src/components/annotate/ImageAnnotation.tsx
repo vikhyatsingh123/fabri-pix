@@ -14,13 +14,13 @@ import imageEditorShapes from '../../utils/imageEditorShapes';
 import PencilDraw from './PencilDraw';
 import EditorTextbox from './EditorTextbox';
 import EditorEmoji from './EditorEmoji';
-import RectangleIcon from 'src/icons/RectangleIcon';
-import RoundIcon from 'src/icons/RoundIcon';
-import RightTwoIcon from 'src/icons/RightTwoIcon';
-import StarIcon from 'src/icons/StarIcon';
-import CommentOneIcon from 'src/icons/CommentOneIcon';
-import PlusIcon from 'src/icons/PlusIcon';
-import DownOneIcon from 'src/icons/DownOneIcon';
+import RectangleIcon from '../../icons/RectangleIcon';
+import RoundIcon from '../../icons/RoundIcon';
+import RightTwoIcon from '../../icons/RightTwoIcon';
+import StarIcon from '../../icons/StarIcon';
+import CommentOneIcon from '../../icons/CommentOneIcon';
+import PlusIcon from '../../icons/PlusIcon';
+import DownOneIcon from '../../icons/DownOneIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;

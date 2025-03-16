@@ -9,13 +9,13 @@ import { Canvas, FabricImage, Point, Rect } from 'fabric';
 import imageEditorShapes from '../utils/imageEditorShapes';
 import { historyLogs, SubMenu } from '../utils/utils';
 import Popover from './widgets/Popover';
-import PlusIcon from 'src/icons/PlusIcon';
-import HistoryIcon from 'src/icons/HistoryIcon';
-import UndoIcon from 'src/icons/UndoIcon';
-import RedoIcon from 'src/icons/RedoIcon';
-import MinusIcon from 'src/icons/MinusIcon';
-import FiveIcon from 'src/icons/FiveIcon';
-import CheckOneIcon from 'src/icons/CheckOneIcon';
+import PlusIcon from '../icons/PlusIcon';
+import HistoryIcon from '../icons/HistoryIcon';
+import UndoIcon from '../icons/UndoIcon';
+import RedoIcon from '../icons/RedoIcon';
+import MinusIcon from '../icons/MinusIcon';
+import FiveIcon from '../icons/FiveIcon';
+import CheckOneIcon from '../icons/CheckOneIcon';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -409,17 +409,17 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 														: ''
 												}`}
 											>
-												{changes.createdObjects.length > 0 && (
+												{changes?.createdObjects.length > 0 && (
 													<div>
 														{historyLogs[changes.createdObjects[0].shapeType]} Created
 													</div>
 												)}
-												{changes.modifiedObjects.length > 0 && (
+												{changes?.modifiedObjects.length > 0 && (
 													<div>
 														{historyLogs[changes.modifiedObjects[0].shapeType]} Modified
 													</div>
 												)}
-												{changes.deletedObjects.length > 0 && (
+												{changes?.deletedObjects.length > 0 && (
 													<div>
 														{historyLogs[changes.deletedObjects[0].shapeType]} Deleted
 													</div>

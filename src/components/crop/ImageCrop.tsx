@@ -5,6 +5,7 @@
 
 import { Canvas, Rect } from 'fabric';
 import React, { useEffect, useRef, useCallback } from 'react';
+
 import imageEditorShapes from '../../utils/imageEditorShapes';
 import { overlaysConstants, SubMenu } from '../../utils/utils';
 

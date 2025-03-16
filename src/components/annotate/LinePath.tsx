@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 
 import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import WholeSiteAcceleratorIcon from 'src/icons/WholeSiteAcceleratorIcon';
+import WholeSiteAcceleratorIcon from '../../icons/WholeSiteAcceleratorIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

@@ -371,7 +371,6 @@ const ImageEditor: React.FC<IProps> = (props) => {
 
 	return (
 		<div>
-			<h5 className='m-0'>Edit Image</h5>
 			<div className='flex justify-between items-center'>
 				<EditorMenu setMenu={setMenu} menu={menu} />
 				<EditorTopMenu

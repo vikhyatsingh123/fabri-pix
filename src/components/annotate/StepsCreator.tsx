@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 
 import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import OrderedListIcon from 'src/icons/OrderedListIcon';
+import OrderedListIcon from '../../icons/OrderedListIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

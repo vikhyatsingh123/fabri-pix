@@ -5,10 +5,11 @@
 
 import React from 'react';
 import { Canvas } from 'fabric';
-import DeleteIcon from 'src/icons/DeleteIcon';
-import HandleRoundIcon from 'src/icons/HandleRoundIcon';
-import ColorPicker from 'components/widgets/ColorPicker';
-import InputNumber from 'components/widgets/InputNumber.tsx';
+
+import DeleteIcon from '../../icons/DeleteIcon';
+import HandleRoundIcon from '../../icons/HandleRoundIcon';
+import ColorPicker from '../widgets/ColorPicker';
+import InputNumber from '../widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

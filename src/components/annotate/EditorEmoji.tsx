@@ -3,14 +3,12 @@
  * Emoji for image editor
  */
 
-import { Dropdown } from 'antd';
 import { Canvas } from 'fabric';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import EmojiPicker from 'emoji-picker-react';
-import DownOneIcon from 'src/icons/DownOneIcon';
+import EmojiDropdown from '../widgets/EmojiDropdown';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;
@@ -140,35 +138,7 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 		}
 	};
 
-	return (
-		<Dropdown.Button
-			onOpenChange={(open: boolean) => {
-				if (open) {
-					setOpenEmojiPicker(open);
-				}
-			}}
-			trigger={['click']}
-			dropdownRender={() => (
-				<EmojiPicker skinTonesDisabled open={openEmojiPicker} onEmojiClick={handleEmojiClick} />
-			)}
-			type={activeAnnotation === SubMenu.EMOJI ? 'default' : 'text'}
-			className={`w-fit shapes-btn ${activeAnnotation === SubMenu.EMOJI ? 'image-shapes-btn' : ''}`}
-			icon={<DownOneIcon />}
-			placement='bottom'
-			onClick={handleButtonClick}
-		>
-			<img
-				src={
-					emojiIconRef.current
-						? emojiIconRef.current.imageUrl
-						: 'https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f600.png'
-				}
-				alt='emoji'
-				className='w-4 h-4 ml-2'
-			/>
-			<span className='mr-2'>Emoji</span>
-		</Dropdown.Button>
-	);
+	return <EmojiDropdown handleEmojiClick={handleEmojiClick} handleButtonClick={handleButtonClick} />;
 };
 
 export default EditorEmoji;

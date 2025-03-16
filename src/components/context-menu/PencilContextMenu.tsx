@@ -3,12 +3,13 @@
  * Context menu for pencil drawing
  */
 
-import ColorPicker from 'components/widgets/ColorPicker';
 import { Canvas } from 'fabric';
 import React from 'react';
-import DeleteIcon from 'src/icons/DeleteIcon';
-import HandleRoundIcon from 'src/icons/HandleRoundIcon';
-import InputNumber from 'components/widgets/InputNumber.tsx';
+
+import DeleteIcon from '../../icons/DeleteIcon';
+import HandleRoundIcon from '../../icons/HandleRoundIcon';
+import ColorPicker from '../widgets/ColorPicker';
+import InputNumber from '../widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

@@ -5,17 +5,16 @@
 
 import { Canvas, Textbox } from 'fabric';
 import React from 'react';
-import { Segmented } from 'antd';
-import BackgroundColorIcon from 'src/icons/BackgroundColorIcon';
-import DeleteIcon from 'src/icons/DeleteIcon';
-import AddTextIcon from 'src/icons/AddTextIcon';
-import TextBoldIcon from 'src/icons/TextBoldIcon';
-import TextItalicIcon from 'src/icons/TextItalicIcon';
-import AlignTextLeftIcon from 'src/icons/AlignTextLeftIcon';
-import AlignTextCenterIcon from 'src/icons/AlignTextCenterIcon';
-import AlignTextRightIcon from 'src/icons/AlignTextRightIcon';
-import ColorPicker from 'components/widgets/ColorPicker';
-import InputNumber from 'components/widgets/InputNumber.tsx';
+
+import ColorPicker from '../widgets/ColorPicker';
+import InputNumber from '../widgets/InputNumber.tsx';
+import TextAlignSegmented from '../widgets/TextAlignSegmented';
+import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
+import DeleteIcon from '../../icons/DeleteIcon';
+import AddTextIcon from '../../icons/AddTextIcon';
+import TextBoldIcon from '../../icons/TextBoldIcon';
+import TextItalicIcon from '../../icons/TextItalicIcon';
+
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
@@ -27,12 +26,6 @@ interface IProps {
 		fontWeight: string;
 	}>;
 }
-
-const segmentedOptions = [
-	{ value: 'left', label: <AlignTextLeftIcon /> },
-	{ value: 'center', label: <AlignTextCenterIcon /> },
-	{ value: 'right', label: <AlignTextRightIcon /> },
-];
 
 const TextContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, textBoxRef } = props;
@@ -175,12 +168,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				</button>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<Segmented
-				options={segmentedOptions}
-				size='small'
-				defaultValue={selectedObject.textAlign}
-				onChange={handleAlignChange}
-			/>
+			<TextAlignSegmented defaultValue={selectedObject.textAlign} onChange={handleAlignChange} />
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
 			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />

@@ -8,7 +8,7 @@ import React, { useCallback, useEffect } from 'react';
 
 import { SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import AddTextIcon from 'src/icons/AddTextIcon';
+import AddTextIcon from '../../icons/AddTextIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

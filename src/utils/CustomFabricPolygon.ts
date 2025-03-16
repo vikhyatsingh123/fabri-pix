@@ -48,10 +48,9 @@ export default class CustomFabricPolygon extends Polygon {
 		this.hasBorders = false;
 		this.strokeUniform = true;
 		this.controls = this.createPathControls();
-
-		this.test.on('mousedown', () => {
-			this.canvas?.setActiveObject(this);
-		});
+		this.test.hasBorders = false;
+		this.test.evented = false;
+		this.test.hasControls = false;
 
 		this.on('added', () => {
 			this.canvas?.add(this.test);
@@ -72,43 +71,14 @@ export default class CustomFabricPolygon extends Polygon {
 		});
 
 		this.on('mousedblclick', () => {
-			this.makeEditable();
-		});
-
-		this.on('deselected', () => {
-			if (!this.canvas) {
-				return;
-			}
-			this.canvas.preserveObjectStacking = this._prevObjectStacking;
-			this.selected = false;
-			this.test.isEditing = false;
-		});
-
-		this.on('selected', () => {
-			this.selected = true;
-			this.test.isEditing = false;
-		});
-
-		this.test.on('editing:exited', () => {
-			this.test.selectable = false;
-			this.test.evented = false;
-			this.selectable = true;
-			this.test.isEditing = false;
+			this.canvas?.setActiveObject(this.test);
+			this.test.enterEditing();
 		});
 
 		// Resize Textbox when Polygon is scaled
 		this.on('scaling', () => {
 			this.updateTextboxDimensions();
 		});
-	}
-
-	makeEditable(): void {
-		this.test.selectable = true;
-		this.test.evented = true;
-		this.test.editable = true;
-		this.canvas?.setActiveObject(this.test);
-		this.test.enterEditing();
-		this.selectable = false;
 	}
 
 	createPathControls(): any {

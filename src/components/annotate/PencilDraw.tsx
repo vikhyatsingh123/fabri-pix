@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
 import { Canvas, PencilBrush } from 'fabric';
 
 import { SubMenu } from '../../utils/utils';
-import WritingFluentlyIcon from 'src/icons/WritingFluently';
+import WritingFluentlyIcon from '../../icons/WritingFluently';
 
 interface IProps {
 	canvas: React.MutableRefObject<Canvas>;

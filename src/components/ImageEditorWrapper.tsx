@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+
 import ImageEditor from './ImageEditor';
 
 interface IProps {

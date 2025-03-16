@@ -1,21 +1,7 @@
 {
 	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
-		"baseUrl": ".",
-		"paths": {
-			"components/*": ["src/components/*"],
-			"page/*": ["src/page/*"],
-			"lib/*": ["src/lib/*"],
-			"utils/*": ["src/utils/*"],
-			"styles/*": ["src/styles/*"],
-			"client/*": ["src/client/*"],
-			"store/*": ["src/store/*"],
-			"app-constants/*": ["src/constants/*"],
-			"hooks/*": ["src/hooks/*"],
-			"logics/*": ["src/logics/*"],
-			"configs/*": ["src/configs/*"],
-			"assets/*": ["src/assets/*"]
-		}
+		"baseUrl": "."
 	},
 	"include": ["src"],
 	"references": [{ "path": "./tsconfig.node.json" }],

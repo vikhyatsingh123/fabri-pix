@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 
 import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import ArrowRightUpIcon from 'src/icons/ArrowRightUpIcon';
+import ArrowRightUpIcon from '../../icons/ArrowRightUpIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

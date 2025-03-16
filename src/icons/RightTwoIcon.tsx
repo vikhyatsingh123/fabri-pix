@@ -12,9 +12,9 @@ const RightTwoIcon: React.FC = () => {
 				d='M24 43L42 24L24 5L24 17L6 17V31H24V43Z'
 				fill='none'
 				stroke='#089443'
-				stroke-width='2'
-				stroke-linecap='square'
-				stroke-linejoin='bevel'
+				strokeWidth='2'
+				strokeLinecap='square'
+				strokeLinejoin='bevel'
 			/>
 		</svg>
 	);

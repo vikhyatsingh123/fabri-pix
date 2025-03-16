@@ -12,11 +12,11 @@ const CommentOneIcon: React.FC = () => {
 				d='M44 6H4V36H13V41L23 36H44V6Z'
 				fill='none'
 				stroke='#089443'
-				stroke-width='2'
-				stroke-linecap='square'
-				stroke-linejoin='bevel'
+				strokeWidth='2'
+				strokeLinecap='square'
+				strokeLinejoin='bevel'
 			/>
-			<path d='M14 21H34' stroke='#089443' stroke-width='2' stroke-linecap='square' stroke-linejoin='bevel' />
+			<path d='M14 21H34' stroke='#089443' strokeWidth='2' strokeLinecap='square' strokeLinejoin='bevel' />
 		</svg>
 	);
 };

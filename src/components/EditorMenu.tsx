@@ -21,7 +21,7 @@ const EditorMenu: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<div className='flex items-center gap-2 my-3'>
+		<div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '16px 0' }}>
 			<button
 				className={`custom-button ${menu === Menu.ANNOTATE ? 'active' : ''}`}
 				onClick={handleClick(Menu.ANNOTATE)}

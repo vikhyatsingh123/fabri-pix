@@ -46,7 +46,8 @@ const EmojiDropdown: React.FC<IProps> = (props) => {
 				<img
 					src='https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f600.png'
 					alt='emoji'
-					className='emoji-icon'
+					width={16}
+					height={16}
 				/>
 				<span className='dropdown-label'>Emoji</span>
 				<span className='dropdown-arrow'>▼</span>

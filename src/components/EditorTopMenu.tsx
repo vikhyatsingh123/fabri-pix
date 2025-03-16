@@ -371,7 +371,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 	};
 
 	const history = (
-		<div className='overflow-y-scroll max-h-56 w-60'>
+		<div style={{ overflowY: 'scroll', maxHeight: 224, width: 240 }}>
 			{config.canvasState.map((state, index) => {
 				const prevState = index > 0 ? config.canvasState[index - 1] : null;
 				const changes = prevState ? detectCanvasChanges(prevState, state) : null;
@@ -380,34 +380,49 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 					<>
 						<div
 							key={index}
-							className={`flex flex-col justify-between items-start p-1 mr-1 ${
-								index === config.currentStateIndex ? 'bg-[#e6f4ff] rounded-md' : ''
-							}`}
+							style={{
+								display: 'flex',
+								flexDirection: 'column',
+								justifyContent: 'between',
+								alignItems: 'start',
+								padding: 4,
+								marginRight: 4,
+								backgroundColor: index === config.currentStateIndex ? '#e6f4ff' : 'transparent',
+								borderRadius: 4,
+							}}
 						>
 							<button
 								className={`custom-button ${index === config.currentStateIndex ? 'active' : ''}`}
 								onClick={() => void handleHistory(state, index)}
 							>
-								<div className='flex w-full'>
-									<div className='flex items-center'>
+								<div
+									style={{
+										width: '100%',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'space-between',
+									}}
+								>
+									<div style={{ display: 'flex', alignItems: 'center' }}>
 										<div
-											className={`text-xs ${
-												index === config.currentStateIndex
-													? 'text-[rgba(0,0,0,0.88)] font-semibold'
-													: ''
-											}`}
+											style={{
+												fontSize: 12,
+												fontWeight: index === config.currentStateIndex ? 'bold' : 'normal',
+											}}
 										>
 											{index + 1}.
 										</div>
 									</div>
-									<div className='flex items-center'>
+									<div style={{ display: 'flex', alignItems: 'center' }}>
 										{!changes ? (
 											<div
-												className={`text-xs flex flex-col items-start ${
-													index === config.currentStateIndex
-														? 'text-[rgba(0,0,0,0.88)] font-semibold'
-														: ''
-												}`}
+												style={{
+													fontSize: 12,
+													display: 'flex',
+													flexDirection: 'column',
+													alignItems: 'start',
+													fontWeight: index === config.currentStateIndex ? 'bold' : 'normal',
+												}}
 											>
 												{changes?.createdObjects.length > 0 && (
 													<div>
@@ -427,17 +442,19 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 											</div>
 										) : (
 											<div
-												className={`text-xs flex flex-col items-start ${
-													index === config.currentStateIndex
-														? 'text-[rgba(0,0,0,0.88)] font-semibold'
-														: ''
-												}`}
+												style={{
+													fontSize: 12,
+													display: 'flex',
+													flexDirection: 'column',
+													alignItems: 'start',
+													fontWeight: index === config.currentStateIndex ? 'bold' : 'normal',
+												}}
 											>
 												Initial State
 											</div>
 										)}
 									</div>
-									<div className='flex items-center justify-center'>
+									<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 										{index === config.currentStateIndex && <CheckOneIcon />}
 									</div>
 								</div>
@@ -451,15 +468,22 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 	);
 
 	return (
-		<div className='flex items-center justify-between'>
-			<div className='flex justify-center items-center'>
-				<div className='flex justify-center items-center gap-2'>
+		<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+				<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
 					<Popover content={history} disabled={config.canvasState.length === 0}>
 						<button className='custom-button'>
 							<HistoryIcon />
 						</button>
 					</Popover>
-					<div className='flex border-solid border border-[#d9d9d9] rounded-full overflow-hidden'>
+					<div
+						style={{
+							display: 'flex',
+							border: 'solid 1px #d9d9d9',
+							borderRadius: '8px',
+							overflow: 'hidden',
+						}}
+					>
 						<button
 							className='custom-button'
 							disabled={config.currentStateIndex === 0 || config.canvasState.length === 0}
@@ -480,7 +504,14 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 						</button>
 					</div>
 					<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-					<div className='flex border-solid border border-[#d9d9d9] rounded-full overflow-hidden'>
+					<div
+						style={{
+							display: 'flex',
+							border: 'solid 1px #d9d9d9',
+							borderRadius: '8px',
+							overflow: 'hidden',
+						}}
+					>
 						<button
 							className='custom-button'
 							onClick={() => setZoomValue(zoomValue + 0.1)}

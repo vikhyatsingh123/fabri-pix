@@ -371,7 +371,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 
 	return (
 		<div>
-			<div className='flex justify-between items-center'>
+			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 				<EditorMenu setMenu={setMenu} menu={menu} />
 				<EditorTopMenu
 					canvas={canvas}
@@ -382,16 +382,23 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					setActiveAnnotation={setActiveAnnotation}
 				/>
 			</div>
-			<div className='flex w-full justify-center'>
+			<div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
 				<div
-					className={'flex flex-col justify-center items-center border-r'}
-					style={{ width: '1000px', height: '508px' }}
+					style={{
+						width: '1000px',
+						height: '508px',
+						display: 'flex',
+						flexDirection: 'column',
+						justifyContent: 'center',
+						alignItems: 'center',
+						borderRightWidth: '1px',
+					}}
 					id='img-editor-div'
 				>
 					<canvas ref={canvasRef} id='mainCanvas' />
 				</div>
 			</div>
-			<div className='mt-4'>
+			<div style={{ marginTop: '16px' }}>
 				<EditorContextMenu
 					canvas={canvas}
 					selectedObject={selectedObject}
@@ -404,7 +411,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					textBoxRef={textBoxRef}
 				/>
 			</div>
-			<div className='absolute left-0 right-0 bottom-8'>
+			<div style={{ position: 'absolute', left: 0, right: 0, bottom: 32 }}>
 				<EditorSubMenu
 					canvas={canvas}
 					menu={menu}

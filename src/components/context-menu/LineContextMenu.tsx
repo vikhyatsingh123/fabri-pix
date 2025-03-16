@@ -55,9 +55,9 @@ const LineContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<div className='flex items-center justify-center'>
-			<div className='flex items-center justify-center gap-2'>
-				<div className='flex gap-1'>
+		<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+				<div style={{ display: 'flex', gap: 4 }}>
 					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>

@@ -32,10 +32,10 @@ const ArrowContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<div className='flex items-center justify-center'>
-			<div className='flex items-center justify-center'>
+		<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 				<BackgroundColorIcon />
-				<span className='ml-1 mr-2'>Fill</span>
+				<span style={{ margin: '0 8px 0 4px' }}>Fill</span>
 				<ColorPicker value={selectedObject?._objects?.[1]?.fill} onChange={handleBackgroundColorChange} />
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />

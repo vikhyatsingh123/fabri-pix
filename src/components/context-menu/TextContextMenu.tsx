@@ -104,10 +104,10 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<div className='flex items-center justify-center'>
-			<div className='flex items-center justify-center'>
+		<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 				<BackgroundColorIcon />
-				<span className='ml-1 mr-2'>Fill</span>
+				<span style={{ margin: '0 8px 0 4px' }}>Fill</span>
 				<ColorPicker
 					value={
 						Object.keys(selectedObject).length === 0
@@ -119,8 +119,8 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<div className='flex items-center justify-center gap-2'>
-				<div className='flex gap-1'>
+			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+				<div style={{ display: 'flex', gap: 4 }}>
 					<AddTextIcon />
 					<span>Text</span>
 				</div>
@@ -141,7 +141,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-			<div className='flex items-center justify-center gap-1'>
+			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
 				<button
 					className={`custom-button ${
 						(Object.keys(selectedObject).length === 0

@@ -9,7 +9,7 @@ import { Canvas } from 'fabric';
 import SaveIcon from '../icons/SaveIcon';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 }
 
 const ImageEditorFooter: React.FC<IProps> = (props) => {
@@ -26,14 +26,15 @@ const ImageEditorFooter: React.FC<IProps> = (props) => {
 
 		const canvasEdited = canvas.current;
 		canvasEdited.discardActiveObject();
+		const canvasAsJson = canvasEdited.toJSON();
 		const dataURL = await canvasEdited.toBlob({ multiplier: 1, format: 'png', quality: 1.0 });
 		const blobUrl = URL.createObjectURL(dataURL);
-		console.log(blobUrl);
-		handleCancel();
+		console.log('blobUrl', blobUrl);
+		console.log('json', canvasAsJson);
 	};
 
 	return (
-		<div className='flex gap-2 absolute bottom-0 right-0'>
+		<div style={{ display: 'flex', gap: 8, position: 'absolute', bottom: 0, right: 0 }}>
 			<button className={`custom-button`} onClick={handleCancel}>
 				Cancel
 			</button>

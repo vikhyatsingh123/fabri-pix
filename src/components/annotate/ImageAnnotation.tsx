@@ -817,20 +817,33 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			label: '',
 			key: 'add-custom',
 			icon: (
-				<div className='inline-flex items-center cursor-pointer bg-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-300'>
+				<div
+					style={{
+						display: 'inline-flex',
+						alignItems: 'center',
+						cursor: 'pointer',
+						backgroundColor: '#f0f0f0',
+						padding: '8px 12px',
+						borderRadius: '4px',
+					}}
+				>
 					<input
 						type='file'
 						accept='image/*'
 						ref={fileInputRef}
 						onChange={handleImageUpload}
-						className='hidden'
+						style={{ display: 'none' }}
 					/>
 
-					<button type='button' className='flex items-center' onClick={() => fileInputRef.current?.click()}>
-						<span className='mr-0.5'>
+					<button
+						type='button'
+						style={{ display: 'flex', alignItems: 'center' }}
+						onClick={() => fileInputRef.current?.click()}
+					>
+						<span style={{ marginRight: '4px' }}>
 							<PlusIcon />
 						</span>
-						<span className='ml-2 text-sm'>Add Custom</span>
+						<span style={{ marginLeft: '8px', fontSize: '14px' }}>Add Custom</span>
 					</button>
 				</div>
 			),
@@ -844,20 +857,26 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<div className='flex justify-center items-center gap-2 mb-3'>
+		<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 12 }}>
 			<StepsCreator
 				canvas={canvas}
 				activeAnnotation={activeAnnotation}
 				setActiveAnnotation={setActiveAnnotation}
 				stepCreatorRef={stepCreatorRef}
 			/>
-			<div className='relative inline-block'>
+			<div style={{ position: 'relative', display: 'inline-block' }}>
 				<button
-					className='px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 flex items-center'
+					style={{
+						padding: '8px 16px',
+						backgroundColor: '#f0f0f0',
+						borderRadius: '4px',
+						display: 'flex',
+						alignItems: 'center',
+					}}
 					onClick={toggleDropdown}
 				>
 					Shapes
-					<span className='ml-2'>
+					<span style={{ marginLeft: 8 }}>
 						<DownOneIcon />
 					</span>
 					{/* Replace with <DownOneIcon /> */}
@@ -865,18 +884,29 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 
 				{/* Dropdown Menu */}
 				{isOpen && (
-					<div ref={dropdownRef} className='absolute left-0 mt-2 w-40 bg-white border rounded-lg shadow-lg'>
-						<ul className='py-2'>
+					<div
+						ref={dropdownRef}
+						style={{
+							position: 'absolute',
+							left: 0,
+							top: 0,
+							width: 160,
+							backgroundColor: 'white',
+							borderRadius: '4px',
+							boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
+						}}
+					>
+						<ul style={{ padding: 8 }}>
 							{menuProps.map((item) => (
 								<li
 									key={item.key}
-									className='px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer'
+									style={{ padding: 8, backgroundColor: '#f0f0f0', cursor: 'pointer' }}
 									onClick={() => {
 										item.onClick();
 										setIsOpen(false);
 									}}
 								>
-									<span className='mr-2'>{item.icon}</span>
+									<span style={{ marginRight: 8 }}>{item.icon}</span>
 									{item.label}
 								</li>
 							))}

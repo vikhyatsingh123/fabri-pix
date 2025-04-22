@@ -10,7 +10,7 @@ import imageEditorShapes from '../../utils/imageEditorShapes';
 import { overlaysConstants, SubMenu } from '../../utils/utils';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
 }

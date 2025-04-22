@@ -57,7 +57,8 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 			<BackgroundColorIcon />
 			<span style={{ margin: '0 8px 0 4px' }}>Fill</span>
 			<ColorPicker value={selectedObject.fill} onChange={handleBackgroundColorChange} />
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
 				<div style={{ display: 'flex', gap: 4 }}>
 					<HandleRoundIcon />
@@ -66,7 +67,8 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 				<ColorPicker value={selectedObject.stroke} onChange={handleBorderColorChange} />
 				<InputNumber min={1} max={50} value={selectedObject.strokeWidth} onChange={handleStrokeWidthChange} />
 			</div>
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>

@@ -165,7 +165,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		undoRedoActive.current = true;
 
 		const existingBackgroundImage = canvas.current.backgroundImage;
-		const jsonData = JSON.parse(config.canvasState[config.currentStateIndex + 1]);
+		const jsonData = JSON.parse(JSON.parse(JSON.stringify(config.canvasState[config.currentStateIndex + 1])));
 
 		canvas.current.clear();
 
@@ -223,7 +223,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		undoRedoActive.current = true;
 
 		const existingBackgroundImage = canvas.current.backgroundImage;
-		const jsonData = JSON.parse(JSON.stringify(config.canvasState[config.currentStateIndex - 1]));
+		const jsonData = JSON.parse(JSON.parse(JSON.stringify(config.canvasState[config.currentStateIndex - 1])));
 
 		canvas.current.clear();
 
@@ -281,7 +281,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		undoRedoActive.current = true;
 
 		const existingBackgroundImage = canvas.current.backgroundImage;
-		const jsonData = JSON.parse(JSON.stringify(state));
+		const jsonData = JSON.parse(JSON.parse(JSON.stringify(state)));
 
 		canvas.current.clear();
 
@@ -343,8 +343,8 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 	};
 
 	const detectCanvasChanges = (prevState: any, newState: any) => {
-		const oldObjects = JSON.parse(JSON.stringify(prevState))?.objects || [];
-		const newObjects = JSON.parse(JSON.stringify(newState))?.objects || [];
+		const oldObjects = JSON.parse(JSON.parse(JSON.stringify(prevState)))?.objects || [];
+		const newObjects = JSON.parse(JSON.parse(JSON.stringify(newState)))?.objects || [];
 
 		const createdObjects: any[] = [];
 		const modifiedObjects: any[] = [];
@@ -460,7 +460,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 								</div>
 							</button>
 						</div>
-						<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+						<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 					</>
 				);
 			})}
@@ -476,64 +476,49 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 							<HistoryIcon />
 						</button>
 					</Popover>
-					<div
-						style={{
-							display: 'flex',
-							border: 'solid 1px #d9d9d9',
-							borderRadius: '8px',
-							overflow: 'hidden',
-						}}
+					<button
+						className='custom-button'
+						disabled={config.currentStateIndex === 0 || config.canvasState.length === 0}
+						onClick={() => void handleUndo()}
 					>
-						<button
-							className='custom-button'
-							disabled={config.currentStateIndex === 0 || config.canvasState.length === 0}
-							onClick={() => void handleUndo()}
-						>
-							<UndoIcon />
-						</button>
-						<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-						<button
-							className='custom-button'
-							disabled={
-								config.currentStateIndex === config.canvasState.length - 1 ||
-								config.canvasState.length === 0
-							}
-							onClick={() => void handleRedo()}
-						>
-							<RedoIcon />
-						</button>
-					</div>
-					<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-					<div
-						style={{
-							display: 'flex',
-							border: 'solid 1px #d9d9d9',
-							borderRadius: '8px',
-							overflow: 'hidden',
-						}}
+						<UndoIcon />
+					</button>
+					<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
+					<button
+						className='custom-button'
+						disabled={
+							config.currentStateIndex === config.canvasState.length - 1 ||
+							config.canvasState.length === 0
+						}
+						onClick={() => void handleRedo()}
 					>
-						<button
-							className='custom-button'
-							onClick={() => setZoomValue(zoomValue + 0.1)}
-							disabled={zoomValue >= 4}
-						>
-							<PlusIcon />
-						</button>
-						<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-						<button className='custom-button' onClick={handleFit} disabled={zoomValue <= 1}>
-							Fit
-						</button>
-						<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
-						<button
-							className='custom-button'
-							onClick={() => {
-								setZoomValue(zoomValue - 0.1);
-							}}
-							disabled={zoomValue <= 1}
-						>
-							<MinusIcon />
-						</button>
-					</div>
+						<RedoIcon />
+					</button>
+					<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
+					<button
+						className='custom-button'
+						onClick={() => setZoomValue(zoomValue + 0.1)}
+						disabled={zoomValue >= 4}
+					>
+						<PlusIcon />
+					</button>
+
+					<button className='custom-button' onClick={handleFit} disabled={zoomValue <= 1}>
+						Fit
+					</button>
+
+					<button
+						className='custom-button'
+						onClick={() => {
+							setZoomValue(zoomValue - 0.1);
+						}}
+						disabled={zoomValue <= 1}
+					>
+						<MinusIcon />
+					</button>
+					<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 					<button className='custom-button' disabled={zoomValue === 1} onClick={handlePanMode}>
 						<FiveIcon />
 					</button>

@@ -142,7 +142,7 @@ const ImageRedact: React.FC<IProps> = (props) => {
 			} else {
 				const target = canvas.current.findTarget(event.e);
 				if (target) {
-					const size = (target as any)._objects.length;
+					const size = (target as any)?._objects?.length;
 					if (size > 0) {
 						canvas.current.setActiveObject((target as any)._objects[size - 1]);
 						canvas.current.requestRenderAll();

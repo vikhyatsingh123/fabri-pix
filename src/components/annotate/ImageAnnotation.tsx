@@ -73,7 +73,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		textBoxRef,
 	} = props;
 
-	const [isOpen, setIsOpen] = useState(false);
+	const [isOpen, setIsOpen] = useState<boolean>(false);
 
 	const hoverRectRef = useRef<Rect | Circle | Group | null>(null);
 	const aiScaledCoordinatesRef = useRef<{ bbox: number[]; scaledBbox: number[] }[]>([]);
@@ -879,7 +879,6 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 					<span style={{ marginLeft: 8 }}>
 						<DownOneIcon />
 					</span>
-					{/* Replace with <DownOneIcon /> */}
 				</button>
 
 				{/* Dropdown Menu */}

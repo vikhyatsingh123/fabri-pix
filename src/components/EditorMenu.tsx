@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+
 import SubtractSelectionIcon from '../icons/SubtractSelectionIcon';
 import TailoringIcon from '../icons/TailoringIcon';
 import WriteIcon from '../icons/WriteIcon';
@@ -16,12 +17,13 @@ interface IProps {
 
 const EditorMenu: React.FC<IProps> = (props) => {
 	const { setMenu, menu } = props;
+
 	const handleClick = (option: Menu) => () => {
 		setMenu(option);
 	};
 
 	return (
-		<div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '16px 0' }}>
+		<div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 			<button
 				className={`custom-button ${menu === Menu.ANNOTATE ? 'active' : ''}`}
 				onClick={handleClick(Menu.ANNOTATE)}

@@ -266,7 +266,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			onClick={handleStepsCreator}
 		>
 			<OrderedListIcon />
-			Arrow Tool
+			Steps Creator
 		</button>
 	);
 };

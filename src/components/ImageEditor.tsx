@@ -189,7 +189,9 @@ const ImageEditor: React.FC<IProps> = (props) => {
 
 		if (imageUrl) {
 			try {
-				const image = await FabricImage.fromURL(imageUrl);
+				const image = await FabricImage.fromURL(imageUrl, {
+					crossOrigin: 'anonymous',
+				});
 				const maxWidth = 1000;
 				const maxHeight = 508;
 				const imageWidth = image.width;
@@ -371,8 +373,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 
 	return (
 		<div>
-			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-				<EditorMenu setMenu={setMenu} menu={menu} />
+			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '12px' }}>
 				<EditorTopMenu
 					canvas={canvas}
 					config={config}
@@ -383,6 +384,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+				<EditorMenu setMenu={setMenu} menu={menu} />
 				<div
 					style={{
 						width: '1000px',
@@ -411,7 +413,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					textBoxRef={textBoxRef}
 				/>
 			</div>
-			<div style={{ position: 'absolute', left: 0, right: 0, bottom: 32 }}>
+			<div style={{ position: 'absolute', left: 0, right: 0, bottom: 26 }}>
 				<EditorSubMenu
 					canvas={canvas}
 					menu={menu}

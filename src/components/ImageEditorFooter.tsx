@@ -7,6 +7,7 @@ import React from 'react';
 import { Canvas } from 'fabric';
 
 import SaveIcon from '../icons/SaveIcon';
+import CancelIcon from '../icons/CancelIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -36,10 +37,10 @@ const ImageEditorFooter: React.FC<IProps> = (props) => {
 	return (
 		<div style={{ display: 'flex', gap: 8, position: 'absolute', bottom: 0, right: 0 }}>
 			<button className={`custom-button`} onClick={handleCancel}>
-				Cancel
+				<CancelIcon /> Cancel
 			</button>
 			<button className={`custom-button`} onClick={() => void handleSave()}>
-				Save <SaveIcon />
+				<SaveIcon /> Save
 			</button>
 		</div>
 	);

@@ -148,7 +148,8 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
 			</div>
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
 				<div style={{ display: 'flex', gap: 4 }}>
 					<HandleRoundIcon />
@@ -174,7 +175,8 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					onChange={handleStrokeWidthChange}
 				/>
 			</div>
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
 				<div style={{ display: 'flex', gap: 4 }}>
 					<AddTextIcon />
@@ -200,7 +202,8 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					onChange={handleFontSizeChange}
 				/>
 			</div>
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
 				<div style={{ display: 'flex', gap: 4 }}>
 					<ListNumbersIcon />
@@ -216,7 +219,8 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					onChange={handleStartStepNumberChange}
 				/>
 			</div>
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>

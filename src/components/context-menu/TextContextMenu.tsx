@@ -118,7 +118,8 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
 			</div>
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
 				<div style={{ display: 'flex', gap: 4 }}>
 					<AddTextIcon />
@@ -140,7 +141,8 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					onChange={handleFontSizeChange}
 				/>
 			</div>
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
 				<button
 					className={`custom-button ${
@@ -167,9 +169,11 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					<TextItalicIcon />
 				</button>
 			</div>
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<TextAlignSegmented defaultValue={selectedObject.textAlign} onChange={handleAlignChange} />
-			<hr style={{ border: 'none', borderTop: '1px solid #d9d9d9', margin: '4px 0' }} />
+			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+
 			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>

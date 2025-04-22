@@ -122,7 +122,7 @@ const PencilDraw: React.FC<IProps> = (props) => {
 	return (
 		<button className={`custom-button ${activeAnnotation === SubMenu.DRAW ? 'active' : ''}`} onClick={handleDraw}>
 			<WritingFluentlyIcon />
-			Arrow Tool
+			Draw
 		</button>
 	);
 };

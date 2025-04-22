@@ -1,6 +1,6 @@
 /**
- * @author Rakesh Kumar<rakesh.kumar@314ecorp.com>
- * @description tipsheet utils
+ * @author Vikhyat Singh
+ * @description Utils for the image editor
  */
 
 export enum Menu {

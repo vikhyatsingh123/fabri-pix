@@ -24,6 +24,7 @@
 /* Active state */
 .custom-button.active {
 	background-color: #f0f0f0;
+	border: 1px solid #000000;
 }
 
 .color-picker {
@@ -79,7 +80,7 @@
 .dropdown-btn {
 	display: flex;
 	align-items: center;
-	background: white;
+	background: transparent;
 	border: 1px solid #ccc;
 	border-radius: 4px;
 	padding: 6px 12px;

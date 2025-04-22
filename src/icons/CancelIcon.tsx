@@ -1,11 +1,11 @@
 /**
  * @author Vikhyat Singh
- * @description HandleRoundIcon icon
+ * @description Cancel icon
  */
 
 import React from 'react';
 
-const HandleRoundIcon: React.FC = () => {
+const CancelIcon: React.FC = () => {
 	return (
 		<svg width='24' height='24' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'>
 			<circle
@@ -18,17 +18,10 @@ const HandleRoundIcon: React.FC = () => {
 				strokeLinecap='round'
 				strokeLinejoin='round'
 			/>
-			<circle
-				cx='24'
-				cy='24'
-				r='12'
-				stroke='#000000'
-				strokeWidth='4'
-				strokeLinecap='round'
-				strokeLinejoin='round'
-			/>
+			<path d='M33 15L15 33' stroke='#000000' strokeWidth='4' strokeLinecap='round' strokeLinejoin='round' />
+			<path d='M15 15L33 33' stroke='#000000' strokeWidth='4' strokeLinecap='round' strokeLinejoin='round' />
 		</svg>
 	);
 };
 
-export default HandleRoundIcon;
+export default CancelIcon;

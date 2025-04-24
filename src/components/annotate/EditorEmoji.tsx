@@ -4,14 +4,14 @@
  */
 
 import { Canvas } from 'fabric';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 import { SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
 import EmojiDropdown from '../widgets/EmojiDropdown';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
 }
@@ -19,14 +19,12 @@ interface IProps {
 const EditorEmoji: React.FC<IProps> = (props) => {
 	const { canvas, activeAnnotation, setActiveAnnotation } = props;
 
-	const [openEmojiPicker, setOpenEmojiPicker] = useState<boolean>(false);
-
 	const emojiIconRef = useRef<any>(null);
 
 	const updateEmojiCursor = () => {
 		const img = new Image();
 		img.crossOrigin = 'anonymous';
-		img.src = emojiIconRef.current.imageUrl;
+		img.src = emojiIconRef.current?.imageUrl;
 
 		img.onload = () => {
 			const canvasElement = document.createElement('canvas');
@@ -106,9 +104,17 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 		};
 	}, []);
 
+	const handleShowDropdown = () => {
+		document.getElementById('emoji-dropdown').classList.add('show-emoji-dropdown');
+	};
+
+	const handleHideDropdown = () => {
+		document.getElementById('emoji-dropdown').classList.remove('show-emoji-dropdown');
+	};
+
 	const handleEmojiClick = (emojiData: any) => {
 		emojiIconRef.current = emojiData;
-		setOpenEmojiPicker(false);
+		handleHideDropdown();
 		if (activeAnnotation !== SubMenu.EMOJI) {
 			setActiveAnnotation(SubMenu.EMOJI);
 			canvas.current.discardActiveObject();
@@ -138,7 +144,16 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 		}
 	};
 
-	return <EmojiDropdown handleEmojiClick={handleEmojiClick} handleButtonClick={handleButtonClick} />;
+	return (
+		<EmojiDropdown
+			emojiIconRef={emojiIconRef}
+			activeAnnotation={activeAnnotation}
+			handleEmojiClick={handleEmojiClick}
+			handleButtonClick={handleButtonClick}
+			handleShowDropdown={handleShowDropdown}
+			handleHideDropdown={handleHideDropdown}
+		/>
+	);
 };
 
 export default EditorEmoji;

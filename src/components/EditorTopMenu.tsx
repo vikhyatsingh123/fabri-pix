@@ -454,13 +454,20 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 											</div>
 										)}
 									</div>
-									<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+									<div
+										style={{
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											marginLeft: '6px',
+										}}
+									>
 										{index === config.currentStateIndex && <CheckOneIcon />}
 									</div>
 								</div>
 							</button>
 						</div>
-						<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
+						<hr style={{ borderTop: '1px solid #d9d9d9' }} />
 					</>
 				);
 			})}

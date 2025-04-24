@@ -4,7 +4,7 @@
  */
 
 import { Canvas, Circle, FabricImage, Group, Line, Rect, Triangle } from 'fabric';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 import StepsCreator from './StepsCreator';
 import AdvancedArrowTool from './AdvancedArrowTool';
@@ -73,11 +73,8 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		textBoxRef,
 	} = props;
 
-	const [isOpen, setIsOpen] = useState<boolean>(false);
-
 	const hoverRectRef = useRef<Rect | Circle | Group | null>(null);
 	const aiScaledCoordinatesRef = useRef<{ bbox: number[]; scaledBbox: number[] }[]>([]);
-	const dropdownRef = useRef<HTMLDivElement | null>(null);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 	useEffect(() => {
@@ -851,9 +848,20 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		},
 	];
 
-	const toggleDropdown = () => {
-		handleShapeClick();
-		setIsOpen((prev) => !prev);
+	const handleShowDropdown = () => {
+		document.getElementById('shape-dropdown').classList.add('show-shape-dropdown');
+	};
+
+	const handleHideDropdown = () => {
+		document.getElementById('shape-dropdown').classList.remove('show-shape-dropdown');
+	};
+
+	const handleDropdownClick = () => {
+		if (document.getElementById('shape-dropdown').classList.contains('show-shape-dropdown')) {
+			handleHideDropdown();
+		} else {
+			handleShowDropdown();
+		}
 	};
 
 	return (
@@ -864,54 +872,38 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 				setActiveAnnotation={setActiveAnnotation}
 				stepCreatorRef={stepCreatorRef}
 			/>
-			<div style={{ position: 'relative', display: 'inline-block' }}>
-				<button
-					style={{
-						padding: '8px 16px',
-						backgroundColor: '#f0f0f0',
-						borderRadius: '4px',
-						display: 'flex',
-						alignItems: 'center',
-					}}
-					onClick={toggleDropdown}
-				>
-					Shapes
-					<span style={{ marginLeft: 8 }}>
-						<DownOneIcon />
-					</span>
+			<button
+				className={`custom-button ${
+					[SubMenu.RECTANGLE, SubMenu.CIRCLE, SubMenu.ARROW].includes(activeAnnotation as SubMenu)
+						? 'active'
+						: ''
+				}`}
+				style={{ paddingRight: '8px' }}
+				onClick={handleShapeClick}
+			>
+				Shapes
+			</button>
+			<div className='dropdown'>
+				<button onClick={handleDropdownClick} className='custom-button' style={{ padding: '0px' }}>
+					<DownOneIcon />
 				</button>
-
-				{/* Dropdown Menu */}
-				{isOpen && (
-					<div
-						ref={dropdownRef}
-						style={{
-							position: 'absolute',
-							left: 0,
-							top: 0,
-							width: 160,
-							backgroundColor: 'white',
-							borderRadius: '4px',
-							boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
-						}}
-					>
-						<ul style={{ padding: 8 }}>
-							{menuProps.map((item) => (
-								<li
-									key={item.key}
-									style={{ padding: 8, backgroundColor: '#f0f0f0', cursor: 'pointer' }}
-									onClick={() => {
-										item.onClick();
-										setIsOpen(false);
-									}}
-								>
-									<span style={{ marginRight: 8 }}>{item.icon}</span>
-									{item.label}
-								</li>
-							))}
-						</ul>
-					</div>
-				)}
+				<div id='shape-dropdown' className='dropdown-content'>
+					<ul style={{ padding: 8 }}>
+						{menuProps.map((item) => (
+							<li
+								key={item.key}
+								style={{ padding: 8, backgroundColor: '#f0f0f0', cursor: 'pointer' }}
+								onClick={() => {
+									item.onClick();
+									handleHideDropdown();
+								}}
+							>
+								<span style={{ marginRight: 8 }}>{item.icon}</span>
+								{item.label}
+							</li>
+						))}
+					</ul>
+				</div>
 			</div>
 			<EditorEmoji
 				canvas={canvas}

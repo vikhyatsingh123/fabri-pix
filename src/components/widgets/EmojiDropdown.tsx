@@ -3,62 +3,67 @@
  * Emoji dropdown component
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import EmojiPicker from 'emoji-picker-react';
 
+import DownOneIcon from '../../icons/DownOneIcon';
+import { SubMenu } from '../../utils/utils';
+
 interface IProps {
+	emojiIconRef: React.RefObject<any>;
+	activeAnnotation: SubMenu | '';
 	handleEmojiClick: (emoji: any) => void;
-	handleButtonClick: any;
+	handleButtonClick: () => void;
+	handleShowDropdown: () => void;
+	handleHideDropdown: () => void;
 }
 
 const EmojiDropdown: React.FC<IProps> = (props) => {
-	const { handleEmojiClick, handleButtonClick } = props;
+	const {
+		activeAnnotation,
+		emojiIconRef,
+		handleEmojiClick,
+		handleButtonClick,
+		handleShowDropdown,
+		handleHideDropdown,
+	} = props;
 
-	const [isOpen, setIsOpen] = useState(false);
-	const dropdownRef = useRef<HTMLDivElement | null>(null);
-
-	const toggleDropdown = () => setIsOpen(!isOpen);
-	const closeDropdown = () => setIsOpen(false);
-
-	const handleClick = () => {
-		handleButtonClick();
-		toggleDropdown();
-	};
-
-	const handleClickOutside = (event: MouseEvent) => {
-		if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-			closeDropdown();
-		}
-	};
-
-	useEffect(() => {
-		if (isOpen) {
-			document.addEventListener('mousedown', handleClickOutside);
+	const handleDropdownClick = () => {
+		if (document.getElementById('emoji-dropdown').classList.contains('show-emoji-dropdown')) {
+			handleHideDropdown();
 		} else {
-			document.removeEventListener('mousedown', handleClickOutside);
+			handleShowDropdown();
 		}
-		return () => document.removeEventListener('mousedown', handleClickOutside);
-	}, [isOpen]);
+	};
 
 	return (
-		<div className='dropdown-container' ref={dropdownRef}>
-			<button className='dropdown-btn' onClick={handleClick}>
+		<>
+			<button
+				className={`custom-button ${activeAnnotation === SubMenu.EMOJI ? 'active' : ''}`}
+				style={{ paddingRight: '8px' }}
+				onClick={handleButtonClick}
+			>
 				<img
-					src='https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f600.png'
+					src={
+						emojiIconRef.current
+							? emojiIconRef.current.imageUrl
+							: 'https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f600.png'
+					}
 					alt='emoji'
 					width={16}
 					height={16}
 				/>
-				<span className='dropdown-label'>Emoji</span>
-				<span className='dropdown-arrow'>▼</span>
+				Emoji
 			</button>
-
-			{isOpen && (
-				<div className='emoji-picker-container'>
+			<div className='dropdown'>
+				<button onClick={handleDropdownClick} className='custom-button' style={{ padding: '0px' }}>
+					<DownOneIcon />
+				</button>
+				<div id='emoji-dropdown' className='dropdown-content'>
 					<EmojiPicker onEmojiClick={handleEmojiClick} skinTonesDisabled />
 				</div>
-			)}
-		</div>
+			</div>
+		</>
 	);
 };
 

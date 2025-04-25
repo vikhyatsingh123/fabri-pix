@@ -109,14 +109,21 @@
 .dropdown-content {
 	display: none;
 	position: absolute;
+	bottom: 40px;
 	background-color: #f1f1f1;
 	min-width: 160px;
 	overflow: auto;
 	box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
 	z-index: 1;
+	border-radius: 10px;
+}
+
+.dropdown-content li:hover {
+	background-color: rgb(154, 150, 150);
 }
 
 .show-emoji-dropdown,
-.show-shape-dropdown {
+.show-shape-dropdown,
+.show-history-dropdown {
 	display: block;
 }

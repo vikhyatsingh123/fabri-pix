@@ -8,7 +8,6 @@ import { Canvas, FabricImage, Point, Rect } from 'fabric';
 
 import imageEditorShapes from '../utils/imageEditorShapes';
 import { historyLogs, SubMenu } from '../utils/utils';
-import Popover from './widgets/Popover';
 import PlusIcon from '../icons/PlusIcon';
 import HistoryIcon from '../icons/HistoryIcon';
 import UndoIcon from '../icons/UndoIcon';
@@ -18,7 +17,7 @@ import FiveIcon from '../icons/FiveIcon';
 import CheckOneIcon from '../icons/CheckOneIcon';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	config: {
 		canvasState: string[];
 		currentStateIndex: number;
@@ -29,7 +28,7 @@ interface IProps {
 			currentStateIndex: number;
 		}>
 	>;
-	undoRedoActive: React.MutableRefObject<boolean>;
+	undoRedoActive: React.RefObject<boolean>;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
 }
@@ -414,7 +413,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 										</div>
 									</div>
 									<div style={{ display: 'flex', alignItems: 'center' }}>
-										{!changes ? (
+										{changes ? (
 											<div
 												style={{
 													fontSize: 12,
@@ -474,15 +473,42 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		</div>
 	);
 
+	const handleShowDropdown = () => {
+		document.getElementById('history-dropdown').classList.add('show-history-dropdown');
+	};
+
+	const handleHideDropdown = () => {
+		document.getElementById('history-dropdown').classList.remove('show-history-dropdown');
+	};
+
+	const handleDropdownClick = () => {
+		if (document.getElementById('history-dropdown').classList.contains('show-history-dropdown')) {
+			handleHideDropdown();
+		} else {
+			handleShowDropdown();
+		}
+	};
+
 	return (
 		<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 				<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
-					<Popover content={history} disabled={config.canvasState.length === 0}>
-						<button className='custom-button'>
+					<div className='dropdown'>
+						<button
+							onClick={handleDropdownClick}
+							className='custom-button'
+							disabled={config.canvasState.length === 0}
+						>
 							<HistoryIcon />
 						</button>
-					</Popover>
+						<div
+							id='history-dropdown'
+							className='dropdown-content'
+							style={{ top: '40px', left: '10px', bottom: 'initial' }}
+						>
+							{history}
+						</div>
+					</div>
 					<button
 						className='custom-button'
 						disabled={config.currentStateIndex === 0 || config.canvasState.length === 0}
@@ -503,7 +529,6 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 						<RedoIcon />
 					</button>
 					<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
-
 					<button
 						className='custom-button'
 						onClick={() => setZoomValue(zoomValue + 0.1)}
@@ -511,11 +536,9 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 					>
 						<PlusIcon />
 					</button>
-
 					<button className='custom-button' onClick={handleFit} disabled={zoomValue <= 1}>
 						Fit
 					</button>
-
 					<button
 						className='custom-button'
 						onClick={() => {

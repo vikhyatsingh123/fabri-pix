@@ -892,7 +892,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 						{menuProps.map((item) => (
 							<li
 								key={item.key}
-								style={{ padding: 8, backgroundColor: '#f0f0f0', cursor: 'pointer' }}
+								style={{ padding: 8, cursor: 'pointer' }}
 								onClick={() => {
 									item.onClick();
 									handleHideDropdown();

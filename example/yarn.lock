@@ -227,6 +227,13 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.6.tgz#628effeeae2064a1b4e79f78e81d87b7e5fc7b50"
   integrity sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==
 
+emoji-picker-react@^4.12.0:
+  version "4.12.2"
+  resolved "https://registry.yarnpkg.com/emoji-picker-react/-/emoji-picker-react-4.12.2.tgz#323fbbf763daf1ffc1a9ff819966408e1ec30bab"
+  integrity sha512-6PDYZGlhidt+Kc0ay890IU4HLNfIR7/OxPvcNxw+nJ4HQhMKd8pnGnPn4n2vqC/arRFCNWQhgJP8rpsYKsz0GQ==
+  dependencies:
+    flairup "1.0.0"
+
 esbuild@^0.25.0:
   version "0.25.0"
   resolved "https://registry.yarnpkg.com/esbuild/-/esbuild-0.25.0.tgz#0de1787a77206c5a79eeb634a623d39b5006ce92"
@@ -257,6 +264,18 @@ esbuild@^0.25.0:
     "@esbuild/win32-arm64" "0.25.0"
     "@esbuild/win32-ia32" "0.25.0"
     "@esbuild/win32-x64" "0.25.0"
+
+fabri-pix@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/fabri-pix/-/fabri-pix-1.0.2.tgz#fc3d5e8a2f1afafa4da7e4344d517bcaf3c51ffb"
+  integrity sha512-h712lhZw8FtWbZZcUrtPQaQ3rX7oJTZZz2aQUYIeVSgxvg+hFSdzTAslo7AZJEboSVifzbds0DDwQ5Zipwp+Yw==
+  dependencies:
+    emoji-picker-react "^4.12.0"
+
+flairup@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/flairup/-/flairup-1.0.0.tgz#d3af0052ad02734c12d2446608a869498adb351b"
+  integrity sha512-IKlE+pNvL2R+kVL1kEhUYqRxVqeFnjiIvHWDMLFXNaqyUdFXQM2wte44EfMYJNHkW16X991t2Zg8apKkhv7OBA==
 
 fsevents@~2.3.2, fsevents@~2.3.3:
   version "2.3.3"

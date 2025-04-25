@@ -1,9 +1,10 @@
 {
 	"name": "fabri-pix",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "A React image editor using Fabric.js",
 	"type": "module",
-	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"main": "dist/index.cjs.js",
 	"module": "dist/index.es.js",
 	"files": [
 		"dist"
@@ -18,6 +19,16 @@
 	"bugs": {
 		"url": "https://github.com/vikhyatsingh123/fabri-pix/issues"
 	},
+	"keywords": [
+		"react",
+		"typescript",
+		"image",
+		"editor",
+		"fabric",
+		"fabric.js",
+		"canvas",
+		"image-editor"
+	],
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc -b && vite build",
@@ -44,7 +55,8 @@
 		"react-dom": "^19.0.0",
 		"typescript": "~5.7.2",
 		"typescript-eslint": "^8.22.0",
-		"vite": "^6.1.0"
+		"vite": "^6.1.0",
+		"vite-plugin-dts": "^4.5.3"
 	},
 	"dependencies": {
 		"emoji-picker-react": "^4.12.0"

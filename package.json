@@ -1,6 +1,6 @@
 {
-	"name": "fabripix",
-	"version": "1.0.0",
+	"name": "fabri-pix",
+	"version": "1.0.2",
 	"description": "A React image editor using Fabric.js",
 	"type": "module",
 	"main": "dist/index.js",
@@ -10,6 +10,14 @@
 	],
 	"author": "Vikhyat Singh",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/vikhyatsingh123/fabri-pix"
+	},
+	"homepage": "https://fabripix-demo.vercel.app",
+	"bugs": {
+		"url": "https://github.com/vikhyatsingh123/fabri-pix/issues"
+	},
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc -b && vite build",

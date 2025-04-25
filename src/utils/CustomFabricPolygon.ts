@@ -19,7 +19,7 @@ import {
 export default class CustomFabricPolygon extends Polygon {
 	static type = 'CustomFabricPolygon';
 	test: Textbox;
-	text = null;
+	text: any = null;
 	textOffsetLeft = 0;
 	textOffsetTop = 0;
 	_prevObjectStacking = true;

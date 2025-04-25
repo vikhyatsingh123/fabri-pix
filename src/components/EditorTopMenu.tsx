@@ -425,17 +425,35 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 											>
 												{changes?.createdObjects.length > 0 && (
 													<div>
-														{historyLogs[changes.createdObjects[0].shapeType]} Created
+														{
+															historyLogs[
+																changes.createdObjects[0]
+																	.shapeType as keyof typeof historyLogs
+															]
+														}
+														Created
 													</div>
 												)}
 												{changes?.modifiedObjects.length > 0 && (
 													<div>
-														{historyLogs[changes.modifiedObjects[0].shapeType]} Modified
+														{
+															historyLogs[
+																changes.modifiedObjects[0]
+																	.shapeType as keyof typeof historyLogs
+															]
+														}
+														Modified
 													</div>
 												)}
 												{changes?.deletedObjects.length > 0 && (
 													<div>
-														{historyLogs[changes.deletedObjects[0].shapeType]} Deleted
+														{
+															historyLogs[
+																changes.deletedObjects[0]
+																	.shapeType as keyof typeof historyLogs
+															]
+														}
+														Deleted
 													</div>
 												)}
 											</div>

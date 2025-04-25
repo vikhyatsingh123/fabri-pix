@@ -7,7 +7,7 @@ export default defineConfig({
 		lib: {
 			entry: 'src/index.ts',
 			name: 'FabriPix',
-			fileName: 'fabri-pix',
+			fileName: (format) => `index.${format}.js`,
 			formats: ['es', 'cjs'],
 		},
 		rollupOptions: {

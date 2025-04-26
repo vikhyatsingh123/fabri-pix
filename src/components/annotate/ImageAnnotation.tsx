@@ -814,16 +814,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			label: '',
 			key: 'add-custom',
 			icon: (
-				<div
-					style={{
-						display: 'inline-flex',
-						alignItems: 'center',
-						cursor: 'pointer',
-						backgroundColor: '#f0f0f0',
-						padding: '8px 12px',
-						borderRadius: '4px',
-					}}
-				>
+				<div>
 					<input
 						type='file'
 						accept='image/*'
@@ -834,13 +825,11 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 
 					<button
 						type='button'
-						style={{ display: 'flex', alignItems: 'center' }}
+						style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
 						onClick={() => fileInputRef.current?.click()}
 					>
-						<span style={{ marginRight: '4px' }}>
-							<PlusIcon />
-						</span>
-						<span style={{ marginLeft: '8px', fontSize: '14px' }}>Add Custom</span>
+						<PlusIcon />
+						<span style={{ marginLeft: '6px' }}>Add Custom</span>
 					</button>
 				</div>
 			),
@@ -888,17 +877,22 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 					<DownOneIcon />
 				</button>
 				<div id='shape-dropdown' className='dropdown-content'>
-					<ul style={{ padding: 8 }}>
+					<ul style={{ padding: 12, margin: 0 }}>
 						{menuProps.map((item) => (
 							<li
 								key={item.key}
-								style={{ padding: 8, cursor: 'pointer' }}
+								style={{
+									padding: 4,
+									cursor: 'pointer',
+									display: 'flex',
+									alignItems: 'center',
+								}}
 								onClick={() => {
 									item.onClick();
 									handleHideDropdown();
 								}}
 							>
-								<span style={{ marginRight: 8 }}>{item.icon}</span>
+								<span style={{ marginRight: 8, marginTop: '3px' }}>{item.icon}</span>
 								{item.label}
 							</li>
 						))}

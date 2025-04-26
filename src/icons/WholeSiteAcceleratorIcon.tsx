@@ -7,7 +7,7 @@ import React from 'react';
 
 const WholeSiteAcceleratorIcon: React.FC = () => {
 	return (
-		<svg width='24' height='24' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'>
+		<svg width='20' height='20' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'>
 			<circle cx='22' cy='40' r='4' fill='none' stroke='#000000' strokeWidth='4' />
 			<circle cx='26' cy='8' r='4' fill='none' stroke='#000000' strokeWidth='4' />
 			<circle cx='36' cy='24' r='4' fill='none' stroke='#000000' strokeWidth='4' />

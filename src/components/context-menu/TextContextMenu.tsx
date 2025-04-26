@@ -149,7 +149,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						(Object.keys(selectedObject).length === 0
 							? textBoxRef.current.fontWeight
 							: selectedObject.fontWeight) === 'bold'
-							? 'bg-gray-200 shadow-sm'
+							? 'active'
 							: ''
 					}`}
 					onClick={handleFontTypeChange}
@@ -161,7 +161,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 						(Object.keys(selectedObject).length === 0
 							? textBoxRef.current.fontStyle
 							: selectedObject.fontStyle) === 'italic'
-							? 'bg-gray-200 shadow-sm'
+							? 'active'
 							: ''
 					}`}
 					onClick={handleFontStyleChange}
@@ -170,10 +170,8 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				</button>
 			</div>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
-
 			<TextAlignSegmented defaultValue={selectedObject.textAlign} onChange={handleAlignChange} />
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
-
 			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>

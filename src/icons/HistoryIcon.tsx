@@ -7,7 +7,7 @@ import React from 'react';
 
 const HistoryIcon: React.FC = () => {
 	return (
-		<svg width='24' height='24' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'>
+		<svg width='20' height='20' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'>
 			<path
 				d='M5.81836 6.72729V14H13.0911'
 				stroke='#333'

@@ -9,10 +9,10 @@ import { Canvas, Circle, IText } from 'fabric';
 import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
 import HandleRoundIcon from '../../icons/HandleRoundIcon';
 import DeleteIcon from '../../icons/DeleteIcon';
-import AddTextIcon from '../../icons/AddTextIcon';
 import ListNumbersIcon from '../../icons/ListNumbersIcon';
 import ColorPicker from '../widgets/ColorPicker';
 import InputNumber from '../widgets/InputNumber.tsx';
+import AddTextTwoIcon from '../../icons/AddTextTwoIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -179,7 +179,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
 				<div style={{ display: 'flex', gap: 4 }}>
-					<AddTextIcon />
+					<AddTextTwoIcon />
 					<span>Text</span>
 				</div>
 				<ColorPicker

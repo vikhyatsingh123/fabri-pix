@@ -370,7 +370,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 	};
 
 	const history = (
-		<div style={{ overflowY: 'scroll', maxHeight: 224, width: 240 }}>
+		<div style={{ overflowY: 'scroll', maxHeight: 224, width: 230 }}>
 			{config.canvasState.map((state, index) => {
 				const prevState = index > 0 ? config.canvasState[index - 1] : null;
 				const changes = prevState ? detectCanvasChanges(prevState, state) : null;
@@ -380,39 +380,38 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 						<div
 							key={index}
 							style={{
-								display: 'flex',
-								flexDirection: 'column',
-								justifyContent: 'between',
-								alignItems: 'start',
 								padding: 4,
-								marginRight: 4,
-								backgroundColor: index === config.currentStateIndex ? '#e6f4ff' : 'transparent',
 								borderRadius: 4,
+								backgroundColor: index === config.currentStateIndex ? '#CEEFFD' : 'transparent',
 							}}
 						>
 							<button
-								className={`custom-button ${index === config.currentStateIndex ? 'active' : ''}`}
+								style={{
+									border: 'none',
+									cursor: 'pointer',
+									background: 'transparent',
+									paddingInline: 14,
+								}}
 								onClick={() => void handleHistory(state, index)}
 							>
 								<div
 									style={{
 										width: '100%',
+										gap: '10px',
 										display: 'flex',
 										alignItems: 'center',
 										justifyContent: 'space-between',
 									}}
 								>
-									<div style={{ display: 'flex', alignItems: 'center' }}>
-										<div
-											style={{
-												fontSize: 12,
-												fontWeight: index === config.currentStateIndex ? 'bold' : 'normal',
-											}}
-										>
-											{index + 1}.
-										</div>
+									<div
+										style={{
+											fontSize: 12,
+											fontWeight: index === config.currentStateIndex ? 'bold' : 'normal',
+										}}
+									>
+										{index + 1}.
 									</div>
-									<div style={{ display: 'flex', alignItems: 'center' }}>
+									<div>
 										{changes ? (
 											<div
 												style={{
@@ -430,7 +429,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 																changes.createdObjects[0]
 																	.shapeType as keyof typeof historyLogs
 															]
-														}
+														}{' '}
 														Created
 													</div>
 												)}
@@ -441,18 +440,18 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 																changes.modifiedObjects[0]
 																	.shapeType as keyof typeof historyLogs
 															]
-														}
+														}{' '}
 														Modified
 													</div>
 												)}
 												{changes?.deletedObjects.length > 0 && (
-													<div>
+													<div style={{ gap: '10px' }}>
 														{
 															historyLogs[
 																changes.deletedObjects[0]
 																	.shapeType as keyof typeof historyLogs
 															]
-														}
+														}{' '}
 														Deleted
 													</div>
 												)}
@@ -484,7 +483,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 								</div>
 							</button>
 						</div>
-						<hr style={{ borderTop: '1px solid #d9d9d9' }} />
+						{index !== config.canvasState.length - 1 && <hr style={{ borderTop: '1px solid #d9d9d9' }} />}
 					</>
 				);
 			})}
@@ -522,7 +521,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 						<div
 							id='history-dropdown'
 							className='dropdown-content'
-							style={{ top: '40px', left: '10px', bottom: 'initial' }}
+							style={{ top: '40px', left: '10px', bottom: 'initial', padding: '12px' }}
 						>
 							{history}
 						</div>

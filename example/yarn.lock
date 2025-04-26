@@ -265,10 +265,10 @@ esbuild@^0.25.0:
     "@esbuild/win32-ia32" "0.25.0"
     "@esbuild/win32-x64" "0.25.0"
 
-fabri-pix@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/fabri-pix/-/fabri-pix-1.0.2.tgz#fc3d5e8a2f1afafa4da7e4344d517bcaf3c51ffb"
-  integrity sha512-h712lhZw8FtWbZZcUrtPQaQ3rX7oJTZZz2aQUYIeVSgxvg+hFSdzTAslo7AZJEboSVifzbds0DDwQ5Zipwp+Yw==
+fabri-pix@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/fabri-pix/-/fabri-pix-1.0.3.tgz#1358fa398b7eb90ac5af99a012f3107455f87dd2"
+  integrity sha512-kFd5amBDFIT511NKNViYS8ZikyzzmCUOx5q4ujfKHRl9j15XfpYRj+SMiYjlxIo+1G4yKhBYIlBzt/ej9N79Pg==
   dependencies:
     emoji-picker-react "^4.12.0"
 

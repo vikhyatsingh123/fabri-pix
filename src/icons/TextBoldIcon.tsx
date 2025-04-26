@@ -7,7 +7,7 @@ import React from 'react';
 
 const TextBoldIcon: React.FC = () => {
 	return (
-		<svg width='24' height='24' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'>
+		<svg width='16' height='16' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'>
 			<path
 				fillRule='evenodd'
 				clipRule='evenodd'

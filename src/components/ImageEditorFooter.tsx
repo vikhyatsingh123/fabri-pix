@@ -17,7 +17,15 @@ const ImageEditorFooter: React.FC<IProps> = (props) => {
 	const { canvas } = props;
 
 	const handleCancel = (): void => {
-		console.log('cancel');
+		if (!canvas.current) {
+			return;
+		}
+
+		const objects = canvas.current.getObjects();
+		objects.forEach((object) => {
+			canvas.current.remove(object);
+		});
+		canvas.current.renderAll();
 	};
 
 	const handleSave = async () => {
@@ -35,11 +43,11 @@ const ImageEditorFooter: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<div style={{ display: 'flex', gap: 8, position: 'absolute', bottom: 0, right: 0 }}>
-			<button className={`custom-button`} onClick={handleCancel}>
-				<CancelIcon /> Cancel
+		<div style={{ display: 'flex', gap: 8, position: 'absolute', bottom: 10, right: 10 }}>
+			<button className={`custom-button`} onClick={handleCancel} type='reset'>
+				<CancelIcon /> Reset
 			</button>
-			<button className={`custom-button`} onClick={() => void handleSave()}>
+			<button className={`custom-button`} onClick={() => void handleSave()} type='submit'>
 				<SaveIcon /> Save
 			</button>
 		</div>

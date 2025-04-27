@@ -5,23 +5,35 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-**FabriPix** is a plug-and-play, lightweight, and customizable **React image editor** built using [Fabric.js](http://fabricjs.com/).  
-It allows you to **annotate**, **draw**, **add text**, **create callouts**, **insert shapes**, and **apply simple edits** — all inside your React apps easily!
+**FabriPix** is a plug-and-play, lightweight, and fully customizable **React image editor** built using [Fabric.js](http://fabricjs.com/).  
+It allows you to **annotate**, **draw**, **add text**, **insert shapes**, **blur**, **crop** and **apply simple edits** — all inside your React apps easily!
 
 ---
 
 ## ✨ Features
 
-- ✏️ **Pencil Drawing**
-- 🖋 **Text Annotations**
-- 📦 **Callouts** with numbers and text
-- 📐 **Shapes** like rectangles, circles, arrows, stars
-- 🎨 **Color pickers** for shapes and text
-- 🔥 **Undo/Redo** capabilities
+### 🖼️ Image Editing
+- ✂️ **Crop Images** — easily crop any part of the image.
+- 🔒 **Blur Multiple Parts** — hide or censor sensitive information.
+- 🔍 **Zoom In and Zoom Out** — zoom for precise edits.
+- ✋ **Pan Mode** — move around the canvas smoothly.
+- ↩️ **Undo and Redo** — quickly revert or redo any action.
+- 🕒 **Edit History Tracking** — view and manage all your edits step-by-step.
 - 💾 **Export edited image** as PNG
-- 📄 **JSON save/load** for annotations
-- 📏 **Zoom, Pan and Resize canvas**
 - ⚡️ **Fast and responsive** — powered by Fabric.js 6+
+
+### 🖍️ Annotations
+- 🔢 **Step Creator** — add sequential numbered steps to guide users.
+- 🟥 **Step Creator with Rectangle Box** — highlight steps inside rectangular shapes.
+- 🧩 **Shapes** — draw Rectangles, Circles, Stars, and Arrows effortlessly.
+- 🎯 **Advanced Arrow Tool** — create flexible at both end arrows.
+- 🗨️ **Callout Boxes** — create callouts with text and numbers pointing anywhere.
+- 📝 **Textbox** — add simple or styled text anywhere on the image.
+- 😄 **Emoji Support** — insert fun emojis to express better.
+- 🖼️ **Add Custom Images** — upload and place your own icons, stamps, or logos.
+- ✏️ **Pencil Draw Tool** — free-hand drawing for rough annotations.
+- ➰ **Line Paths** — connect points smoothly using lines.
+- 🎨 **Color pickers** and **Other Context Menu** for all the annotations
 
 ---
 
@@ -57,17 +69,19 @@ export default function App() {
 | Prop         | Type                | Description                                                               | Required |
 |--------------|---------------------|---------------------------------------------------------------------------|:--------:|
 | `imageUrl`   | `string`             | URL of the image you want to load onto the editor                         | ✅ |
-| `onSave`     | `(blob, json) => void`| Callback when the user saves (returns image Blob and canvas JSON)         | ✅ |
-| `options`    | `Partial<Options>`   | (optional) Editor customization options (coming soon)                    | ❌ |
+| `onSave`     | `(blob, json) => void`| Callback when the user saves (returns image Blob and canvas JSON) (coming soon)        | ✅ |
+| `options`    | `Partial<Options>`   | (optional) Editor fully customization options (coming soon)                    | ❌ |
 
 ---
 
-## 🚀 Planned for Next Releases
+## 🚀 Upcoming Features
 
-- ✂️ **Crop** and **Resize** tools
+- ✂️ **Filter** and **Resize** tools
+- 🔄 **Rotate** and **Flip** tools
 - 🧠 **AI Auto-Annotation** (detecting objects in the image)
-- 🌐 **Localization (i18n)** support
 - ⚡️ **Better performance** for huge images
+- ⬇️ **Download** images after editing
+- 📄 **JSON save/load** for annotations
 
 ---
 
@@ -93,5 +107,5 @@ Please open issues, bug reports, or submit pull requests 🙌
 
 ## 📄 License
 
-MIT © [Vikhyat Singh]
+MIT © Vikhyat Singh
 

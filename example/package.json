@@ -6,6 +6,7 @@
 		"build": "vite build"
 	},
 	"dependencies": {
+		"emoji-picker-react": "^4.12.2",
 		"fabri-pix": "^1.0.3",
 		"fabric": "^6.6.4",
 		"react": "^19.0.0",

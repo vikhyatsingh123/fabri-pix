@@ -23,7 +23,7 @@ const EditorMenu: React.FC<IProps> = (props) => {
 	};
 
 	return (
-		<div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+		<div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16 }}>
 			<button
 				className={`custom-button ${menu === Menu.ANNOTATE ? 'active' : ''}`}
 				onClick={handleClick(Menu.ANNOTATE)}

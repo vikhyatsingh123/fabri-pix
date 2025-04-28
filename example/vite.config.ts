@@ -6,6 +6,7 @@ export default defineConfig({
 	server: {
 		port: 3000,
 	},
+	base: '/fabri-pix/',
 	build: {
 		rollupOptions: {
 			external: ['fabric', 'emoji-picker-react'],

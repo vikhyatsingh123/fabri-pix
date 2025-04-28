@@ -8,10 +8,11 @@ export default defineConfig({
 	},
 	build: {
 		rollupOptions: {
-			external: ['fabric'],
+			external: ['fabric', 'emoji-picker-react'],
 			output: {
 				globals: {
 					fabric: 'fabric',
+					'emoji-picker-react': 'EmojiPicker',
 				},
 			},
 		},

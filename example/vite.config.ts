@@ -3,22 +3,8 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
 	plugins: [react()],
+	base: '/',
 	server: {
 		port: 3000,
-	},
-	base: '/fabri-pix/',
-	optimizeDeps: {
-		include: ['fabric'],
-	},
-	build: {
-		rollupOptions: {
-			external: ['fabric', 'emoji-picker-react'],
-			output: {
-				globals: {
-					fabric: 'fabric',
-					'emoji-picker-react': 'EmojiPicker',
-				},
-			},
-		},
 	},
 });

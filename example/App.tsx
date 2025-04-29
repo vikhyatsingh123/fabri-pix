@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { ImageEditorWrapper } from '../src';
+import { ImageEditorWrapper } from 'fabri-pix';
+import 'fabri-pix/dist/fabri-pix.css';
 
 export default function App() {
 	return (

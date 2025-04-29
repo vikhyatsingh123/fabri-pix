@@ -3,11 +3,11 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite",
-		"build": "vite build"
+		"build": "vite build",
+		"preview": "vite preview"
 	},
 	"dependencies": {
-		"emoji-picker-react": "^4.12.2",
-		"fabri-pix": "^1.0.3",
+		"fabri-pix": "^1.0.6",
 		"fabric": "^6.6.4",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0"

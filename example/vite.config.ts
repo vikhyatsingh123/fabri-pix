@@ -7,4 +7,15 @@ export default defineConfig({
 	server: {
 		port: 3000,
 	},
+	build: {
+		rollupOptions: {
+			external: ['fabric', 'emoji-picker-react'],
+			output: {
+				globals: {
+					fabric: 'fabric',
+					'emoji-picker-react': 'EmojiPicker',
+				},
+			},
+		},
+	},
 });

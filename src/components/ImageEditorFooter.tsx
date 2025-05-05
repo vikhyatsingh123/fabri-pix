@@ -4,10 +4,11 @@
  */
 
 import React from 'react';
-import { Canvas } from 'fabric';
+import { Canvas, Rect } from 'fabric';
 
 import SaveIcon from '../icons/SaveIcon';
 import CancelIcon from '../icons/CancelIcon';
+import { SubMenu } from '../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -28,10 +29,34 @@ const ImageEditorFooter: React.FC<IProps> = (props) => {
 		canvas.current.renderAll();
 	};
 
+	const applyCropMask = () => {
+		const cropRectangle = canvas.current
+			.getObjects()
+			.find((obj: any) => obj?.shapeType === SubMenu.CROP_RECTANGLE) as Rect;
+		if (!canvas.current.backgroundImage || !cropRectangle) {
+			return;
+		}
+
+		const clipPath = new Rect({
+			left: cropRectangle.left,
+			top: cropRectangle.top,
+			width: cropRectangle.width * cropRectangle.scaleX,
+			height: cropRectangle.height * cropRectangle.scaleY,
+			absolutePositioned: true,
+			id: crypto.randomUUID(),
+		});
+
+		canvas.current.clipPath = clipPath;
+		canvas.current.remove(cropRectangle);
+		canvas.current.renderAll();
+	};
+
 	const handleSave = async () => {
 		if (!canvas.current) {
 			return;
 		}
+
+		applyCropMask();
 
 		const canvasEdited = canvas.current;
 		canvasEdited.discardActiveObject();

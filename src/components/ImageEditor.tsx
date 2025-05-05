@@ -53,7 +53,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 	}>({
 		backgroundColor: '#ff0000',
 		fontColor: '#fff',
-		fontSize: 16,
+		fontSize: 20,
 		fontStyle: 'normal',
 		fontWeight: 'normal',
 		strokeWidth: 2,
@@ -163,12 +163,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					canvas.current?.remove(activeObject);
 					canvas.current?.renderAll();
 				} else if (activeObject.shapeType === SubMenu.COMMENT_BOX_TEXTBOX) {
-					const text = activeObject as IText;
-					const textValue = text.text;
-					if (textValue.length > 0) {
-						text.text = textValue.slice(0, -1);
-						canvas.current?.renderAll();
-					}
+					return;
 				} else if (activeObject.shapeType === SubMenu.COMMENT_BOX) {
 					const canvasObject = canvas.current.getObjects();
 					const textboxObj = canvasObject.find((obj: any) => obj.id === activeObject.id + '-text');
@@ -379,6 +374,7 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					config={config}
 					setConfig={setConfig}
 					undoRedoActive={undoRedoActive}
+					stepCreatorRef={stepCreatorRef}
 					activeAnnotation={activeAnnotation}
 					setActiveAnnotation={setActiveAnnotation}
 				/>

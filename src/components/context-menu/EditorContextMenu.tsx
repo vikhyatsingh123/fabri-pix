@@ -3,7 +3,7 @@
  * Context menu for image editor
  */
 
-import { Canvas, Object as FabricObject } from 'fabric';
+import { Canvas, FabricObject } from 'fabric';
 import React from 'react';
 import ShapesContextMenu from './ShapesContextMenu';
 import TextContextMenu from './TextContextMenu';

@@ -85,7 +85,7 @@ const ImageRedact: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(event.e);
+		const pointer = canvas.current.getViewportPoint(event.e);
 		const target = canvas.current.findTarget(event.e);
 
 		if (target) {
@@ -121,7 +121,7 @@ const ImageRedact: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(event.e);
+		const pointer = canvas.current.getViewportPoint(event.e);
 		const rect = blurRect.current;
 
 		rect.set({

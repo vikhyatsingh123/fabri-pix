@@ -46,7 +46,7 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 	};
 
 	const handleMouseDown = useCallback((e: any) => {
-		const pointer = canvas.current.getPointer(e.e);
+		const pointer = canvas.current.getViewportPoint(e.e);
 		const target = canvas.current.findTarget(e.e);
 
 		if (target) {

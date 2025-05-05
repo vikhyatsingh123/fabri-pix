@@ -29,12 +29,20 @@ interface IProps {
 		}>
 	>;
 	undoRedoActive: React.RefObject<boolean>;
+	stepCreatorRef: React.RefObject<{
+		borderColor: string;
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		stepNumber: number;
+		strokeWidth: number;
+	}>;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
 }
 
 const EditorTopMenu: React.FC<IProps> = (props) => {
-	const { canvas, config, setConfig, undoRedoActive, activeAnnotation, setActiveAnnotation } = props;
+	const { canvas, config, setConfig, undoRedoActive, stepCreatorRef, activeAnnotation, setActiveAnnotation } = props;
 
 	const [isPanning, setIsPanning] = useState<boolean>(false);
 	const [zoomValue, setZoomValue] = useState<number>(1);
@@ -44,8 +52,8 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const center = canvas.current.getCenter();
-		canvas.current.zoomToPoint(new Point(center.left, center.top), zoomValue);
+		const center = canvas.current.getCenterPoint();
+		canvas.current.zoomToPoint(new Point(center.x, center.y), zoomValue);
 		canvas.current.requestRenderAll();
 	}, [zoomValue]);
 
@@ -197,6 +205,9 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		}
 
 		jsonData.objects.forEach((obj: any) => {
+			if (obj.shapeType === SubMenu.STEPS_CREATOR) {
+				stepCreatorRef.current.stepNumber = Number(obj.objects[1].objects[1].text) + 1;
+			}
 			imageEditorShapes({
 				canvas,
 				shapeType: obj.shapeType,
@@ -255,6 +266,9 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		}
 
 		jsonData.objects.forEach((obj: any) => {
+			if (obj.shapeType === SubMenu.STEPS_CREATOR) {
+				stepCreatorRef.current.stepNumber = Number(obj.objects[1].objects[1].text) + 1;
+			}
 			imageEditorShapes({
 				canvas,
 				shapeType: obj.shapeType,
@@ -313,6 +327,9 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		}
 
 		jsonData.objects.forEach((obj: any) => {
+			if (obj.shapeType === SubMenu.STEPS_CREATOR) {
+				stepCreatorRef.current.stepNumber = Number(obj.objects[1].objects[1].text) + 1;
+			}
 			imageEditorShapes({
 				canvas,
 				shapeType: obj.shapeType,

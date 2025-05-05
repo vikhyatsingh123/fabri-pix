@@ -42,7 +42,6 @@ export default class CustomFabricPolygon extends Polygon {
 		this.arrowType = args[7];
 		this.contextMenuPosition = args[8];
 		this.cornerColor = 'white';
-		this.cornerStyle = 'circle';
 		this.cornerStrokeColor = 'black';
 		this.cornerSize = 8;
 		this.hasBorders = false;

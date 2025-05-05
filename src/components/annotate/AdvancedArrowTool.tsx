@@ -36,7 +36,7 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 		if (activeObj) {
 			return;
 		}
-		const pointer = canvas.current.getPointer(e.e);
+		const pointer = canvas.current.getViewportPoint(e.e);
 
 		if (!isDrawing.current) {
 			isDrawing.current = true;
@@ -76,7 +76,7 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(e.e);
+		const pointer = canvas.current.getViewportPoint(e.e);
 		const points = currentPolyline.current?.points;
 		points[1] = { x: pointer.x, y: pointer.y };
 		currentPolyline.current?.set({ points });
@@ -105,7 +105,7 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 				canvas.current.remove(arrowHead.current);
 			} else {
 				const target = canvas.current.findTarget(event.e) as any;
-				const pointer = canvas.current.getPointer(event.e);
+				const pointer = canvas.current.getViewportPoint(event.e);
 
 				if (target) {
 					const size = target._objects ? target._objects.length : 0;

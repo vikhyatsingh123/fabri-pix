@@ -26,7 +26,7 @@ const LinePath: React.FC<IProps> = (props) => {
 	const polylinePoints = useRef<{ x: number; y: number }[]>([]);
 
 	const handleMouseDown = useCallback((e: any) => {
-		const pointer = canvas.current.getPointer(e.e);
+		const pointer = canvas.current.getViewportPoint(e.e);
 		const target = canvas.current.findTarget(e.e);
 
 		if (target) {
@@ -73,7 +73,7 @@ const LinePath: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(e.e);
+		const pointer = canvas.current.getViewportPoint(e.e);
 		const points = currentPolyline.current?.points || [];
 
 		points[points.length - 1] = { x: pointer.x, y: pointer.y };

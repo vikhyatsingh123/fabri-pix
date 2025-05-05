@@ -137,7 +137,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(event.e);
+		const pointer = canvas.current.getViewportPoint(event.e);
 		const vpt = canvas.current.viewportTransform;
 		const x = (pointer.x - vpt[4]) / vpt[0];
 		const y = (pointer.y - vpt[5]) / vpt[3];
@@ -177,7 +177,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(event.e);
+		const pointer = canvas.current.getViewportPoint(event.e);
 		const vpt = canvas.current.viewportTransform;
 		const x = (pointer.x - vpt[4]) / vpt[0];
 		const y = (pointer.y - vpt[5]) / vpt[3];
@@ -244,7 +244,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(event.e);
+		const pointer = canvas.current.getViewportPoint(event.e);
 		const vpt = canvas.current.viewportTransform;
 		const x = (pointer.x - vpt[4]) / vpt[0];
 		const y = (pointer.y - vpt[5]) / vpt[3];
@@ -283,7 +283,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(event.e);
+		const pointer = canvas.current.getViewportPoint(event.e);
 		const vpt = canvas.current.viewportTransform;
 		const x = (pointer.x - vpt[4]) / vpt[0];
 		const y = (pointer.y - vpt[5]) / vpt[3];
@@ -348,7 +348,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(event.e);
+		const pointer = canvas.current.getViewportPoint(event.e);
 		const vpt = canvas.current.viewportTransform;
 		const x = (pointer.x - vpt[4]) / vpt[0];
 		const y = (pointer.y - vpt[5]) / vpt[3];
@@ -439,7 +439,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(event.e);
+		const pointer = canvas.current.getViewportPoint(event.e);
 		const vpt = canvas.current.viewportTransform;
 		const x = (pointer.x - vpt[4]) / vpt[0];
 		const y = (pointer.y - vpt[5]) / vpt[3];

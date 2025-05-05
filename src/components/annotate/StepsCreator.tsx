@@ -136,7 +136,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 					canvas.current.requestRenderAll();
 				}
 			}
-			const pointer = canvas.current.getPointer(e.e);
+			const pointer = canvas.current.getViewportPoint(e.e);
 			createStepCircle(pointer.x, pointer.y, stepCreatorRef.current.stepNumber);
 
 			stepCreatorRef.current.stepNumber += 1;
@@ -159,7 +159,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(e.e);
+		const pointer = canvas.current.getViewportPoint(e.e);
 		const rect = stepRectRef.current;
 
 		rect.set({
@@ -179,7 +179,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getPointer(e.e);
+		const pointer = canvas.current.getViewportPoint(e.e);
 		startPointer.current = { x: pointer.x, y: pointer.y };
 		isDrawing.current = true;
 

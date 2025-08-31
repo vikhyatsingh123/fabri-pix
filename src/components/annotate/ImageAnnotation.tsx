@@ -3,32 +3,32 @@
  * Image Annotation for menu
  */
 
-import { Canvas, Circle, FabricImage, Group, Line, Rect, Triangle } from 'fabric';
 import React, { useCallback, useEffect, useRef } from 'react';
+import { Canvas, Circle, FabricImage, Group, Line, Rect, Triangle } from 'fabric';
 
-import StepsCreator from './StepsCreator';
 import AdvancedArrowTool from './AdvancedArrowTool';
-import LinePath from './LinePath';
-import { SubMenu } from '../../utils/utils';
-import imageEditorShapes from '../../utils/imageEditorShapes';
-import PencilDraw from './PencilDraw';
-import EditorTextbox from './EditorTextbox';
-import EditorEmoji from './EditorEmoji';
-import RectangleIcon from '../../icons/RectangleIcon';
-import RoundIcon from '../../icons/RoundIcon';
-import RightTwoIcon from '../../icons/RightTwoIcon';
-import StarIcon from '../../icons/StarIcon';
 import CommentOneIcon from '../../icons/CommentOneIcon';
-import PlusIcon from '../../icons/PlusIcon';
 import DownOneIcon from '../../icons/DownOneIcon';
+import EditorEmoji from './EditorEmoji';
+import EditorTextbox from './EditorTextbox';
+import LinePath from './LinePath';
+import PencilDraw from './PencilDraw';
+import PlusIcon from '../../icons/PlusIcon';
+import RectangleIcon from '../../icons/RectangleIcon';
+import RightTwoIcon from '../../icons/RightTwoIcon';
+import RoundIcon from '../../icons/RoundIcon';
+import StarIcon from '../../icons/StarIcon';
+import StepsCreator from './StepsCreator';
+import imageEditorShapes from '../../utils/imageEditorShapes';
+import { SubMenu } from '../../utils/utils';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	aIAnnotation: any;
 	handleTrackChange: (e?: any) => void;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
-	freeDrawingBrushRef: React.RefObject<{ color: string; width: number }>;
+	freeDrawingBrushContextMenu: { color: string; width: number };
 	advancedArrowRef: React.RefObject<{ stroke: string; width: number }>;
 	linePathRef: React.RefObject<{ stroke: string; width: number }>;
 	stepCreatorRef: React.RefObject<{
@@ -49,13 +49,13 @@ interface IProps {
 		borderColor: string;
 		text: string;
 	}>;
-	textBoxRef: React.RefObject<{
+	textBoxContextMenu: {
 		backgroundColor: string;
 		fontColor: string;
 		fontSize: number;
 		fontStyle: string;
 		fontWeight: string;
-	}>;
+	};
 }
 
 const ImageAnnotation: React.FC<IProps> = (props) => {
@@ -65,17 +65,18 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		handleTrackChange,
 		activeAnnotation,
 		setActiveAnnotation,
-		freeDrawingBrushRef,
+		freeDrawingBrushContextMenu,
 		advancedArrowRef,
 		linePathRef,
 		stepCreatorRef,
 		commentBoxRef,
-		textBoxRef,
+		textBoxContextMenu,
 	} = props;
 
 	const hoverRectRef = useRef<Rect | Circle | Group | null>(null);
 	const aiScaledCoordinatesRef = useRef<{ bbox: number[]; scaledBbox: number[] }[]>([]);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const dropdownRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
 		setActiveAnnotation('');
@@ -581,6 +582,22 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		}
 	}, [activeAnnotation]);
 
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			const dropdown = document.getElementById('shape-dropdown');
+			const isDropdownOpen = dropdown?.classList.contains('show-shape-dropdown');
+
+			if (isDropdownOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				handleHideDropdown();
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
+
 	const handleRectangularShape = () => {
 		if (activeAnnotation === SubMenu.RECTANGLE) {
 			return;
@@ -828,7 +845,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 						style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
 						onClick={() => fileInputRef.current?.click()}
 					>
-						<PlusIcon />
+						<PlusIcon disabled={false} />
 						<span style={{ marginLeft: '6px' }}>Add Custom</span>
 					</button>
 				</div>
@@ -872,7 +889,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			>
 				Shapes
 			</button>
-			<div className='dropdown'>
+			<div className='dropdown' ref={dropdownRef}>
 				<button onClick={handleDropdownClick} className='custom-button' style={{ padding: '0px' }}>
 					<DownOneIcon />
 				</button>
@@ -908,14 +925,14 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 				canvas={canvas}
 				activeAnnotation={activeAnnotation}
 				setActiveAnnotation={setActiveAnnotation}
-				textBoxRef={textBoxRef}
+				textBoxContextMenu={textBoxContextMenu}
 			/>
 			<PencilDraw
 				canvas={canvas}
 				handleTrackChange={handleTrackChange}
 				activeAnnotation={activeAnnotation}
 				setActiveAnnotation={setActiveAnnotation}
-				freeDrawingBrushRef={freeDrawingBrushRef}
+				freeDrawingBrushContextMenu={freeDrawingBrushContextMenu}
 			/>
 			<AdvancedArrowTool
 				canvas={canvas}

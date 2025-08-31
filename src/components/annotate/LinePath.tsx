@@ -3,12 +3,12 @@
  * Line path for image editor
  */
 
-import { Canvas, Polyline } from 'fabric';
 import React, { useCallback, useEffect, useRef } from 'react';
+import { Canvas, Polyline } from 'fabric';
 
-import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
-import imageEditorShapes from '../../utils/imageEditorShapes';
 import WholeSiteAcceleratorIcon from '../../icons/WholeSiteAcceleratorIcon';
+import imageEditorShapes from '../../utils/imageEditorShapes';
+import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

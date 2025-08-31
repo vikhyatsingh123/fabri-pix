@@ -6,7 +6,6 @@
 import {
 	Canvas,
 	Rect,
-	Image,
 	controlsUtils,
 	Triangle,
 	Polygon,
@@ -19,12 +18,13 @@ import {
 	Line,
 	FabricImage,
 	Control,
+	TransformActionHandler,
 } from 'fabric';
 
 import { SubMenu } from './utils';
 import CustomFabricPolygon from './CustomFabricPolygon';
 
-const applyBlurEffect = (canvas: React.MutableRefObject<Canvas>, rect: any) => {
+const applyBlurEffect = (canvas: React.RefObject<Canvas>, rect: any) => {
 	const img = canvas.current.backgroundImage as any;
 
 	if (!img || !rect) {
@@ -57,7 +57,7 @@ const applyBlurEffect = (canvas: React.MutableRefObject<Canvas>, rect: any) => {
 			croppedCanvas.height,
 		);
 
-		const blurredImage = new Image(croppedCanvas);
+		const blurredImage = new FabricImage(croppedCanvas);
 
 		blurredImage.set({
 			left,
@@ -87,7 +87,7 @@ const addBlurEffect = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	isNewShape?: boolean;
 	canvasData?: any;
 }) => {
@@ -114,14 +114,18 @@ const addBlurEffect = ({
 	});
 
 	if (!isNewShape) {
-		let hasRun = false;
-		canvas.current.on('after:render', () => {
-			if (!hasRun) {
-				applyBlurEffect(canvas, rect);
-				hasRun = true;
+		let hasBeenCalled = false;
+		const handleAfterRender = () => {
+			if (hasBeenCalled) {
+				return;
 			}
-		});
+			hasBeenCalled = true;
+			applyBlurEffect(canvas, rect);
+			canvas.current.off('after:render', handleAfterRender);
+		};
+		canvas.current.on('after:render', handleAfterRender);
 	}
+
 	rect.on('modified', () => {
 		applyBlurEffect(canvas, rect);
 	});
@@ -162,7 +166,7 @@ const addAdvancedArrow = ({
 	canvasData,
 	shapeType,
 }: {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	isNewShape?: boolean;
 	canvasData?: any;
 	shapeType: SubMenu;
@@ -172,6 +176,7 @@ const addAdvancedArrow = ({
 		stroke: canvasData.stroke,
 		strokeWidth: canvasData.strokeWidth,
 		objectCaching: false,
+		cornerStyle: 'circle',
 		transparentCorners: false,
 		cornerColor: canvasData.cornerColor,
 		perPixelTargetFind: true,
@@ -243,7 +248,7 @@ const addLinePath = ({
 	canvasData,
 	shapeType,
 }: {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	isNewShape?: boolean;
 	canvasData?: any;
 	shapeType: SubMenu;
@@ -255,6 +260,7 @@ const addLinePath = ({
 		objectCaching: false,
 		transparentCorners: false,
 		perPixelTargetFind: true,
+		cornerStyle: 'circle',
 		cornerColor: 'blue',
 		...(isNewShape
 			? {}
@@ -287,7 +293,7 @@ const addPencil = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	isNewShape?: boolean;
 	canvasData?: any;
 }) => {
@@ -314,7 +320,7 @@ const addPencil = ({
 	}
 };
 
-const addText = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas>; canvasData?: any }) => {
+const addText = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
 	const text = new IText(canvasData.text, {
 		backgroundColor: canvasData.backgroundColor,
 		cornerColor: '#000',
@@ -344,7 +350,7 @@ const addText = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas
 	canvas.current.setActiveObject(text);
 };
 
-const addEmoji = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas>; canvasData?: any }) => {
+const addEmoji = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
 	const emoj = new Textbox(canvasData.text, {
 		cornerColor: '#000',
 		cornerSize: 8,
@@ -368,7 +374,7 @@ const addEmoji = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canva
 	canvas.current.setActiveObject(emoj);
 };
 
-const addRectangle = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas>; canvasData?: any }) => {
+const addRectangle = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
 	const rect = new Rect({
 		angle: canvasData.angle,
 		cornerColor: '#000',
@@ -399,7 +405,7 @@ const addRectangle = ({ canvas, canvasData }: { canvas: React.MutableRefObject<C
 	canvas.current.setActiveObject(rect);
 };
 
-const addCircle = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas>; canvasData?: any }) => {
+const addCircle = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
 	const circle = new Circle({
 		angle: canvasData.angle,
 		cornerColor: '#000',
@@ -435,7 +441,7 @@ const createStarPoints = (
 	points: number,
 ) => {
 	const angle = Math.PI / points;
-	const starPoints = [];
+	const starPoints: { x: number; y: number }[] = [];
 	for (let i = 0; i < 2 * points; i++) {
 		const radius = i % 2 === 0 ? outerRadius : innerRadius;
 		const x = centerX + radius * Math.cos(i * angle);
@@ -445,7 +451,7 @@ const createStarPoints = (
 	return starPoints;
 };
 
-const addStar = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas>; canvasData?: any }) => {
+const addStar = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
 	const centerX = 200;
 	const centerY = 150;
 	const outerRadius = 50;
@@ -467,6 +473,7 @@ const addStar = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas
 		strokeWidth: canvasData.strokeWidth,
 		strokeUniform: true,
 		transparentCorners: false,
+		objectCaching: false,
 		cornerColor: '#000',
 		cornerStyle: 'circle',
 		cornerSize: 8,
@@ -482,7 +489,7 @@ const addStar = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas
 	canvas.current.setActiveObject(star);
 };
 
-const addArrow = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas>; canvasData?: any }) => {
+const addArrow = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
 	const line = new Line([50, 50, 100, 50], {
 		angle: canvasData.objects[0].angle,
 		fill: canvasData.objects[0].fill,
@@ -529,7 +536,7 @@ const addArrow = ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canva
 	canvas.current.setActiveObject(arrow);
 };
 
-const addCustomShape = async ({ canvas, canvasData }: { canvas: React.MutableRefObject<Canvas>; canvasData?: any }) => {
+const addCustomShape = async ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
 	const img = await FabricImage.fromURL(canvasData.src);
 	img.set({
 		left: canvasData.left,
@@ -547,7 +554,7 @@ const addCustomShape = async ({ canvas, canvasData }: { canvas: React.MutableRef
 	canvas.current.renderAll();
 };
 
-const handleTextChangedStepsCreator = (group: Group, canvas: React.MutableRefObject<Canvas>) => {
+const handleTextChangedStepsCreator = (group: Group, canvas: React.RefObject<Canvas>) => {
 	const textObject = (group.getObjects()[1] as Group).getObjects()[1] as IText;
 	const circleObject = (group.getObjects()[1] as Group).getObjects()[0] as Circle;
 	const textWidth = textObject.width;
@@ -569,7 +576,7 @@ const handleTextChangedStepsCreator = (group: Group, canvas: React.MutableRefObj
 	canvas.current.requestRenderAll();
 };
 
-const handleDoubleClickStepsCreator = (e: any, canvas: React.MutableRefObject<Canvas>) => {
+const handleDoubleClickStepsCreator = (e: any, canvas: React.RefObject<Canvas>) => {
 	const target = e.target;
 	if (!target) {
 		return;
@@ -586,7 +593,7 @@ const handleDoubleClickStepsCreator = (e: any, canvas: React.MutableRefObject<Ca
 	}
 };
 
-const handleDeselectStepsCreator = (group: Group, canvas: React.MutableRefObject<Canvas>) => {
+const handleDeselectStepsCreator = (group: Group, canvas: React.RefObject<Canvas>) => {
 	((group.getObjects()[1] as Group).getObjects()[1] as IText).exitEditing();
 	canvas.current.requestRenderAll();
 };
@@ -596,7 +603,7 @@ const addStepsCreator = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	isNewShape: boolean;
 	canvasData: any;
 }) => {
@@ -723,7 +730,7 @@ const addCommentBox = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	isNewShape: boolean;
 	canvasData: any;
 }): void => {
@@ -759,7 +766,7 @@ const addCommentBox = ({
 		clonedDefaultPoints.points,
 		{
 			id: canvasData.id,
-			fill: canvasData.fill,
+			fill: canvasData?.fill,
 			scaleX: canvasData.scaleX,
 			scaleY: canvasData.scaleY,
 			lockRotation: true,
@@ -767,26 +774,26 @@ const addCommentBox = ({
 			transparentCorners: false,
 			hasControls: true,
 			evented: true,
-			stroke: canvasData.stroke,
-			strokeWidth: canvasData.strokeWidth,
+			stroke: canvasData?.stroke,
+			strokeWidth: canvasData?.strokeWidth,
 			cornerColor: '#fff',
 			cornerStyle: 'circle',
 			cornerSize: 12,
-			fontStyle: canvasData.test.fontStyle || 'normal',
+			fontStyle: canvasData?.['test']?.fontStyle || 'normal',
 		},
-		new Textbox(canvasData.test.text, {
+		new Textbox(canvasData?.['test']?.text ?? '', {
 			id: canvasData.id + '-text',
-			fill: canvasData.test.fill,
-			fontSize: canvasData.test.fontSize,
+			fill: canvasData?.['test']?.fill,
+			fontSize: canvasData?.['test']?.fontSize,
 			fontFamily: 'Inter Roboto',
-			fontWeight: canvasData.test.fontWeight,
-			textAlign: canvasData.test.textAlign,
+			fontWeight: canvasData?.['test']?.fontWeight,
+			textAlign: canvasData?.['test']?.textAlign,
 			objectCaching: false,
 			hasBorders: false,
 			hasControls: true,
 			evented: true,
 			excludeFromExport: true,
-			fontStyle: canvasData.test.fontStyle || 'normal',
+			fontStyle: canvasData?.['test']?.fontStyle || 'normal',
 			shapeType: SubMenu.COMMENT_BOX_TEXTBOX,
 		}),
 		canvas.current,
@@ -869,16 +876,25 @@ const drawLCorner = (ctx: any, left: number, top: number, position: string) => {
 };
 
 const lCornerControl = (x: number, y: number, cursor: string, position: string) => {
+	let actionHandler: TransformActionHandler<any>;
+
+	switch (cursor) {
+		case 'ns-resize':
+			actionHandler = controlsUtils.scalingY;
+			break;
+		case 'ew-resize':
+			actionHandler = controlsUtils.scalingX;
+			break;
+		default:
+			actionHandler = controlsUtils.scalingEqually;
+			break;
+	}
+
 	return new Control({
 		x,
 		y,
 		render: (ctx, left, top) => drawLCorner(ctx, left, top, position),
-		actionHandler:
-			cursor === 'ns-resize'
-				? controlsUtils.scalingY
-				: cursor === 'ew-resize'
-				? controlsUtils.scalingX
-				: controlsUtils.scalingEqually,
+		actionHandler,
 		cursorStyle: cursor,
 		sizeX: 20,
 		sizeY: 20,
@@ -890,7 +906,7 @@ const addCropRectangle = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	isNewShape: boolean;
 	canvasData?: any;
 }) => {
@@ -1018,7 +1034,7 @@ const addCropRectangle = ({
 			height: canvasHeight - (newTop + newHeight),
 		});
 		[overlayTop, overlayLeft, overlayRight, overlayBottom].forEach((overlay) => overlay.setCoords());
-		canvas.current.requestRenderAll();
+		canvas.current?.requestRenderAll();
 	};
 
 	if (!isNewShape) {
@@ -1042,7 +1058,7 @@ const imageEditorShapes = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	shapeType: SubMenu;
 	isNewShape: boolean;
 	canvasData?: any;

@@ -3,12 +3,12 @@
  * Advanced Arrow Tool for image editor
  */
 
-import { Canvas, Polygon, Triangle } from 'fabric';
 import React, { useCallback, useEffect, useRef } from 'react';
+import { Canvas, Polygon, Triangle } from 'fabric';
 
-import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
-import imageEditorShapes from '../../utils/imageEditorShapes';
 import ArrowRightUpIcon from '../../icons/ArrowRightUpIcon';
+import imageEditorShapes from '../../utils/imageEditorShapes';
+import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

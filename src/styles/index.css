@@ -27,6 +27,10 @@
 	border: 1px solid #000000;
 }
 
+button:disabled {
+	cursor: not-allowed;
+}
+
 .color-picker {
 	display: inline-block;
 	position: relative;
@@ -120,4 +124,14 @@
 .show-shape-dropdown,
 .show-history-dropdown {
 	display: block;
+}
+
+.history-log {
+	cursor: pointer;
+	padding: 5px;
+	border-radius: 4px;
+}
+
+.history-log:hover {
+	background-color: #ceeffd !important;
 }

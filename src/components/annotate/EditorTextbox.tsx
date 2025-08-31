@@ -3,27 +3,39 @@
  * Textbox for image editor
  */
 
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Canvas } from 'fabric';
-import React, { useCallback, useEffect } from 'react';
 
-import { SubMenu } from '../../utils/utils';
-import imageEditorShapes from '../../utils/imageEditorShapes';
 import AddTextIcon from '../../icons/AddTextIcon';
+import imageEditorShapes from '../../utils/imageEditorShapes';
+import { SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
-	textBoxRef: React.RefObject<{
+	textBoxContextMenu: {
 		backgroundColor: string;
 		fontColor: string;
 		fontSize: number;
 		fontStyle: string;
 		fontWeight: string;
-	}>;
+	};
 }
 const EditorTextbox: React.FC<IProps> = (props) => {
-	const { canvas, activeAnnotation, setActiveAnnotation, textBoxRef } = props;
+	const { canvas, activeAnnotation, setActiveAnnotation, textBoxContextMenu } = props;
+
+	const textBoxRef = useRef<{
+		backgroundColor: string;
+		fontColor: string;
+		fontSize: number;
+		fontStyle: string;
+		fontWeight: string;
+	}>(textBoxContextMenu);
+
+	useEffect(() => {
+		textBoxRef.current = textBoxContextMenu;
+	}, [textBoxContextMenu]);
 
 	const updateTextCursor = () => {
 		const canvasElement = document.createElement('canvas');

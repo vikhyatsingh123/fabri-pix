@@ -140,9 +140,18 @@ export default class CustomFabricPolygon extends Polygon {
 	}
 
 	updateTextboxDimensions(): void {
-		const polygonWidth = (this.points[this.widthPointer.x2].x - this.points[this.widthPointer.x1].x) * this.scaleX;
-		const polygonHeight =
-			(this.points[this.heightPointer.y2].y - this.points[this.heightPointer.y1].y) * this.scaleY;
+		const x2Point = this.points[this.widthPointer.x2];
+		const x1Point = this.points[this.widthPointer.x1];
+		const y2Point = this.points[this.heightPointer.y2];
+		const y1Point = this.points[this.heightPointer.y1];
+
+		if (!x2Point || !x1Point || !y2Point || !y1Point) {
+			return;
+		}
+
+		const polygonWidth = (x2Point.x - x1Point.x) * this.scaleX;
+		const polygonHeight = (y2Point.y - y1Point.y) * this.scaleY;
+
 		this.test.set({
 			width: polygonWidth - 10,
 			height: polygonHeight - 10,
@@ -162,16 +171,25 @@ export default class CustomFabricPolygon extends Polygon {
 		const newWidth = Math.max(minWidth, textWidth);
 		const newHeight = Math.max(minHeight, textHeight);
 
-		const scaleX = newWidth / (this.points[this.widthPointer.x2].x - this.points[this.widthPointer.x1].x || 1);
-		const scaleY = newHeight / (this.points[this.heightPointer.y2].y - this.points[this.heightPointer.y1].y || 1);
+		const x2Point = this.points[this.widthPointer.x2];
+		const x1Point = this.points[this.widthPointer.x1];
+		const y2Point = this.points[this.heightPointer.y2];
+		const y1Point = this.points[this.heightPointer.y1];
 
-		if (textWidth > (this.points[this.widthPointer.x2].x - this.points[this.widthPointer.x1].x) * this.scaleX) {
+		if (!x2Point || !x1Point || !y2Point || !y1Point) {
+			return;
+		}
+
+		const scaleX = newWidth / (x2Point.x - x1Point.x || 1);
+		const scaleY = newHeight / (y2Point.y - y1Point.y || 1);
+
+		if (textWidth > (x2Point.x - x1Point.x) * this.scaleX) {
 			this.set({
 				scaleX,
 			});
 		}
 
-		if (textHeight > (this.points[this.heightPointer.y2].y - this.points[this.heightPointer.y1].y) * this.scaleY) {
+		if (textHeight > (y2Point.y - y1Point.y) * this.scaleY) {
 			this.set({
 				scaleY,
 			});
@@ -181,17 +199,22 @@ export default class CustomFabricPolygon extends Polygon {
 	}
 
 	updateTextboxPosition(): void {
-		const extraTop = this.arrowType === 'top' ? this.points[this.pointIndex].y : 0;
-		const extraLeft = this.arrowType === 'left' ? this.points[this.pointIndex].x : 0;
+		const pointIndex = this.pointIndex;
+		const extraTop = this.arrowType === 'top' ? this.points[pointIndex]?.y ?? 0 : 0;
+		const extraLeft = this.arrowType === 'left' ? this.points[pointIndex]?.x ?? 0 : 0;
+
+		const x2Point = this.points[this.widthPointer.x2];
+		const x1Point = this.points[this.widthPointer.x1];
+		const y2Point = this.points[this.heightPointer.y2];
+		const y1Point = this.points[this.heightPointer.y1];
+
+		if (!x2Point || !x1Point || !y2Point || !y1Point) {
+			return;
+		}
+
 		this.test.set({
-			left:
-				this.left +
-				((this.points[this.widthPointer.x2].x - this.points[this.widthPointer.x1].x) * this.scaleX) / 2 -
-				extraLeft * this.scaleX,
-			top:
-				this.top +
-				((this.points[this.heightPointer.y2].y - this.points[this.heightPointer.y1].y) * this.scaleY) / 2 -
-				extraTop * this.scaleY,
+			left: this.left + ((x2Point.x - x1Point.x) * this.scaleX) / 2 - extraLeft * this.scaleX,
+			top: this.top + ((y2Point.y - y1Point.y) * this.scaleY) / 2 - extraTop * this.scaleY,
 		});
 	}
 

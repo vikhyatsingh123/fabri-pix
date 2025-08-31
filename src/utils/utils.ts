@@ -1294,6 +1294,7 @@ export const multiSelectAnnotation: Partial<SubMenu | ''>[] = [
 	SubMenu.LINE_PATH,
 	SubMenu.STEPS_CREATOR,
 ];
+
 export const overlaysConstants = [
 	SubMenu.CROP_GREYED_TOP,
 	SubMenu.CROP_GREYED_LEFT,

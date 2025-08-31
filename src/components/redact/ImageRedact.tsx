@@ -4,13 +4,13 @@
  */
 
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Canvas, Image, Rect } from 'fabric';
+import { Canvas, FabricImage, Rect } from 'fabric';
 
 import { SubMenu } from '../../utils/utils';
 import imageEditorShapes from '../../utils/imageEditorShapes';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	handleTrackChange: (e?: any) => void;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
@@ -55,7 +55,7 @@ const ImageRedact: React.FC<IProps> = (props) => {
 				croppedCanvas.height,
 			);
 
-			const blurredImage = new Image(croppedCanvas);
+			const blurredImage = new FabricImage(croppedCanvas);
 
 			blurredImage.set({
 				left,

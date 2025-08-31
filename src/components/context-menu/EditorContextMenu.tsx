@@ -19,7 +19,8 @@ interface IProps {
 	canvas: React.RefObject<Canvas>;
 	selectedObject: FabricObject | null;
 	activeAnnotation: SubMenu | '';
-	freeDrawingBrushRef: React.RefObject<{ color: string; width: number }>;
+	freeDrawingBrushContextMenu: { color: string; width: number };
+	setFreeDrawingBrushContextMenu: React.Dispatch<React.SetStateAction<{ color: string; width: number }>>;
 	advancedArrowRef: React.RefObject<{ stroke: string; width: number }>;
 	linePathRef: React.RefObject<{ stroke: string; width: number }>;
 	stepCreatorRef: React.RefObject<{
@@ -40,13 +41,22 @@ interface IProps {
 		borderColor: string;
 		text: string;
 	}>;
-	textBoxRef: React.RefObject<{
+	textBoxContextMenu: {
 		backgroundColor: string;
 		fontColor: string;
 		fontSize: number;
 		fontStyle: string;
 		fontWeight: string;
-	}>;
+	};
+	setTextBoxContextMenu: React.Dispatch<
+		React.SetStateAction<{
+			backgroundColor: string;
+			fontColor: string;
+			fontSize: number;
+			fontStyle: string;
+			fontWeight: string;
+		}>
+	>;
 }
 
 const EditorContextMenu: React.FC<IProps> = (props) => {
@@ -54,12 +64,14 @@ const EditorContextMenu: React.FC<IProps> = (props) => {
 		canvas,
 		selectedObject,
 		activeAnnotation,
-		freeDrawingBrushRef,
+		freeDrawingBrushContextMenu,
+		setFreeDrawingBrushContextMenu,
 		advancedArrowRef,
 		linePathRef,
 		stepCreatorRef,
 		commentBoxRef,
-		textBoxRef,
+		textBoxContextMenu,
+		setTextBoxContextMenu,
 	} = props;
 
 	const type = (selectedObject as any)?.shapeType ?? activeAnnotation;
@@ -90,13 +102,21 @@ const EditorContextMenu: React.FC<IProps> = (props) => {
 				/>
 			);
 		case SubMenu.TEXT:
-			return <TextContextMenu canvas={canvas} selectedObject={selectedObject} textBoxRef={textBoxRef} />;
+			return (
+				<TextContextMenu
+					canvas={canvas}
+					selectedObject={selectedObject}
+					textBoxContextMenu={textBoxContextMenu}
+					setTextBoxContextMenu={setTextBoxContextMenu}
+				/>
+			);
 		case SubMenu.DRAW:
 			return (
 				<PencilContextMenu
 					canvas={canvas}
 					selectedObject={selectedObject}
-					freeDrawingBrushRef={freeDrawingBrushRef}
+					freeDrawingBrushContextMenu={freeDrawingBrushContextMenu}
+					setFreeDrawingBrushContextMenu={setFreeDrawingBrushContextMenu}
 				/>
 			);
 		case SubMenu.STEPS_CREATOR:

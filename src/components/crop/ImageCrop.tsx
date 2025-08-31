@@ -3,8 +3,8 @@
  * Image crop for menu
  */
 
-import { Canvas, Rect } from 'fabric';
 import React, { useEffect, useRef, useCallback } from 'react';
+import { Canvas, Rect } from 'fabric';
 
 import imageEditorShapes from '../../utils/imageEditorShapes';
 import { overlaysConstants, SubMenu } from '../../utils/utils';

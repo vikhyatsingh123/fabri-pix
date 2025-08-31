@@ -14,14 +14,12 @@ import InputNumber from '../widgets/InputNumber.tsx';
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
-	freeDrawingBrushRef: React.RefObject<{
-		color: string;
-		width: number;
-	}>;
+	freeDrawingBrushContextMenu: { color: string; width: number };
+	setFreeDrawingBrushContextMenu: React.Dispatch<React.SetStateAction<{ color: string; width: number }>>;
 }
 
 const PencilContextMenu: React.FC<IProps> = (props) => {
-	const { canvas, selectedObject, freeDrawingBrushRef } = props;
+	const { canvas, selectedObject, freeDrawingBrushContextMenu, setFreeDrawingBrushContextMenu } = props;
 
 	const handleStrokeColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
@@ -32,7 +30,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleStrokeColorChangeComplete = (val: string) => {
-		freeDrawingBrushRef.current.color = val;
+		setFreeDrawingBrushContextMenu({ ...freeDrawingBrushContextMenu, color: val });
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -44,7 +42,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 		if (currentObject) {
 			currentObject.set({ strokeWidth: val });
 		}
-		freeDrawingBrushRef.current.width = val;
+		setFreeDrawingBrushContextMenu({ ...freeDrawingBrushContextMenu, width: val });
 		canvas.current.renderAll();
 	};
 
@@ -63,7 +61,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 				<ColorPicker
 					value={
 						Object.keys(selectedObject).length === 0
-							? freeDrawingBrushRef.current.color
+							? freeDrawingBrushContextMenu.color
 							: selectedObject.stroke
 					}
 					onChange={handleStrokeColorChange}
@@ -74,7 +72,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 					max={50}
 					value={
 						Object.keys(selectedObject).length === 0
-							? freeDrawingBrushRef.current.width
+							? freeDrawingBrushContextMenu.width
 							: selectedObject.strokeWidth
 					}
 					onChange={handleStrokeWidthChange}

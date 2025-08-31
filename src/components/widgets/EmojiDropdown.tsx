@@ -3,14 +3,14 @@
  * Emoji dropdown component
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 
 import DownOneIcon from '../../icons/DownOneIcon';
 import { SubMenu } from '../../utils/utils';
 
 interface IProps {
-	emojiIconRef: React.RefObject<any>;
+	emojiIcon: any;
 	activeAnnotation: SubMenu | '';
 	handleEmojiClick: (emoji: any) => void;
 	handleButtonClick: () => void;
@@ -19,14 +19,26 @@ interface IProps {
 }
 
 const EmojiDropdown: React.FC<IProps> = (props) => {
-	const {
-		activeAnnotation,
-		emojiIconRef,
-		handleEmojiClick,
-		handleButtonClick,
-		handleShowDropdown,
-		handleHideDropdown,
-	} = props;
+	const { activeAnnotation, emojiIcon, handleEmojiClick, handleButtonClick, handleShowDropdown, handleHideDropdown } =
+		props;
+
+	const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			const dropdown = document.getElementById('emoji-dropdown');
+			const isDropdownOpen = dropdown?.classList.contains('show-emoji-dropdown');
+
+			if (isDropdownOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				handleHideDropdown();
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
 
 	const handleDropdownClick = () => {
 		if (document.getElementById('emoji-dropdown').classList.contains('show-emoji-dropdown')) {
@@ -43,19 +55,10 @@ const EmojiDropdown: React.FC<IProps> = (props) => {
 				style={{ paddingRight: '8px' }}
 				onClick={handleButtonClick}
 			>
-				<img
-					src={
-						emojiIconRef.current
-							? emojiIconRef.current.imageUrl
-							: 'https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f600.png'
-					}
-					alt='emoji'
-					width={16}
-					height={16}
-				/>
+				<div className='ml-2'>{emojiIcon ? emojiIcon?.emoji : '😀'}</div>
 				Emoji
 			</button>
-			<div className='dropdown'>
+			<div className='dropdown' ref={dropdownRef}>
 				<button onClick={handleDropdownClick} className='custom-button' style={{ padding: '0px' }}>
 					<DownOneIcon />
 				</button>

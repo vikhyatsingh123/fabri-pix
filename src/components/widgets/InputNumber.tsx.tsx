@@ -3,7 +3,7 @@
  * InputNumber component
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface IProps {
 	value: number;
@@ -17,11 +17,21 @@ const InputNumber: React.FC<IProps> = (props) => {
 
 	const [inputValue, setInputValue] = useState(value);
 
+	useEffect(() => {
+		setInputValue(value);
+	}, [value]);
+
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		let newValue = parseInt(event.target.value, 10);
-		if (isNaN(newValue)) return;
-		if (newValue < min) newValue = min;
-		if (newValue > max) newValue = max;
+		if (isNaN(newValue)) {
+			return;
+		}
+		if (newValue < min) {
+			newValue = min;
+		}
+		if (newValue > max) {
+			newValue = max;
+		}
 		setInputValue(newValue);
 		onChange(newValue);
 	};

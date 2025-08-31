@@ -3,21 +3,22 @@
  * Image editor for sub menu
  */
 
-import { Canvas } from 'fabric';
 import React from 'react';
-import { Menu, SubMenu } from '../utils/utils';
+import { Canvas } from 'fabric';
+
 import ImageAnnotation from './annotate/ImageAnnotation';
-import ImageRedact from './redact/ImageRedact';
 import ImageCrop from './crop/ImageCrop';
+import ImageRedact from './redact/ImageRedact';
+import { Menu, SubMenu } from '../utils/utils';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	menu: Menu | '';
 	aIAnnotation: any;
 	handleTrackChange: (e?: any) => void;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
-	freeDrawingBrushRef: React.RefObject<{ color: string; width: number }>;
+	freeDrawingBrushContextMenu: { color: string; width: number };
 	advancedArrowRef: React.RefObject<{ stroke: string; width: number }>;
 	linePathRef: React.RefObject<{ stroke: string; width: number }>;
 	stepCreatorRef: React.RefObject<{
@@ -38,13 +39,13 @@ interface IProps {
 		borderColor: string;
 		text: string;
 	}>;
-	textBoxRef: React.RefObject<{
+	textBoxContextMenu: {
 		backgroundColor: string;
 		fontColor: string;
 		fontSize: number;
 		fontStyle: string;
 		fontWeight: string;
-	}>;
+	};
 }
 
 const EditorSubMenu: React.FC<IProps> = (props) => {
@@ -55,12 +56,12 @@ const EditorSubMenu: React.FC<IProps> = (props) => {
 		handleTrackChange,
 		activeAnnotation,
 		setActiveAnnotation,
-		freeDrawingBrushRef,
+		freeDrawingBrushContextMenu,
 		advancedArrowRef,
 		linePathRef,
 		stepCreatorRef,
 		commentBoxRef,
-		textBoxRef,
+		textBoxContextMenu,
 	} = props;
 
 	switch (menu) {
@@ -72,12 +73,12 @@ const EditorSubMenu: React.FC<IProps> = (props) => {
 					handleTrackChange={handleTrackChange}
 					activeAnnotation={activeAnnotation}
 					setActiveAnnotation={setActiveAnnotation}
-					freeDrawingBrushRef={freeDrawingBrushRef}
+					freeDrawingBrushContextMenu={freeDrawingBrushContextMenu}
 					advancedArrowRef={advancedArrowRef}
 					linePathRef={linePathRef}
 					stepCreatorRef={stepCreatorRef}
 					commentBoxRef={commentBoxRef}
-					textBoxRef={textBoxRef}
+					textBoxContextMenu={textBoxContextMenu}
 				/>
 			);
 		case Menu.BLUR:

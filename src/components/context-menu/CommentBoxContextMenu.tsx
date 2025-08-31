@@ -16,9 +16,9 @@ import InputNumber from '../widgets/InputNumber.tsx';
 import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
 
 interface IProps {
-	canvas: React.MutableRefObject<Canvas>;
+	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
-	commentBoxRef: React.MutableRefObject<{
+	commentBoxRef: React.RefObject<{
 		backgroundColor: string;
 		fontColor: string;
 		fontSize: number;

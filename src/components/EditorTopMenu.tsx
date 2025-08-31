@@ -3,18 +3,18 @@
  * Image editor for top menu
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas, FabricImage, Point, Rect } from 'fabric';
 
+import CheckOneIcon from '../icons/CheckOneIcon';
+import FiveIcon from '../icons/FiveIcon';
+import HistoryIcon from '../icons/HistoryIcon';
+import MinusIcon from '../icons/MinusIcon';
+import PlusIcon from '../icons/PlusIcon';
+import RedoIcon from '../icons/RedoIcon';
+import UndoIcon from '../icons/UndoIcon';
 import imageEditorShapes from '../utils/imageEditorShapes';
 import { historyLogs, SubMenu } from '../utils/utils';
-import PlusIcon from '../icons/PlusIcon';
-import HistoryIcon from '../icons/HistoryIcon';
-import UndoIcon from '../icons/UndoIcon';
-import RedoIcon from '../icons/RedoIcon';
-import MinusIcon from '../icons/MinusIcon';
-import FiveIcon from '../icons/FiveIcon';
-import CheckOneIcon from '../icons/CheckOneIcon';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -46,6 +46,24 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 
 	const [isPanning, setIsPanning] = useState<boolean>(false);
 	const [zoomValue, setZoomValue] = useState<number>(1);
+
+	const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			const dropdown = document.getElementById('history-dropdown');
+			const isDropdownOpen = dropdown?.classList.contains('show-history-dropdown');
+
+			if (isDropdownOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				handleHideDropdown();
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
 
 	useEffect(() => {
 		if (!canvas.current) {
@@ -265,7 +283,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 			canvas.current.renderAll();
 		}
 
-		jsonData.objects.forEach((obj: any) => {
+		jsonData.objects?.forEach((obj: any) => {
 			if (obj.shapeType === SubMenu.STEPS_CREATOR) {
 				stepCreatorRef.current.stepNumber = Number(obj.objects[1].objects[1].text) + 1;
 			}
@@ -396,9 +414,8 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 					<>
 						<div
 							key={index}
+							className='history-log'
 							style={{
-								padding: 4,
-								borderRadius: 4,
 								backgroundColor: index === config.currentStateIndex ? '#CEEFFD' : 'transparent',
 							}}
 						>
@@ -527,13 +544,13 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 		<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 				<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
-					<div className='dropdown'>
+					<div className='dropdown' ref={dropdownRef}>
 						<button
 							onClick={handleDropdownClick}
 							className='custom-button'
 							disabled={config.canvasState.length === 0}
 						>
-							<HistoryIcon />
+							<HistoryIcon disabled={config.canvasState.length === 0} />
 						</button>
 						<div
 							id='history-dropdown'
@@ -548,7 +565,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 						disabled={config.currentStateIndex === 0 || config.canvasState.length === 0}
 						onClick={() => void handleUndo()}
 					>
-						<UndoIcon />
+						<UndoIcon disabled={config.currentStateIndex === 0 || config.canvasState.length === 0} />
 					</button>
 					<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 
@@ -560,7 +577,12 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 						}
 						onClick={() => void handleRedo()}
 					>
-						<RedoIcon />
+						<RedoIcon
+							disabled={
+								config.currentStateIndex === config.canvasState.length - 1 ||
+								config.canvasState.length === 0
+							}
+						/>
 					</button>
 					<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 					<button
@@ -568,7 +590,7 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 						onClick={() => setZoomValue(zoomValue + 0.1)}
 						disabled={zoomValue >= 4}
 					>
-						<PlusIcon />
+						<PlusIcon disabled={zoomValue >= 4} />
 					</button>
 					<button className='custom-button' onClick={handleFit} disabled={zoomValue <= 1}>
 						Fit
@@ -580,11 +602,15 @@ const EditorTopMenu: React.FC<IProps> = (props) => {
 						}}
 						disabled={zoomValue <= 1}
 					>
-						<MinusIcon />
+						<MinusIcon disabled={zoomValue <= 1} />
 					</button>
 					<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
-					<button className='custom-button' disabled={zoomValue === 1} onClick={handlePanMode}>
-						<FiveIcon />
+					<button
+						className={`custom-button ${activeAnnotation === SubMenu.FREE_HAND_ENABLED ? 'active' : ''}`}
+						disabled={zoomValue === 1}
+						onClick={handlePanMode}
+					>
+						<FiveIcon disabled={zoomValue === 1} />
 					</button>
 				</div>
 			</div>

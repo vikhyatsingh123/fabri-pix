@@ -6,12 +6,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Canvas, IText, FabricImage, FabricObject } from 'fabric';
 
+import EditorContextMenu from './context-menu/EditorContextMenu';
 import EditorMenu from './EditorMenu';
 import EditorSubMenu from './EditorSubMenu';
-import { Menu, overlaysConstants, SubMenu, AICoordinates } from '../utils/utils';
 import EditorTopMenu from './EditorTopMenu';
-import EditorContextMenu from './context-menu/EditorContextMenu';
 import ImageEditorFooter from './ImageEditorFooter';
+import { Menu, overlaysConstants, SubMenu, AICoordinates } from '../utils/utils';
 
 interface IProps {
 	imageUrl?: string | null;
@@ -23,7 +23,6 @@ const ImageEditor: React.FC<IProps> = (props) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const canvas = useRef<Canvas>(null);
 	const undoRedoActive = useRef<boolean>(false);
-	const freeDrawingBrushRef = useRef<{ color: string; width: number }>({ color: '#ff0000', width: 1 });
 	const advancedArrowRef = useRef<{ stroke: string; width: number }>({ stroke: '#ff0000', width: 4 });
 	const linePathRef = useRef<{ stroke: string; width: number }>({ stroke: '#ff0000', width: 3 });
 	const stepCreatorRef = useRef<{
@@ -60,7 +59,8 @@ const ImageEditor: React.FC<IProps> = (props) => {
 		borderColor: '#0386B5',
 		text: 'Textbox',
 	});
-	const textBoxRef = useRef<{
+
+	const [textBoxContextMenu, setTextBoxContextMenu] = useState<{
 		backgroundColor: string;
 		fontColor: string;
 		fontSize: number;
@@ -73,7 +73,10 @@ const ImageEditor: React.FC<IProps> = (props) => {
 		fontStyle: 'normal',
 		fontWeight: 'normal',
 	});
-
+	const [freeDrawingBrushContextMenu, setFreeDrawingBrushContextMenu] = useState<{ color: string; width: number }>({
+		color: '#ff0000',
+		width: 1,
+	});
 	const [activeAnnotation, setActiveAnnotation] = useState<SubMenu | ''>('');
 	const [menu, setMenu] = useState<Menu | ''>('');
 	const [selectedObject, setSelectedObject] = useState<any>({});
@@ -179,6 +182,10 @@ const ImageEditor: React.FC<IProps> = (props) => {
 	};
 
 	const initializeCanvas = async () => {
+		if (canvas.current) {
+			canvas.current.dispose();
+			canvas.current = null;
+		}
 		FabricObject.customProperties = ['id', 'shapeType', 'lastLeft', 'lastTop', 'test'];
 		canvas.current = new Canvas(canvasRef.current as HTMLCanvasElement);
 
@@ -401,12 +408,14 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					canvas={canvas}
 					selectedObject={selectedObject}
 					activeAnnotation={activeAnnotation}
-					freeDrawingBrushRef={freeDrawingBrushRef}
+					freeDrawingBrushContextMenu={freeDrawingBrushContextMenu}
+					setFreeDrawingBrushContextMenu={setFreeDrawingBrushContextMenu}
 					advancedArrowRef={advancedArrowRef}
 					linePathRef={linePathRef}
 					stepCreatorRef={stepCreatorRef}
 					commentBoxRef={commentBoxRef}
-					textBoxRef={textBoxRef}
+					textBoxContextMenu={textBoxContextMenu}
+					setTextBoxContextMenu={setTextBoxContextMenu}
 				/>
 			</div>
 			<div style={{ position: 'absolute', left: 0, right: 0, bottom: 26 }}>
@@ -417,12 +426,12 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					handleTrackChange={trackChange}
 					activeAnnotation={activeAnnotation}
 					setActiveAnnotation={setActiveAnnotation}
-					freeDrawingBrushRef={freeDrawingBrushRef}
+					freeDrawingBrushContextMenu={freeDrawingBrushContextMenu}
 					advancedArrowRef={advancedArrowRef}
 					linePathRef={linePathRef}
 					stepCreatorRef={stepCreatorRef}
 					commentBoxRef={commentBoxRef}
-					textBoxRef={textBoxRef}
+					textBoxContextMenu={textBoxContextMenu}
 				/>
 			</div>
 			<ImageEditorFooter canvas={canvas} />

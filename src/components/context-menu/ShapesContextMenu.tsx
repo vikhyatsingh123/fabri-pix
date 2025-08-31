@@ -6,16 +6,17 @@
 import React from 'react';
 import { Canvas } from 'fabric';
 
-import HandleRoundIcon from '../../icons/HandleRoundIcon';
-import DeleteIcon from '../../icons/DeleteIcon';
 import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
 import ColorPicker from '../widgets/ColorPicker';
+import DeleteIcon from '../../icons/DeleteIcon';
+import HandleRoundIcon from '../../icons/HandleRoundIcon';
 import InputNumber from '../widgets/InputNumber.tsx';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
 }
+
 const ShapesContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject } = props;
 
@@ -56,7 +57,10 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 		<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 			<BackgroundColorIcon />
 			<span style={{ margin: '0 8px 0 4px' }}>Fill</span>
-			<ColorPicker value={selectedObject.fill} onChange={handleBackgroundColorChange} />
+			<ColorPicker
+				value={selectedObject?.fill === 'transparent' ? undefined : selectedObject?.fill}
+				onChange={handleBackgroundColorChange}
+			/>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
@@ -64,8 +68,11 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 					<HandleRoundIcon />
 					<span>Stroke</span>
 				</div>
-				<ColorPicker value={selectedObject.stroke} onChange={handleBorderColorChange} />
-				<InputNumber min={1} max={50} value={selectedObject.strokeWidth} onChange={handleStrokeWidthChange} />
+				<ColorPicker
+					value={selectedObject?.stroke === 'transparent' ? undefined : selectedObject?.stroke}
+					onChange={handleBorderColorChange}
+				/>
+				<InputNumber min={1} max={50} value={selectedObject?.strokeWidth} onChange={handleStrokeWidthChange} />
 			</div>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 

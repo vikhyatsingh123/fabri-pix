@@ -3,12 +3,12 @@
  * Emoji for image editor
  */
 
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas } from 'fabric';
-import React, { useCallback, useEffect, useRef } from 'react';
 
-import { SubMenu } from '../../utils/utils';
-import imageEditorShapes from '../../utils/imageEditorShapes';
 import EmojiDropdown from '../widgets/EmojiDropdown';
+import imageEditorShapes from '../../utils/imageEditorShapes';
+import { SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -19,30 +19,44 @@ interface IProps {
 const EditorEmoji: React.FC<IProps> = (props) => {
 	const { canvas, activeAnnotation, setActiveAnnotation } = props;
 
+	const [emojiIcon, setEmojiIcon] = useState<any>(null);
 	const emojiIconRef = useRef<any>(null);
 
+	// we need active annotation ref here to avoid closure issue happening in emojiPicker package
+	const activeAnnotationRef = useRef<SubMenu | ''>(activeAnnotation);
+
+	useEffect(() => {
+		activeAnnotationRef.current = activeAnnotation;
+	}, [activeAnnotation]);
+
+	useEffect(() => {
+		emojiIconRef.current = emojiIcon;
+	}, [emojiIcon]);
+
 	const updateEmojiCursor = () => {
-		const img = new Image();
-		img.crossOrigin = 'anonymous';
-		img.src = emojiIconRef.current?.imageUrl;
+		const canvasElement = document.createElement('canvas');
+		const ctx = canvasElement.getContext('2d');
 
-		img.onload = () => {
-			const canvasElement = document.createElement('canvas');
-			const ctx = canvasElement.getContext('2d');
+		const width = 40;
+		const height = 40;
+		canvasElement.width = width;
+		canvasElement.height = height;
 
-			const width = 40;
-			const height = 40;
-			canvasElement.width = width;
-			canvasElement.height = height;
+		if (ctx) {
+			ctx.clearRect(0, 0, width, height);
 
+			ctx.font = '32px "Apple Color Emoji", sans-serif';
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
 			ctx.globalAlpha = 0.7;
-			ctx.drawImage(img, 0, 0, width, height);
 
-			const cursorUrl = canvasElement.toDataURL();
+			ctx.fillText(emojiIconRef.current?.emoji ?? '😀', width / 2, height / 2);
+		}
 
-			canvas.current.setCursor(`url(${cursorUrl}) 20 20, auto`);
-			canvas.current.requestRenderAll();
-		};
+		const cursorUrl = canvasElement.toDataURL();
+
+		canvas.current.setCursor(`url(${cursorUrl}) 20 20, auto`);
+		canvas.current.requestRenderAll();
 	};
 
 	const handleMouseDown = useCallback((e: any) => {
@@ -83,7 +97,7 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		if (activeAnnotation !== SubMenu.EMOJI) {
+		if (activeAnnotationRef.current !== SubMenu.EMOJI) {
 			canvas.current.off('mouse:down', handleMouseDown);
 			canvas.current.off('mouse:move', handleMouseMove);
 			canvas.current.defaultCursor = 'default';
@@ -113,9 +127,9 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 	};
 
 	const handleEmojiClick = (emojiData: any) => {
-		emojiIconRef.current = emojiData;
+		setEmojiIcon(emojiData);
 		handleHideDropdown();
-		if (activeAnnotation !== SubMenu.EMOJI) {
+		if (activeAnnotationRef.current !== SubMenu.EMOJI) {
 			setActiveAnnotation(SubMenu.EMOJI);
 			canvas.current.discardActiveObject();
 			canvas.current.requestRenderAll();
@@ -125,9 +139,9 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 	};
 
 	const handleButtonClick = () => {
-		if (activeAnnotation === SubMenu.EMOJI) {
+		if (activeAnnotationRef.current === SubMenu.EMOJI) {
 			setActiveAnnotation('');
-			emojiIconRef.current = null;
+			setEmojiIcon(null);
 			canvas.current.off('mouse:down', handleMouseDown);
 			canvas.current.off('mouse:move', handleMouseMove);
 			canvas.current.setCursor('default');
@@ -135,7 +149,6 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 			handleEmojiClick({
 				activeSkinTone: '1f3fe',
 				emoji: '😀',
-				imageUrl: 'https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f600.png',
 				isCustom: false,
 				names: ['grinning', 'grinning face'],
 				unified: '1f600',
@@ -146,7 +159,7 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 
 	return (
 		<EmojiDropdown
-			emojiIconRef={emojiIconRef}
+			emojiIcon={emojiIcon}
 			activeAnnotation={activeAnnotation}
 			handleEmojiClick={handleEmojiClick}
 			handleButtonClick={handleButtonClick}

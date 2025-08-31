@@ -3,7 +3,7 @@
  * ColorPicker component
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface IProps {
 	value: string;
@@ -14,6 +14,10 @@ const ColorPicker: React.FC<IProps> = (props) => {
 	const { value, onChange, onChangeComplete } = props;
 
 	const [color, setColor] = useState(value);
+
+	useEffect(() => {
+		setColor(value);
+	}, [value]);
 
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const newColor = event.target.value;

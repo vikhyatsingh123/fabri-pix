@@ -3,7 +3,7 @@
  * Text align component
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import AlignTextCenterIcon from '../../icons/AlignTextCenterIcon';
 import AlignTextLeftIcon from '../../icons/AlignTextLeftIcon';
@@ -23,6 +23,10 @@ const TextAlignSegmented: React.FC<IProps> = (props) => {
 	const { defaultValue, onChange } = props;
 
 	const [selected, setSelected] = useState(defaultValue);
+
+	useEffect(() => {
+		setSelected(defaultValue);
+	}, [defaultValue]);
 
 	const handleSelection = (value: string) => {
 		setSelected(value);

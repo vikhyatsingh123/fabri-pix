@@ -6,8 +6,8 @@
 import React from 'react';
 import { Canvas, Rect } from 'fabric';
 
-import SaveIcon from '../icons/SaveIcon';
 import CancelIcon from '../icons/CancelIcon';
+import SaveIcon from '../icons/SaveIcon';
 import { SubMenu } from '../utils/utils';
 
 interface IProps {

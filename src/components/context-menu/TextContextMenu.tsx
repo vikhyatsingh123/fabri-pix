@@ -18,17 +18,26 @@ import TextItalicIcon from '../../icons/TextItalicIcon';
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
-	textBoxRef: React.RefObject<{
+	textBoxContextMenu: {
 		backgroundColor: string;
 		fontColor: string;
 		fontSize: number;
 		fontStyle: string;
 		fontWeight: string;
-	}>;
+	};
+	setTextBoxContextMenu: React.Dispatch<
+		React.SetStateAction<{
+			backgroundColor: string;
+			fontColor: string;
+			fontSize: number;
+			fontStyle: string;
+			fontWeight: string;
+		}>
+	>;
 }
 
 const TextContextMenu: React.FC<IProps> = (props) => {
-	const { canvas, selectedObject, textBoxRef } = props;
+	const { canvas, selectedObject, textBoxContextMenu, setTextBoxContextMenu } = props;
 
 	const handleFontColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
@@ -39,7 +48,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleFontColorChangeComplete = (val: string) => {
-		textBoxRef.current.fontColor = val;
+		setTextBoxContextMenu({ ...textBoxContextMenu, fontColor: val });
 	};
 
 	const handleBackgroundColorChange = (val: string) => {
@@ -51,7 +60,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleBackgroundColorChangeComplete = (val: string) => {
-		textBoxRef.current.backgroundColor = val;
+		setTextBoxContextMenu({ ...textBoxContextMenu, backgroundColor: val });
 	};
 
 	const handleAlignChange = (value: string) => {
@@ -71,7 +80,10 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				fontStyle: currentObject.fontStyle === 'italic' ? 'normal' : 'italic',
 			});
 		}
-		textBoxRef.current.fontStyle = textBoxRef.current.fontStyle === 'italic' ? 'normal' : 'italic';
+		setTextBoxContextMenu({
+			...textBoxContextMenu,
+			fontStyle: textBoxContextMenu.fontStyle === 'italic' ? 'normal' : 'italic',
+		});
 		canvas.current.renderAll();
 	};
 
@@ -83,7 +95,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 		if (currentObject) {
 			currentObject.set({ fontSize: value });
 		}
-		textBoxRef.current.fontSize = value;
+		setTextBoxContextMenu({ ...textBoxContextMenu, fontSize: value });
 		canvas.current.renderAll();
 	};
 
@@ -94,7 +106,10 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				fontWeight: currentObject.fontWeight === 'bold' ? 'normal' : 'bold',
 			});
 		}
-		textBoxRef.current.fontWeight = textBoxRef.current.fontWeight === 'bold' ? 'normal' : 'bold';
+		setTextBoxContextMenu({
+			...textBoxContextMenu,
+			fontWeight: textBoxContextMenu.fontWeight === 'bold' ? 'normal' : 'bold',
+		});
 		canvas.current.renderAll();
 	};
 
@@ -111,7 +126,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				<ColorPicker
 					value={
 						Object.keys(selectedObject).length === 0
-							? textBoxRef.current.backgroundColor
+							? textBoxContextMenu.backgroundColor
 							: selectedObject.backgroundColor
 					}
 					onChange={handleBackgroundColorChange}
@@ -127,7 +142,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				</div>
 				<ColorPicker
 					value={
-						Object.keys(selectedObject).length === 0 ? textBoxRef.current.fontColor : selectedObject.fill
+						Object.keys(selectedObject).length === 0 ? textBoxContextMenu.fontColor : selectedObject.fill
 					}
 					onChange={handleFontColorChange}
 					onChangeComplete={handleFontColorChangeComplete}
@@ -136,7 +151,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					min={1}
 					max={100}
 					value={
-						Object.keys(selectedObject).length === 0 ? textBoxRef.current.fontSize : selectedObject.fontSize
+						Object.keys(selectedObject).length === 0 ? textBoxContextMenu.fontSize : selectedObject.fontSize
 					}
 					onChange={handleFontSizeChange}
 				/>
@@ -147,7 +162,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				<button
 					className={`custom-button ${
 						(Object.keys(selectedObject).length === 0
-							? textBoxRef.current.fontWeight
+							? textBoxContextMenu.fontWeight
 							: selectedObject.fontWeight) === 'bold'
 							? 'active'
 							: ''
@@ -159,7 +174,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 				<button
 					className={`custom-button ${
 						(Object.keys(selectedObject).length === 0
-							? textBoxRef.current.fontStyle
+							? textBoxContextMenu.fontStyle
 							: selectedObject.fontStyle) === 'italic'
 							? 'active'
 							: ''

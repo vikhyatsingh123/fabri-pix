@@ -3,12 +3,12 @@
  * Steps creator for image editor
  */
 
-import { Canvas, Rect } from 'fabric';
 import React, { useCallback, useEffect, useRef } from 'react';
+import { Canvas, Rect } from 'fabric';
 
-import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
-import imageEditorShapes from '../../utils/imageEditorShapes';
 import OrderedListIcon from '../../icons/OrderedListIcon';
+import imageEditorShapes from '../../utils/imageEditorShapes';
+import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;

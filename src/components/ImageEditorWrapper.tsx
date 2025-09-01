@@ -10,6 +10,11 @@ import ImageEditor from './ImageEditor';
 
 interface IProps {
 	imageUrl?: string | null;
+	onSave?: (blob: Blob, json: any) => void;
+	onCancel?: () => void;
+	loadFromJson?: any;
+	exportJson?: (json: any) => void;
+	showExportJson?: boolean;
 }
 export const ImageEditorWrapper: React.FC<IProps> = (props) => {
 	return <ImageEditor {...props} />;

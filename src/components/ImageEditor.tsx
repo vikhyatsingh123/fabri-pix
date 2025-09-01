@@ -4,21 +4,27 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas, IText, FabricImage, FabricObject } from 'fabric';
+import { Canvas, IText, FabricImage, FabricObject, Rect } from 'fabric';
 
 import EditorContextMenu from './context-menu/EditorContextMenu';
 import EditorMenu from './EditorMenu';
 import EditorSubMenu from './EditorSubMenu';
 import EditorTopMenu from './EditorTopMenu';
 import ImageEditorFooter from './ImageEditorFooter';
+import imageEditorShapes from '../utils/imageEditorShapes';
 import { Menu, overlaysConstants, SubMenu, AICoordinates } from '../utils/utils';
 
 interface IProps {
 	imageUrl?: string | null;
+	onSave?: (blob: Blob, json: any) => void;
+	onCancel?: () => void;
+	loadFromJson?: any;
+	exportJson?: (json: any) => void;
+	showExportJson?: boolean;
 }
 
 const ImageEditor: React.FC<IProps> = (props) => {
-	const { imageUrl } = props;
+	const { imageUrl, onSave, onCancel, loadFromJson, exportJson, showExportJson } = props;
 
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const canvas = useRef<Canvas>(null);
@@ -181,6 +187,64 @@ const ImageEditor: React.FC<IProps> = (props) => {
 		}
 	};
 
+	const initialAnnotation = async (annotationJson: any) => {
+		if (Object.keys(annotationJson).length === 0) {
+			return;
+		}
+
+		undoRedoActive.current = true;
+		const jsonData = JSON.parse(JSON.stringify(annotationJson));
+		const existingBackgroundImage = canvas.current.backgroundImage;
+		canvas.current.clear();
+
+		if (existingBackgroundImage) {
+			canvas.current.backgroundImage = existingBackgroundImage;
+		} else {
+			const newBackgroundImage = await FabricImage.fromURL(jsonData.backgroundImage.src);
+			newBackgroundImage.flipX = jsonData.backgroundImage.flipX;
+			newBackgroundImage.flipY = jsonData.backgroundImage.flipY;
+			newBackgroundImage.width = jsonData.backgroundImage.width;
+			newBackgroundImage.height = jsonData.backgroundImage.height;
+			newBackgroundImage.scaleX = jsonData.backgroundImage.scaleX;
+			newBackgroundImage.scaleY = jsonData.backgroundImage.scaleY;
+			canvas.current.backgroundImage = newBackgroundImage;
+		}
+
+		if (!jsonData.clipPath) {
+			canvas.current.clipPath = undefined;
+		} else {
+			const clipPath = new Rect({
+				left: jsonData.clipPath.left,
+				top: jsonData.clipPath.top,
+				width: jsonData.clipPath.width * jsonData.clipPath.scaleX,
+				height: jsonData.clipPath.height * jsonData.clipPath.scaleY,
+				absolutePositioned: true,
+			});
+
+			canvas.current.clipPath = clipPath;
+			canvas.current.renderAll();
+		}
+
+		jsonData.objects?.forEach((obj: any) => {
+			if (obj.shapeType === SubMenu.STEPS_CREATOR) {
+				stepCreatorRef.current.stepNumber = Number(obj.objects[1].objects[1].text) + 1;
+			}
+			imageEditorShapes({
+				canvas,
+				shapeType: obj.shapeType,
+				isNewShape: false,
+				canvasData: obj,
+			});
+		});
+
+		canvas.current.setDimensions({
+			width: jsonData.backgroundImage.width * jsonData.backgroundImage.scaleX,
+			height: jsonData.backgroundImage.height * jsonData.backgroundImage.scaleY,
+		});
+		canvas.current.requestRenderAll();
+		undoRedoActive.current = false;
+	};
+
 	const initializeCanvas = async () => {
 		if (canvas.current) {
 			canvas.current.dispose();
@@ -211,6 +275,10 @@ const ImageEditor: React.FC<IProps> = (props) => {
 			} catch (error) {
 				void console.error('Error loading image');
 			}
+		}
+
+		if (loadFromJson) {
+			await initialAnnotation(loadFromJson);
 		}
 
 		const canvasAsJson = JSON.stringify(JSON.parse(JSON.stringify(canvas.current.toJSON())));
@@ -434,7 +502,13 @@ const ImageEditor: React.FC<IProps> = (props) => {
 					textBoxContextMenu={textBoxContextMenu}
 				/>
 			</div>
-			<ImageEditorFooter canvas={canvas} />
+			<ImageEditorFooter
+				canvas={canvas}
+				onSave={onSave}
+				onCancel={onCancel}
+				exportJson={exportJson}
+				showExportJson={showExportJson}
+			/>
 		</div>
 	);
 };

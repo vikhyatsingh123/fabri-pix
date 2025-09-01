@@ -830,10 +830,10 @@ esutils@^2.0.2:
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.3.tgz#74d2eb4de0b8da1293711910d50775b9b710ef64"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
 
-fabri-pix@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/fabri-pix/-/fabri-pix-2.0.0.tgz#5776717c165cdcdf3daeb59ca0814c9b86d77d02"
-  integrity sha512-pSNwdzqv7g+SyKm7QJEFR52yJXzUGqiPlMEH0uUyB07NhGZpUcdMDGoH1XCjKrys/BLmQAmKXfdyWULc/OkynQ==
+fabri-pix@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/fabri-pix/-/fabri-pix-2.1.1.tgz#fc1e5809550c113a4d866ba405ac4caba58204ff"
+  integrity sha512-u5nqfpP/VfJKHRBVu3gp0C4yLgPpd0Hu/eWcOw3Ms8yq5wnNhh8uElO7EmeltuWMiGdyQo27ih7O1JrmC7JTQA==
   dependencies:
     emoji-picker-react "^4.12.0"
 

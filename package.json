@@ -1,13 +1,16 @@
 {
 	"name": "fabri-pix",
-	"version": "2.1.1",
+	"version": "2.2.0",
 	"description": "A React image editor using Fabric.js",
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"main": "dist/index.cjs.js",
+	"main": "dist/index.cjs",
 	"module": "dist/index.es.js",
 	"files": [
 		"dist"
+	],
+	"sideEffects": [
+		"*.css"
 	],
 	"author": "Vikhyat Singh",
 	"license": "MIT",
@@ -31,13 +34,13 @@
 	],
 	"scripts": {
 		"dev": "vite",
-		"build": "tsc -b && vite build",
+		"build": "tsc -p tsconfig.json --noEmit && vite build",
 		"lint": "eslint .",
 		"preview": "vite preview",
 		"prepublishOnly": "yarn build"
 	},
 	"peerDependencies": {
-		"fabric": ">=6.0.0",
+		"fabric": "^6.0.0",
 		"react": ">=17.0.0",
 		"react-dom": ">=17.0.0"
 	},

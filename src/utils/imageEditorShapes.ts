@@ -24,8 +24,8 @@ import {
 import { SubMenu } from './utils';
 import CustomFabricPolygon from './CustomFabricPolygon';
 
-const applyBlurEffect = (canvas: React.RefObject<Canvas>, rect: any) => {
-	const img = canvas.current.backgroundImage as any;
+export const applyBlurEffect = (canvas: React.RefObject<Canvas>, rect: any) => {
+	const img = canvas.current?.backgroundImage as any;
 
 	if (!img || !rect) {
 		return;
@@ -44,18 +44,46 @@ const applyBlurEffect = (canvas: React.RefObject<Canvas>, rect: any) => {
 
 	const ctx = croppedCanvas.getContext('2d');
 	if (ctx) {
-		ctx.filter = 'blur(5px)';
-		ctx.drawImage(
-			img.getElement(),
-			(left - img.left) / imgScaleX,
-			(top - img.top) / imgScaleY,
-			(width * scaleX) / imgScaleX,
-			(height * scaleY) / imgScaleY,
-			0,
-			0,
-			croppedCanvas.width,
-			croppedCanvas.height,
-		);
+		const sourceX = (left - img.left) / imgScaleX;
+		const sourceY = (top - img.top) / imgScaleY;
+		const sourceWidth = (width * scaleX) / imgScaleX;
+		const sourceHeight = (height * scaleY) / imgScaleY;
+
+		if (typeof ctx.filter === 'string') {
+			ctx.filter = 'blur(5px)';
+			ctx.drawImage(
+				img.getElement(),
+				sourceX,
+				sourceY,
+				sourceWidth,
+				sourceHeight,
+				0,
+				0,
+				croppedCanvas.width,
+				croppedCanvas.height,
+			);
+		} else {
+			// ctx.filter is not supported (Safari), pixelate by down-scaling and up-scaling instead,
+			// otherwise the redacted area would be drawn without any blur
+			const pixelatedCanvas = document.createElement('canvas');
+			pixelatedCanvas.width = Math.max(1, Math.round(croppedCanvas.width / 10));
+			pixelatedCanvas.height = Math.max(1, Math.round(croppedCanvas.height / 10));
+			pixelatedCanvas
+				.getContext('2d')
+				?.drawImage(
+					img.getElement(),
+					sourceX,
+					sourceY,
+					sourceWidth,
+					sourceHeight,
+					0,
+					0,
+					pixelatedCanvas.width,
+					pixelatedCanvas.height,
+				);
+			ctx.imageSmoothingEnabled = true;
+			ctx.drawImage(pixelatedCanvas, 0, 0, croppedCanvas.width, croppedCanvas.height);
+		}
 
 		const blurredImage = new FabricImage(croppedCanvas);
 
@@ -131,10 +159,6 @@ const addBlurEffect = ({
 	});
 
 	canvas.current.add(rect);
-
-	if (!isNewShape) {
-		canvas.current.setActiveObject(rect);
-	}
 	canvas.current.requestRenderAll();
 };
 
@@ -238,7 +262,9 @@ const addAdvancedArrow = ({
 	currentPolyline.setCoords();
 
 	canvas.current.add(currentPolyline, arrowHead);
-	canvas.current.setActiveObject(currentPolyline);
+	if (isNewShape) {
+		canvas.current.setActiveObject(currentPolyline);
+	}
 	canvas.current.requestRenderAll();
 };
 
@@ -284,7 +310,9 @@ const addLinePath = ({
 	currentPolyline.setCoords();
 
 	canvas.current.add(currentPolyline);
-	canvas.current.setActiveObject(currentPolyline);
+	if (isNewShape) {
+		canvas.current.setActiveObject(currentPolyline);
+	}
 	canvas.current.requestRenderAll();
 };
 
@@ -314,13 +342,22 @@ const addPencil = ({
 			strokeLineJoin: canvasData.strokeLineJoin,
 			strokeMiterLimit: canvasData.strokeMiterLimit,
 			shapeType: SubMenu.DRAW,
+			id: canvasData.id,
 		});
 		canvas.current.add(path);
 		canvas.current.requestRenderAll();
 	}
 };
 
-const addText = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
+const addText = ({
+	canvas,
+	isNewShape,
+	canvasData,
+}: {
+	canvas: React.RefObject<Canvas>;
+	isNewShape: boolean;
+	canvasData?: any;
+}) => {
 	const text = new IText(canvasData.text, {
 		backgroundColor: canvasData.backgroundColor,
 		cornerColor: '#000',
@@ -347,10 +384,20 @@ const addText = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canv
 	});
 
 	canvas.current.add(text);
-	canvas.current.setActiveObject(text);
+	if (isNewShape) {
+		canvas.current.setActiveObject(text);
+	}
 };
 
-const addEmoji = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
+const addEmoji = ({
+	canvas,
+	isNewShape,
+	canvasData,
+}: {
+	canvas: React.RefObject<Canvas>;
+	isNewShape: boolean;
+	canvasData?: any;
+}) => {
 	const emoj = new Textbox(canvasData.text, {
 		cornerColor: '#000',
 		cornerSize: 8,
@@ -371,10 +418,20 @@ const addEmoji = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; can
 	});
 
 	canvas.current.add(emoj);
-	canvas.current.setActiveObject(emoj);
+	if (isNewShape) {
+		canvas.current.setActiveObject(emoj);
+	}
 };
 
-const addRectangle = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
+const addRectangle = ({
+	canvas,
+	isNewShape,
+	canvasData,
+}: {
+	canvas: React.RefObject<Canvas>;
+	isNewShape: boolean;
+	canvasData?: any;
+}) => {
 	const rect = new Rect({
 		angle: canvasData.angle,
 		cornerColor: '#000',
@@ -402,10 +459,20 @@ const addRectangle = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>;
 	});
 
 	canvas.current.add(rect);
-	canvas.current.setActiveObject(rect);
+	if (isNewShape) {
+		canvas.current.setActiveObject(rect);
+	}
 };
 
-const addCircle = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
+const addCircle = ({
+	canvas,
+	isNewShape,
+	canvasData,
+}: {
+	canvas: React.RefObject<Canvas>;
+	isNewShape: boolean;
+	canvasData?: any;
+}) => {
 	const circle = new Circle({
 		angle: canvasData.angle,
 		cornerColor: '#000',
@@ -429,8 +496,10 @@ const addCircle = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; ca
 		id: canvasData.id,
 	});
 
-	canvas.current?.add(circle);
-	canvas.current.setActiveObject(circle);
+	canvas.current.add(circle);
+	if (isNewShape) {
+		canvas.current.setActiveObject(circle);
+	}
 };
 
 const createStarPoints = (
@@ -451,7 +520,15 @@ const createStarPoints = (
 	return starPoints;
 };
 
-const addStar = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
+const addStar = ({
+	canvas,
+	isNewShape,
+	canvasData,
+}: {
+	canvas: React.RefObject<Canvas>;
+	isNewShape: boolean;
+	canvasData?: any;
+}) => {
 	const centerX = 200;
 	const centerY = 150;
 	const outerRadius = 50;
@@ -486,10 +563,20 @@ const addStar = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canv
 	});
 
 	canvas.current.add(star);
-	canvas.current.setActiveObject(star);
+	if (isNewShape) {
+		canvas.current.setActiveObject(star);
+	}
 };
 
-const addArrow = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
+const addArrow = ({
+	canvas,
+	isNewShape,
+	canvasData,
+}: {
+	canvas: React.RefObject<Canvas>;
+	isNewShape: boolean;
+	canvasData?: any;
+}) => {
 	const line = new Line([50, 50, 100, 50], {
 		angle: canvasData.objects[0].angle,
 		fill: canvasData.objects[0].fill,
@@ -533,16 +620,42 @@ const addArrow = ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; can
 	});
 
 	canvas.current.add(arrow);
-	canvas.current.setActiveObject(arrow);
+	if (isNewShape) {
+		canvas.current.setActiveObject(arrow);
+	}
 };
 
-const addCustomShape = async ({ canvas, canvasData }: { canvas: React.RefObject<Canvas>; canvasData?: any }) => {
-	const img = await FabricImage.fromURL(canvasData.src);
+const addCustomShape = async ({
+	canvas,
+	isNewShape,
+	canvasData,
+}: {
+	canvas: React.RefObject<Canvas>;
+	isNewShape: boolean;
+	canvasData?: any;
+}) => {
+	const img = await FabricImage.fromURL(canvasData.src, { crossOrigin: 'anonymous' });
+	if (!canvas.current) {
+		return;
+	}
+
+	let { left, top, scaleX, scaleY } = canvasData;
+	if (isNewShape) {
+		// fit big uploads into half of the canvas and center them
+		const canvasWidth = canvas.current.getWidth();
+		const canvasHeight = canvas.current.getHeight();
+		const scale = Math.min(1, (canvasWidth / 2) / img.width, (canvasHeight / 2) / img.height);
+		scaleX = scale;
+		scaleY = scale;
+		left = (canvasWidth - img.width * scale) / 2;
+		top = (canvasHeight - img.height * scale) / 2;
+	}
+
 	img.set({
-		left: canvasData.left,
-		top: canvasData.top,
-		scaleX: canvasData.scaleX,
-		scaleY: canvasData.scaleY,
+		left,
+		top,
+		scaleX,
+		scaleY,
 		angle: canvasData.angle,
 		fill: canvasData.fill,
 		shapeType: SubMenu.CUSTOM_SHAPE,
@@ -550,8 +663,10 @@ const addCustomShape = async ({ canvas, canvasData }: { canvas: React.RefObject<
 	});
 
 	canvas.current.add(img);
-	canvas.current.setActiveObject(img);
-	canvas.current.renderAll();
+	if (isNewShape) {
+		canvas.current.setActiveObject(img);
+	}
+	canvas.current.requestRenderAll();
 };
 
 const handleTextChangedStepsCreator = (group: Group, canvas: React.RefObject<Canvas>) => {
@@ -1038,13 +1153,11 @@ const addCropRectangle = ({
 	};
 
 	if (!isNewShape) {
-		let hasRun = false;
-		canvas.current.on('after:render', () => {
-			if (!hasRun) {
-				updateOverlays();
-				hasRun = true;
-			}
-		});
+		const handleAfterRender = () => {
+			canvas.current?.off('after:render', handleAfterRender);
+			updateOverlays();
+		};
+		canvas.current.on('after:render', handleAfterRender);
 	}
 
 	cropRect.on('modified', updateOverlays);
@@ -1062,7 +1175,7 @@ const imageEditorShapes = ({
 	shapeType: SubMenu;
 	isNewShape: boolean;
 	canvasData?: any;
-}): void => {
+}): Promise<void> | void => {
 	switch (shapeType) {
 		case SubMenu.BLUR:
 			addBlurEffect({ canvas, isNewShape, canvasData });
@@ -1079,26 +1192,26 @@ const imageEditorShapes = ({
 			addPencil({ canvas, isNewShape, canvasData });
 			break;
 		case SubMenu.TEXT:
-			addText({ canvas, canvasData });
+			addText({ canvas, isNewShape, canvasData });
 			break;
 		case SubMenu.EMOJI:
-			addEmoji({ canvas, canvasData });
+			addEmoji({ canvas, isNewShape, canvasData });
 			break;
 		case SubMenu.RECTANGLE:
-			addRectangle({ canvas, canvasData });
+			addRectangle({ canvas, isNewShape, canvasData });
 			break;
 		case SubMenu.CIRCLE:
-			addCircle({ canvas, canvasData });
+			addCircle({ canvas, isNewShape, canvasData });
 			break;
 		case SubMenu.STAR:
-			addStar({ canvas, canvasData });
+			addStar({ canvas, isNewShape, canvasData });
 			break;
 		case SubMenu.ARROW:
-			addArrow({ canvas, canvasData });
+			addArrow({ canvas, isNewShape, canvasData });
 			break;
 		case SubMenu.CUSTOM_SHAPE:
-			addCustomShape({ canvas, canvasData }).catch((err) => console.error(err));
-			break;
+			// returned so callers restoring a saved state can wait for the image to load
+			return addCustomShape({ canvas, isNewShape, canvasData }).catch((err) => console.error(err));
 		case SubMenu.STEPS_CREATOR:
 			addStepsCreator({ canvas, isNewShape, canvasData });
 			break;

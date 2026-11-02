@@ -10,7 +10,8 @@ import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
 import ColorPicker from '../widgets/ColorPicker';
 import DeleteIcon from '../../icons/DeleteIcon';
 import HandleRoundIcon from '../../icons/HandleRoundIcon';
-import InputNumber from '../widgets/InputNumber.tsx';
+import InputNumber from '../widgets/InputNumber';
+import { commitActiveObjectChange, removeCanvasObject } from '../../utils/canvasHelpers';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -46,11 +47,15 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 			currentObject.set({ strokeWidth: val });
 		}
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
+	};
+
+	const handleColorChangeComplete = () => {
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleDeleteAnnotations = () => {
-		canvas.current.remove(selectedObject);
-		canvas.current.renderAll();
+		removeCanvasObject(canvas.current, selectedObject);
 	};
 
 	return (
@@ -60,6 +65,7 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 			<ColorPicker
 				value={selectedObject?.fill === 'transparent' ? undefined : selectedObject?.fill}
 				onChange={handleBackgroundColorChange}
+				onChangeComplete={handleColorChangeComplete}
 			/>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 
@@ -71,12 +77,13 @@ const ShapesContextMenu: React.FC<IProps> = (props) => {
 				<ColorPicker
 					value={selectedObject?.stroke === 'transparent' ? undefined : selectedObject?.stroke}
 					onChange={handleBorderColorChange}
+					onChangeComplete={handleColorChangeComplete}
 				/>
 				<InputNumber min={1} max={50} value={selectedObject?.strokeWidth} onChange={handleStrokeWidthChange} />
 			</div>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 
-			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+			<button type='button' className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>
 		</div>

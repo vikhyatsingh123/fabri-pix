@@ -7,42 +7,22 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import { Canvas, Rect } from 'fabric';
 
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { overlaysConstants, SubMenu } from '../../utils/utils';
+import { applyCropMask, removeCanvasObject } from '../../utils/canvasHelpers';
+import { generateId, overlaysConstants, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
+	handleTrackChange: (e?: any) => void;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
 }
 
 const ImageCrop: React.FC<IProps> = (props) => {
-	const { canvas, activeAnnotation, setActiveAnnotation } = props;
+	const { canvas, handleTrackChange, activeAnnotation, setActiveAnnotation } = props;
 
 	const cropRect = useRef<Rect | null>(null);
 	const isDrawing = useRef<boolean>(false);
 	const startPointer = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-
-	const applyCropMask = () => {
-		const cropRectangle = canvas.current
-			.getObjects()
-			.find((obj: any) => obj?.shapeType === SubMenu.CROP_RECTANGLE) as Rect;
-		if (!canvas.current.backgroundImage || !cropRectangle) {
-			return;
-		}
-
-		const clipPath = new Rect({
-			left: cropRectangle.left,
-			top: cropRectangle.top,
-			width: cropRectangle.width * cropRectangle.scaleX,
-			height: cropRectangle.height * cropRectangle.scaleY,
-			absolutePositioned: true,
-			id: crypto.randomUUID(),
-		});
-
-		canvas.current.clipPath = clipPath;
-		canvas.current.remove(cropRectangle);
-		canvas.current.renderAll();
-	};
 
 	const updateOverlays = () => {
 		const newLeft = cropRect.current.left;
@@ -106,7 +86,7 @@ const ImageCrop: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
+		const pointer = canvas.current.getScenePoint(event.e);
 		const target = canvas.current.findTarget(event.e);
 
 		if (target) {
@@ -126,7 +106,7 @@ const ImageCrop: React.FC<IProps> = (props) => {
 		const { x, y } = pointer;
 		startPointer.current = { x, y };
 
-		const id = crypto.randomUUID();
+		const id = generateId();
 		imageEditorShapes({
 			canvas,
 			shapeType: SubMenu.CROP_RECTANGLE,
@@ -152,7 +132,7 @@ const ImageCrop: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
+		const pointer = canvas.current.getScenePoint(event.e);
 		const rect = cropRect.current;
 
 		rect.set({
@@ -161,28 +141,22 @@ const ImageCrop: React.FC<IProps> = (props) => {
 			width: Math.abs(pointer.x - startPointer.current?.x),
 			height: Math.abs(pointer.y - startPointer.current?.y),
 		});
+		rect.setCoords();
 
-		canvas.current.renderAll();
+		// keep the greyed area in sync while drawing, not only on mouse up
+		updateOverlays();
 	}, []);
 
-	const handleMouseUp = useCallback((event: any) => {
+	const handleMouseUp = useCallback(() => {
 		if (isDrawing.current && cropRect.current) {
 			if (cropRect.current.width === 0 || cropRect.current.height === 0) {
-				canvas.current.remove(cropRect.current);
-				canvas.current.requestRenderAll();
+				// a click without dragging, drop the empty crop rectangle together with its overlays
+				removeCanvasObject(canvas.current, cropRect.current);
 			} else {
-				const target = canvas.current.findTarget(event.e) as any;
-				if (target) {
-					const size = (target?._objects ?? []).length;
-					if (size > 0) {
-						canvas.current.setActiveObject((target?._objects ?? [])[size - 1]);
-						canvas.current.requestRenderAll();
-					}
-				}
+				updateOverlays();
+				canvas.current.setActiveObject(cropRect.current);
 			}
-
-			updateOverlays();
-			canvas.current.setActiveObject(cropRect.current);
+			canvas.current.requestRenderAll();
 			isDrawing.current = false;
 			cropRect.current = null;
 		}
@@ -219,7 +193,7 @@ const ImageCrop: React.FC<IProps> = (props) => {
 				canvas.current.setActiveObject(cropRect.current);
 			}
 		} else {
-			const id = crypto.randomUUID();
+			const id = generateId();
 			imageEditorShapes({
 				canvas,
 				shapeType: SubMenu.CROP_RECTANGLE,
@@ -250,18 +224,21 @@ const ImageCrop: React.FC<IProps> = (props) => {
 		setActiveAnnotation(SubMenu.CROP_RECTANGLE);
 
 		return () => {
-			const overlayObjects = canvasOverlay.getObjects();
-			overlayObjects.forEach((obj: any) => {
-				if (overlaysConstants.includes(obj?.shapeType)) {
-					canvasOverlay.remove(obj);
-				}
-			});
-			applyCropMask();
-			canvasOverlay.defaultCursor = 'default';
-			canvasOverlay.selection = true;
 			canvasOverlay.off('mouse:down', handleMouseDown);
 			canvasOverlay.off('mouse:move', handleMouseMove);
 			canvasOverlay.off('mouse:up', handleMouseUp);
+
+			applyCropMask(canvasOverlay);
+			const overlayObjects = canvasOverlay
+				.getObjects()
+				.filter((obj: any) => overlaysConstants.includes(obj?.shapeType));
+			canvasOverlay.remove(...overlayObjects);
+			canvasOverlay.defaultCursor = 'default';
+			canvasOverlay.selection = true;
+
+			// the crop rectangle itself is not tracked, record the applied / removed crop
+			// (unchanged states are ignored by the history)
+			handleTrackChange();
 		};
 	}, []);
 

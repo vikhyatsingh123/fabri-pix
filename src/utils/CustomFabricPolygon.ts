@@ -24,7 +24,8 @@ export default class CustomFabricPolygon extends Polygon {
 	textOffsetTop = 0;
 	_prevObjectStacking = true;
 	_prevAngle = 0;
-	canvas = new Canvas('c');
+	// assigned in the constructor, must not be initialised with a new Canvas (that leaked a canvas per callout)
+	declare canvas: Canvas;
 	selected = false;
 	pointIndex = 0;
 	widthPointer = { x1: 0, x2: 1 };

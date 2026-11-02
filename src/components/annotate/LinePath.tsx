@@ -8,7 +8,7 @@ import { Canvas, Polyline } from 'fabric';
 
 import WholeSiteAcceleratorIcon from '../../icons/WholeSiteAcceleratorIcon';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
+import { generateId, multiSelectAnnotation, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -26,7 +26,7 @@ const LinePath: React.FC<IProps> = (props) => {
 	const polylinePoints = useRef<{ x: number; y: number }[]>([]);
 
 	const handleMouseDown = useCallback((e: any) => {
-		const pointer = canvas.current.getViewportPoint(e.e);
+		const pointer = canvas.current.getScenePoint(e.e);
 		const target = canvas.current.findTarget(e.e);
 
 		if (target) {
@@ -34,7 +34,7 @@ const LinePath: React.FC<IProps> = (props) => {
 		}
 
 		if (!isDrawing.current) {
-			const id = crypto.randomUUID();
+			const id = generateId();
 			isDrawing.current = true;
 
 			imageEditorShapes({
@@ -73,7 +73,7 @@ const LinePath: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(e.e);
+		const pointer = canvas.current.getScenePoint(e.e);
 		const points = currentPolyline.current?.points || [];
 
 		points[points.length - 1] = { x: pointer.x, y: pointer.y };
@@ -89,7 +89,13 @@ const LinePath: React.FC<IProps> = (props) => {
 			currentPolyline.current = null;
 		}
 
-		if (polylinePoints.current.length > 0) {
+		// the clicks of a double click add the same point again, drop consecutive duplicates
+		polylinePoints.current = polylinePoints.current.filter(
+			(point, index, points) => index === 0 || point.x !== points[index - 1].x || point.y !== points[index - 1].y,
+		);
+
+		// a path needs at least two points, a single click would create an invisible object
+		if (polylinePoints.current.length > 1) {
 			imageEditorShapes({
 				canvas,
 				shapeType: SubMenu.LINE_PATH,
@@ -98,12 +104,12 @@ const LinePath: React.FC<IProps> = (props) => {
 					stroke: linePathRef.current.stroke,
 					strokeWidth: linePathRef.current.width,
 					points: polylinePoints.current,
-					id: crypto.randomUUID(),
+					id: generateId(),
 				},
 			});
-			polylinePoints.current = [];
 			handleTrackChange();
 		}
+		polylinePoints.current = [];
 	}, []);
 
 	const handleKeyPress = useCallback((e: KeyboardEvent) => {
@@ -173,6 +179,10 @@ const LinePath: React.FC<IProps> = (props) => {
 		canvas.current.discardActiveObject();
 		canvas.current.requestRenderAll();
 
+		// remove first so that the listeners can never be registered twice
+		canvas.current.off('mouse:down', handleMouseDown);
+		canvas.current.off('mouse:move', handleMouseMove);
+		canvas.current.off('mouse:dblclick', handleDoubleClick);
 		canvas.current.on('mouse:down', handleMouseDown);
 		canvas.current.on('mouse:move', handleMouseMove);
 		canvas.current.on('mouse:dblclick', handleDoubleClick);
@@ -181,6 +191,7 @@ const LinePath: React.FC<IProps> = (props) => {
 
 	return (
 		<button
+			type='button'
 			className={`custom-button ${activeAnnotation === SubMenu.LINE_PATH ? 'active' : ''}`}
 			onClick={handleLinePath}
 		>

@@ -37,6 +37,7 @@ const TextAlignSegmented: React.FC<IProps> = (props) => {
 		<div className='segmented-container'>
 			{segmentedOptions.map((option) => (
 				<button
+					type='button'
 					key={option.value}
 					className={`segmented-option ${selected === option.value ? 'active' : ''}`}
 					onClick={() => handleSelection(option.value)}

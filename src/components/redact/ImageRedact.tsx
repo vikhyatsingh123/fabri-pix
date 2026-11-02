@@ -4,10 +4,10 @@
  */
 
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Canvas, FabricImage, Rect } from 'fabric';
+import { Canvas, Rect } from 'fabric';
 
-import { SubMenu } from '../../utils/utils';
-import imageEditorShapes from '../../utils/imageEditorShapes';
+import { generateId, SubMenu } from '../../utils/utils';
+import imageEditorShapes, { applyBlurEffect } from '../../utils/imageEditorShapes';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -22,70 +22,12 @@ const ImageRedact: React.FC<IProps> = (props) => {
 	const isDrawing = useRef<boolean>(false);
 	const startPointer = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-	const applyBlurEffect = (rect: any) => {
-		const img = canvas.current.backgroundImage as any;
-
-		if (!img || !rect) {
-			return;
-		}
-
-		const { left, top, width, height, scaleX, scaleY } = rect;
-		const { scaleX: imgScaleX = 1, scaleY: imgScaleY = 1 } = img;
-
-		const croppedCanvas = document.createElement('canvas');
-		croppedCanvas.width = width * scaleX;
-		croppedCanvas.height = height * scaleY;
-
-		if (croppedCanvas.width === 0 || croppedCanvas.height === 0) {
-			return;
-		}
-
-		const ctx = croppedCanvas.getContext('2d');
-		if (ctx) {
-			ctx.filter = 'blur(5px)';
-			ctx.drawImage(
-				img.getElement(),
-				(left - img.left) / imgScaleX,
-				(top - img.top) / imgScaleY,
-				(width * scaleX) / imgScaleX,
-				(height * scaleY) / imgScaleY,
-				0,
-				0,
-				croppedCanvas.width,
-				croppedCanvas.height,
-			);
-
-			const blurredImage = new FabricImage(croppedCanvas);
-
-			blurredImage.set({
-				left,
-				top,
-				width: width * scaleX,
-				height: height * scaleY,
-				selectable: false,
-				evented: false,
-				excludeFromExport: true,
-				shapeType: SubMenu.BLUR_INNER_PART,
-				id: rect.id + '-blur',
-			});
-
-			canvas.current.getObjects().forEach((obj: any) => {
-				if (obj.type === 'image' && obj !== img && obj.id === rect.id + '-blur') {
-					canvas.current.remove(obj);
-				}
-			});
-
-			canvas.current.add(blurredImage);
-			canvas.current.renderAll();
-		}
-	};
-
 	const handleMouseDown = useCallback((event: any) => {
 		if (blurRect.current) {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
+		const pointer = canvas.current.getScenePoint(event.e);
 		const target = canvas.current.findTarget(event.e);
 
 		if (target) {
@@ -95,7 +37,7 @@ const ImageRedact: React.FC<IProps> = (props) => {
 		const { x, y } = pointer;
 		startPointer.current = { x, y };
 
-		const id = crypto.randomUUID();
+		const id = generateId();
 		imageEditorShapes({
 			canvas,
 			shapeType: SubMenu.BLUR,
@@ -121,7 +63,7 @@ const ImageRedact: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
+		const pointer = canvas.current.getScenePoint(event.e);
 		const rect = blurRect.current;
 
 		rect.set({
@@ -131,24 +73,17 @@ const ImageRedact: React.FC<IProps> = (props) => {
 			height: Math.abs(pointer.y - startPointer.current?.y),
 		});
 
-		canvas.current.renderAll();
+		canvas.current.requestRenderAll();
 	}, []);
 
-	const handleMouseUp = useCallback((event: any) => {
+	const handleMouseUp = useCallback(() => {
 		if (isDrawing.current && blurRect.current) {
 			if (blurRect.current.width === 0 || blurRect.current.height === 0) {
 				canvas.current.remove(blurRect.current);
 				canvas.current.requestRenderAll();
 			} else {
-				const target = canvas.current.findTarget(event.e);
-				if (target) {
-					const size = (target as any)?._objects?.length;
-					if (size > 0) {
-						canvas.current.setActiveObject((target as any)._objects[size - 1]);
-						canvas.current.requestRenderAll();
-					}
-				}
-				applyBlurEffect(blurRect.current);
+				blurRect.current.setCoords();
+				applyBlurEffect(canvas, blurRect.current);
 				handleTrackChange();
 			}
 			isDrawing.current = false;
@@ -157,6 +92,10 @@ const ImageRedact: React.FC<IProps> = (props) => {
 	}, []);
 
 	useEffect(() => {
+		if (!canvas.current) {
+			return;
+		}
+
 		if (activeAnnotation === SubMenu.FREE_HAND_ENABLED) {
 			canvas.current.off('mouse:down', handleMouseDown);
 			canvas.current.off('mouse:move', handleMouseMove);
@@ -167,6 +106,8 @@ const ImageRedact: React.FC<IProps> = (props) => {
 			canvas.current.off('mouse:up', handleMouseUp);
 
 			canvas.current.defaultCursor = 'crosshair';
+			// otherwise fabric draws its selection box on top of the blur rectangle being drawn
+			canvas.current.selection = false;
 			isDrawing.current = false;
 			blurRect.current = null;
 			canvas.current.on('mouse:down', handleMouseDown);
@@ -188,6 +129,7 @@ const ImageRedact: React.FC<IProps> = (props) => {
 
 		return () => {
 			canvasOverlay.defaultCursor = 'default';
+			canvasOverlay.selection = true;
 			canvasOverlay.off('mouse:down', handleMouseDown);
 			canvasOverlay.off('mouse:move', handleMouseMove);
 			canvasOverlay.off('mouse:up', handleMouseUp);

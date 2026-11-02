@@ -8,7 +8,7 @@ import { Canvas } from 'fabric';
 
 import EmojiDropdown from '../widgets/EmojiDropdown';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { SubMenu } from '../../utils/utils';
+import { generateId, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -21,6 +21,8 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 
 	const [emojiIcon, setEmojiIcon] = useState<any>(null);
 	const emojiIconRef = useRef<any>(null);
+	// generating the cursor image is expensive, it is only re-created when the emoji changes
+	const cursorRef = useRef<{ emoji: string; cursor: string } | null>(null);
 
 	// we need active annotation ref here to avoid closure issue happening in emojiPicker package
 	const activeAnnotationRef = useRef<SubMenu | ''>(activeAnnotation);
@@ -34,6 +36,12 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 	}, [emojiIcon]);
 
 	const updateEmojiCursor = () => {
+		const emoji = emojiIconRef.current?.emoji ?? '😀';
+		if (cursorRef.current?.emoji === emoji) {
+			canvas.current.setCursor(cursorRef.current.cursor);
+			return;
+		}
+
 		const canvasElement = document.createElement('canvas');
 		const ctx = canvasElement.getContext('2d');
 
@@ -50,24 +58,23 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 			ctx.textBaseline = 'middle';
 			ctx.globalAlpha = 0.7;
 
-			ctx.fillText(emojiIconRef.current?.emoji ?? '😀', width / 2, height / 2);
+			ctx.fillText(emoji, width / 2, height / 2);
 		}
 
 		const cursorUrl = canvasElement.toDataURL();
-
-		canvas.current.setCursor(`url(${cursorUrl}) 20 20, auto`);
-		canvas.current.requestRenderAll();
+		cursorRef.current = { emoji, cursor: `url(${cursorUrl}) 20 20, auto` };
+		canvas.current.setCursor(cursorRef.current.cursor);
 	};
 
 	const handleMouseDown = useCallback((e: any) => {
-		const pointer = canvas.current.getViewportPoint(e.e);
+		const pointer = canvas.current.getScenePoint(e.e);
 		const target = canvas.current.findTarget(e.e);
 
 		if (target) {
 			return;
 		}
 
-		const id = crypto.randomUUID();
+		const id = generateId();
 		imageEditorShapes({
 			canvas,
 			shapeType: SubMenu.EMOJI,
@@ -86,7 +93,7 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 	const handleMouseMove = useCallback((e: any) => {
 		const target = canvas.current.findTarget(e.e);
 		if (target) {
-			canvas.current.setCursor('resize');
+			canvas.current.setCursor('move');
 		} else {
 			updateEmojiCursor();
 		}
@@ -118,21 +125,17 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 		};
 	}, []);
 
-	const handleShowDropdown = () => {
-		document.getElementById('emoji-dropdown').classList.add('show-emoji-dropdown');
-	};
-
-	const handleHideDropdown = () => {
-		document.getElementById('emoji-dropdown').classList.remove('show-emoji-dropdown');
-	};
-
 	const handleEmojiClick = (emojiData: any) => {
 		setEmojiIcon(emojiData);
-		handleHideDropdown();
+		// keep the ref in sync right away, the cursor and new emojis read it before the effect runs
+		emojiIconRef.current = emojiData;
 		if (activeAnnotationRef.current !== SubMenu.EMOJI) {
 			setActiveAnnotation(SubMenu.EMOJI);
 			canvas.current.discardActiveObject();
 			canvas.current.requestRenderAll();
+			// remove first so that the listeners can never be registered twice
+			canvas.current.off('mouse:down', handleMouseDown);
+			canvas.current.off('mouse:move', handleMouseMove);
 			canvas.current.on('mouse:down', handleMouseDown);
 			canvas.current.on('mouse:move', handleMouseMove);
 		}
@@ -163,8 +166,6 @@ const EditorEmoji: React.FC<IProps> = (props) => {
 			activeAnnotation={activeAnnotation}
 			handleEmojiClick={handleEmojiClick}
 			handleButtonClick={handleButtonClick}
-			handleShowDropdown={handleShowDropdown}
-			handleHideDropdown={handleHideDropdown}
 		/>
 	);
 };

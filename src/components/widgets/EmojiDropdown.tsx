@@ -3,34 +3,32 @@
  * Emoji dropdown component
  */
 
-import React, { useEffect, useRef } from 'react';
-import EmojiPicker from 'emoji-picker-react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 
 import DownOneIcon from '../../icons/DownOneIcon';
 import { SubMenu } from '../../utils/utils';
+
+// the picker (~60KB gzipped with its emoji data) is split into its own chunk by the consumer's bundler
+// and only downloaded when the dropdown is opened for the first time
+const EmojiPicker = lazy(() => import('emoji-picker-react'));
 
 interface IProps {
 	emojiIcon: any;
 	activeAnnotation: SubMenu | '';
 	handleEmojiClick: (emoji: any) => void;
 	handleButtonClick: () => void;
-	handleShowDropdown: () => void;
-	handleHideDropdown: () => void;
 }
 
 const EmojiDropdown: React.FC<IProps> = (props) => {
-	const { activeAnnotation, emojiIcon, handleEmojiClick, handleButtonClick, handleShowDropdown, handleHideDropdown } =
-		props;
+	const { activeAnnotation, emojiIcon, handleEmojiClick, handleButtonClick } = props;
 
+	const [isOpen, setIsOpen] = useState<boolean>(false);
 	const dropdownRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			const dropdown = document.getElementById('emoji-dropdown');
-			const isDropdownOpen = dropdown?.classList.contains('show-emoji-dropdown');
-
-			if (isDropdownOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-				handleHideDropdown();
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				setIsOpen(false);
 			}
 		};
 
@@ -40,17 +38,15 @@ const EmojiDropdown: React.FC<IProps> = (props) => {
 		};
 	}, []);
 
-	const handleDropdownClick = () => {
-		if (document.getElementById('emoji-dropdown').classList.contains('show-emoji-dropdown')) {
-			handleHideDropdown();
-		} else {
-			handleShowDropdown();
-		}
+	const handleSelectEmoji = (emojiData: any) => {
+		setIsOpen(false);
+		handleEmojiClick(emojiData);
 	};
 
 	return (
 		<>
 			<button
+				type='button'
 				className={`custom-button ${activeAnnotation === SubMenu.EMOJI ? 'active' : ''}`}
 				style={{ paddingRight: '8px' }}
 				onClick={handleButtonClick}
@@ -59,11 +55,21 @@ const EmojiDropdown: React.FC<IProps> = (props) => {
 				Emoji
 			</button>
 			<div className='dropdown' ref={dropdownRef}>
-				<button onClick={handleDropdownClick} className='custom-button' style={{ padding: '0px' }}>
+				<button
+					type='button'
+					onClick={() => setIsOpen((open) => !open)}
+					className='custom-button'
+					style={{ padding: '0px' }}
+				>
 					<DownOneIcon />
 				</button>
-				<div id='emoji-dropdown' className='dropdown-content'>
-					<EmojiPicker onEmojiClick={handleEmojiClick} skinTonesDisabled />
+				<div className={`dropdown-content ${isOpen ? 'show-emoji-dropdown' : ''}`}>
+					{/* the picker renders thousands of emojis, only mount it while it is visible */}
+					{isOpen && (
+						<Suspense fallback={<div style={{ padding: 12, fontSize: 14 }}>Loading...</div>}>
+							<EmojiPicker onEmojiClick={handleSelectEmoji} skinTonesDisabled />
+						</Suspense>
+					)}
 				</div>
 			</div>
 		</>

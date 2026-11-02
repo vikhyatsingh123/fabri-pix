@@ -25,17 +25,26 @@ const EditorMenu: React.FC<IProps> = (props) => {
 	return (
 		<div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16 }}>
 			<button
+				type='button'
 				className={`custom-button ${menu === Menu.ANNOTATE ? 'active' : ''}`}
 				onClick={handleClick(Menu.ANNOTATE)}
 			>
 				<WriteIcon />
 				Annotate
 			</button>
-			<button className={`custom-button ${menu === Menu.CROP ? 'active' : ''}`} onClick={handleClick(Menu.CROP)}>
+			<button
+				type='button'
+				className={`custom-button ${menu === Menu.CROP ? 'active' : ''}`}
+				onClick={handleClick(Menu.CROP)}
+			>
 				<TailoringIcon />
 				Crop
 			</button>
-			<button className={`custom-button ${menu === Menu.BLUR ? 'active' : ''}`} onClick={handleClick(Menu.BLUR)}>
+			<button
+				type='button'
+				className={`custom-button ${menu === Menu.BLUR ? 'active' : ''}`}
+				onClick={handleClick(Menu.BLUR)}
+			>
 				<SubtractSelectionIcon />
 				Redact
 			</button>

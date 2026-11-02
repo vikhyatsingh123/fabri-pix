@@ -8,7 +8,7 @@ import { Canvas } from 'fabric';
 
 import AddTextIcon from '../../icons/AddTextIcon';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { SubMenu } from '../../utils/utils';
+import { generateId, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -33,11 +33,20 @@ const EditorTextbox: React.FC<IProps> = (props) => {
 		fontWeight: string;
 	}>(textBoxContextMenu);
 
+	// generating the cursor image is expensive, it is only re-created when the colors change
+	const cursorRef = useRef<{ key: string; cursor: string } | null>(null);
+
 	useEffect(() => {
 		textBoxRef.current = textBoxContextMenu;
 	}, [textBoxContextMenu]);
 
 	const updateTextCursor = () => {
+		const cursorKey = `${textBoxRef.current.backgroundColor}|${textBoxRef.current.fontColor}`;
+		if (cursorRef.current?.key === cursorKey) {
+			canvas.current.setCursor(cursorRef.current.cursor);
+			return;
+		}
+
 		const canvasElement = document.createElement('canvas');
 		canvasElement.width = 120;
 		canvasElement.height = 40;
@@ -64,12 +73,12 @@ const EditorTextbox: React.FC<IProps> = (props) => {
 		ctx.fillText('Add your text here', canvasElement.width / 2, canvasElement.height / 2 + 4);
 
 		const cursorUrl = canvasElement.toDataURL();
-		canvas.current.setCursor(`url(${cursorUrl}) 35 20, auto`);
-		canvas.current.requestRenderAll();
+		cursorRef.current = { key: cursorKey, cursor: `url(${cursorUrl}) 35 20, auto` };
+		canvas.current.setCursor(cursorRef.current.cursor);
 	};
 
 	const handleMouseDown = useCallback((e: any) => {
-		const pointer = canvas.current.getViewportPoint(e.e);
+		const pointer = canvas.current.getScenePoint(e.e);
 		const target = canvas.current.findTarget(e.e);
 
 		if (target) {
@@ -86,7 +95,7 @@ const EditorTextbox: React.FC<IProps> = (props) => {
 				fontSize: textBoxRef.current.fontSize,
 				fontStyle: textBoxRef.current.fontStyle,
 				fontWeight: textBoxRef.current.fontWeight,
-				id: crypto.randomUUID(),
+				id: generateId(),
 				left: pointer.x - 80,
 				scaleX: 1,
 				scaleY: 1,
@@ -100,7 +109,7 @@ const EditorTextbox: React.FC<IProps> = (props) => {
 	const handleMouseMove = useCallback((e: any) => {
 		const target = canvas.current.findTarget(e.e);
 		if (target) {
-			canvas.current.setCursor('resize');
+			canvas.current.setCursor('move');
 		} else {
 			updateTextCursor();
 		}
@@ -149,6 +158,7 @@ const EditorTextbox: React.FC<IProps> = (props) => {
 
 	return (
 		<button
+			type='button'
 			className={`custom-button ${activeAnnotation === SubMenu.TEXT ? 'active' : ''}`}
 			onClick={handleAddText}
 		>

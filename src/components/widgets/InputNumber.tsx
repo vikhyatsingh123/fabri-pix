@@ -39,8 +39,8 @@ const InputNumber: React.FC<IProps> = (props) => {
 	return (
 		<input
 			type='number'
-			className={`number-input ${className}`}
-			value={inputValue}
+			className={`number-input ${className ?? ''}`}
+			value={inputValue ?? ''}
 			min={min}
 			max={max}
 			onChange={handleChange}

@@ -3,7 +3,7 @@
  * Image Annotation for menu
  */
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas, Circle, FabricImage, Group, Line, Rect, Triangle } from 'fabric';
 
 import AdvancedArrowTool from './AdvancedArrowTool';
@@ -20,11 +20,12 @@ import RoundIcon from '../../icons/RoundIcon';
 import StarIcon from '../../icons/StarIcon';
 import StepsCreator from './StepsCreator';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { SubMenu } from '../../utils/utils';
+import { generateId, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
-	aIAnnotation: any;
+	// optional pre-detected regions (e.g. from an AI model) that shapes snap to
+	aIAnnotation?: any;
 	handleTrackChange: (e?: any) => void;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
@@ -58,6 +59,8 @@ interface IProps {
 	};
 }
 
+const shapeAnnotations: (SubMenu | '')[] = [SubMenu.RECTANGLE, SubMenu.CIRCLE, SubMenu.ARROW];
+
 const ImageAnnotation: React.FC<IProps> = (props) => {
 	const {
 		canvas,
@@ -73,6 +76,8 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		textBoxContextMenu,
 	} = props;
 
+	const [isShapeDropdownOpen, setIsShapeDropdownOpen] = useState<boolean>(false);
+
 	const hoverRectRef = useRef<Rect | Circle | Group | null>(null);
 	const aiScaledCoordinatesRef = useRef<{ bbox: number[]; scaledBbox: number[] }[]>([]);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -84,6 +89,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 
 	useEffect(() => {
 		if (!canvas.current || !aIAnnotation) {
+			aiScaledCoordinatesRef.current = [];
 			return;
 		}
 
@@ -105,11 +111,29 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		}));
 	}, [aIAnnotation]);
 
+	// returns the biggest region under the given scene point
+	const findHoveredEntry = (x: number, y: number) => {
+		let hoveredEntry = null;
+		let maxArea = 0;
+
+		for (const coord of aiScaledCoordinatesRef.current) {
+			const [x1, y1, x2, y2] = coord.scaledBbox;
+			if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
+				const area = (x2 - x1) * (y2 - y1);
+				if (area > maxArea) {
+					maxArea = area;
+					hoveredEntry = coord;
+				}
+			}
+		}
+		return hoveredEntry;
+	};
+
 	const handleStarShape = () => {
 		canvas.current.discardActiveObject();
 		setActiveAnnotation(SubMenu.STAR);
 
-		const id = crypto.randomUUID();
+		const id = generateId();
 		const height = canvas.current.getHeight();
 		const width = canvas.current.getWidth();
 
@@ -138,24 +162,8 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
-		const vpt = canvas.current.viewportTransform;
-		const x = (pointer.x - vpt[4]) / vpt[0];
-		const y = (pointer.y - vpt[5]) / vpt[3];
-
-		let hoveredEntry = null;
-		let maxArea = 0;
-
-		for (const coord of aiScaledCoordinatesRef.current) {
-			const [x1, y1, x2, y2] = coord.scaledBbox;
-			if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-				const area = (x2 - x1) * (y2 - y1);
-				if (area > maxArea) {
-					maxArea = area;
-					hoveredEntry = coord;
-				}
-			}
-		}
+		const { x, y } = canvas.current.getScenePoint(event.e);
+		const hoveredEntry = findHoveredEntry(x, y);
 
 		if (hoveredEntry) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
@@ -178,26 +186,10 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
-		const vpt = canvas.current.viewportTransform;
-		const x = (pointer.x - vpt[4]) / vpt[0];
-		const y = (pointer.y - vpt[5]) / vpt[3];
+		const { x, y } = canvas.current.getScenePoint(event.e);
+		const hoveredEntry = findHoveredEntry(x, y);
 
-		let hoveredEntry = null;
-		let maxArea = 0;
-
-		for (const coord of aiScaledCoordinatesRef.current) {
-			const [x1, y1, x2, y2] = coord.scaledBbox;
-			if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-				const area = (x2 - x1) * (y2 - y1);
-				if (area > maxArea) {
-					maxArea = area;
-					hoveredEntry = coord;
-				}
-			}
-		}
-
-		const id = crypto.randomUUID();
+		const id = generateId();
 		if (hoveredEntry) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
 			imageEditorShapes({
@@ -228,12 +220,12 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 					angle: 0,
 					fill: 'transparent',
 					height: 50,
-					left: pointer.x - 50,
+					left: x - 50,
 					scaleX: 1,
 					scaleY: 1,
 					stroke: '#ff0000',
 					strokeWidth: 5,
-					top: pointer.y - 25,
+					top: y - 25,
 					width: 100,
 				},
 			});
@@ -245,24 +237,8 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
-		const vpt = canvas.current.viewportTransform;
-		const x = (pointer.x - vpt[4]) / vpt[0];
-		const y = (pointer.y - vpt[5]) / vpt[3];
-
-		let hoveredEntry = null;
-		let maxArea = 0;
-
-		for (const coord of aiScaledCoordinatesRef.current) {
-			const [x1, y1, x2, y2] = coord.scaledBbox;
-			if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-				const area = (x2 - x1) * (y2 - y1);
-				if (area > maxArea) {
-					maxArea = area;
-					hoveredEntry = coord;
-				}
-			}
-		}
+		const { x, y } = canvas.current.getScenePoint(event.e);
+		const hoveredEntry = findHoveredEntry(x, y);
 
 		if (hoveredEntry) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
@@ -284,26 +260,10 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
-		const vpt = canvas.current.viewportTransform;
-		const x = (pointer.x - vpt[4]) / vpt[0];
-		const y = (pointer.y - vpt[5]) / vpt[3];
+		const { x, y } = canvas.current.getScenePoint(event.e);
+		const hoveredEntry = findHoveredEntry(x, y);
 
-		let hoveredEntry = null;
-		let maxArea = 0;
-
-		for (const coord of aiScaledCoordinatesRef.current) {
-			const [x1, y1, x2, y2] = coord.scaledBbox;
-			if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-				const area = (x2 - x1) * (y2 - y1);
-				if (area > maxArea) {
-					maxArea = area;
-					hoveredEntry = coord;
-				}
-			}
-		}
-
-		const id = crypto.randomUUID();
+		const id = generateId();
 		if (hoveredEntry) {
 			const [x1, y1, x2, y2] = hoveredEntry.scaledBbox;
 			imageEditorShapes({
@@ -332,13 +292,13 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 					angle: 0,
 					fill: 'transparent',
 					id,
-					left: pointer.x - 50,
+					left: x - 50,
 					radius: 50,
 					scaleX: 1,
 					scaleY: 1,
 					stroke: '#ff0000',
 					strokeWidth: 5,
-					top: pointer.y - 50,
+					top: y - 50,
 				},
 			});
 		}
@@ -349,24 +309,8 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
-		const vpt = canvas.current.viewportTransform;
-		const x = (pointer.x - vpt[4]) / vpt[0];
-		const y = (pointer.y - vpt[5]) / vpt[3];
-
-		let hoveredEntry = null;
-		let maxArea = 0;
-
-		for (const coord of aiScaledCoordinatesRef.current) {
-			const [x1, y1, x2, y2] = coord.scaledBbox;
-			if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-				const area = (x2 - x1) * (y2 - y1);
-				if (area > maxArea) {
-					maxArea = area;
-					hoveredEntry = coord;
-				}
-			}
-		}
+		const { x, y } = canvas.current.getScenePoint(event.e);
+		const hoveredEntry = findHoveredEntry(x, y);
 
 		const obj1 = (hoverRectRef.current as any)?._objects[1];
 		const obj2 = (hoverRectRef.current as any)?._objects[0];
@@ -440,29 +384,13 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(event.e);
-		const vpt = canvas.current.viewportTransform;
-		const x = (pointer.x - vpt[4]) / vpt[0];
-		const y = (pointer.y - vpt[5]) / vpt[3];
-
-		let hoveredEntry = null;
-		let maxArea = 0;
-
-		for (const coord of aiScaledCoordinatesRef.current) {
-			const [x1, y1, x2, y2] = coord.scaledBbox;
-			if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-				const area = (x2 - x1) * (y2 - y1);
-				if (area > maxArea) {
-					maxArea = area;
-					hoveredEntry = coord;
-				}
-			}
-		}
+		const { x, y } = canvas.current.getScenePoint(event.e);
+		const hoveredEntry = findHoveredEntry(x, y);
 
 		const obj0 = (hoverRectRef.current as any)?._objects[0];
 		const obj1 = (hoverRectRef.current as any)?._objects[1];
 
-		const id = crypto.randomUUID();
+		const id = generateId();
 		if (hoveredEntry && obj0 && obj1) {
 			imageEditorShapes({
 				canvas,
@@ -509,8 +437,8 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 					id,
 					angle: 0,
 					fill: 'transparent',
-					left: pointer.x - 36,
-					top: pointer.y - 10.5,
+					left: x - 36,
+					top: y - 10.5,
 					scaleX: 1,
 					scaleY: 1,
 					objects: [
@@ -540,6 +468,23 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		}
 	}, []);
 
+	// removes the hover preview and all listeners of the rectangle / circle / arrow tools
+	const clearShapeTool = (fabricCanvas: Canvas | null) => {
+		if (!fabricCanvas) {
+			return;
+		}
+		if (hoverRectRef.current) {
+			fabricCanvas.remove(hoverRectRef.current);
+			hoverRectRef.current = null;
+		}
+		fabricCanvas.off('mouse:move', handleRectMouseMove);
+		fabricCanvas.off('mouse:down', handleRectMouseDown);
+		fabricCanvas.off('mouse:move', handleCircleMouseMove);
+		fabricCanvas.off('mouse:down', handleCircleMouseDown);
+		fabricCanvas.off('mouse:move', handleArrowMouseMove);
+		fabricCanvas.off('mouse:down', handleArrowMouseDown);
+	};
+
 	useEffect(() => {
 		if (!canvas.current) {
 			return;
@@ -550,16 +495,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		canvas.current.requestRenderAll();
 
 		return () => {
-			if (hoverRectRef.current) {
-				canvasOverlay.remove(hoverRectRef.current);
-				hoverRectRef.current = null;
-			}
-			canvasOverlay.off('mouse:move', handleRectMouseMove);
-			canvasOverlay.off('mouse:down', handleRectMouseDown);
-			canvasOverlay.off('mouse:move', handleCircleMouseMove);
-			canvasOverlay.off('mouse:down', handleCircleMouseDown);
-			canvasOverlay.off('mouse:move', handleArrowMouseMove);
-			canvasOverlay.off('mouse:down', handleArrowMouseDown);
+			clearShapeTool(canvasOverlay);
 		};
 	}, []);
 
@@ -568,27 +504,16 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		if (activeAnnotation !== SubMenu.RECTANGLE) {
-			canvas.current.off('mouse:move', handleRectMouseMove);
-			canvas.current.off('mouse:down', handleRectMouseDown);
-		}
-		if (activeAnnotation !== SubMenu.CIRCLE) {
-			canvas.current.off('mouse:move', handleCircleMouseMove);
-			canvas.current.off('mouse:down', handleCircleMouseDown);
-		}
-		if (activeAnnotation !== SubMenu.ARROW) {
-			canvas.current.off('mouse:move', handleArrowMouseMove);
-			canvas.current.off('mouse:down', handleArrowMouseDown);
+		// another tool got selected, the hover preview must not stay on the canvas (it would be exported)
+		if (!shapeAnnotations.includes(activeAnnotation)) {
+			clearShapeTool(canvas.current);
 		}
 	}, [activeAnnotation]);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			const dropdown = document.getElementById('shape-dropdown');
-			const isDropdownOpen = dropdown?.classList.contains('show-shape-dropdown');
-
-			if (isDropdownOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-				handleHideDropdown();
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				setIsShapeDropdownOpen(false);
 			}
 		};
 
@@ -598,35 +523,45 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		};
 	}, []);
 
-	const handleRectangularShape = () => {
-		if (activeAnnotation === SubMenu.RECTANGLE) {
-			return;
-		}
-		setActiveAnnotation(SubMenu.RECTANGLE);
+	const startShapeTool = (shapeType: SubMenu, hoverObject: Rect | Circle | Group) => {
+		clearShapeTool(canvas.current);
+		setActiveAnnotation(shapeType);
 
-		hoverRectRef.current = new Rect({
-			fill: 'rgba(171, 211, 255, 0.3)',
-			stroke: '#ff0000',
-			strokeWidth: 2,
-			strokeDashArray: [4, 2],
-			strokeUniform: true,
-			selectable: false,
-			evented: false,
-			excludeFromExport: true,
-			shapeType: SubMenu.AI_RECTANGLE,
-		});
-
+		hoverRectRef.current = hoverObject;
 		hoverRectRef.current.visible = false;
 		canvas.current.add(hoverRectRef.current);
 		canvas.current.discardActiveObject();
 		canvas.current.requestRenderAll();
+	};
+
+	const handleRectangularShape = () => {
+		if (activeAnnotation === SubMenu.RECTANGLE) {
+			return;
+		}
+
+		startShapeTool(
+			SubMenu.RECTANGLE,
+			new Rect({
+				fill: 'rgba(171, 211, 255, 0.3)',
+				stroke: '#ff0000',
+				strokeWidth: 2,
+				strokeDashArray: [4, 2],
+				strokeUniform: true,
+				selectable: false,
+				evented: false,
+				excludeFromExport: true,
+				shapeType: SubMenu.AI_RECTANGLE,
+			}),
+		);
 
 		canvas.current.on('mouse:down', handleRectMouseDown);
 		canvas.current.on('mouse:move', handleRectMouseMove);
 	};
 
 	const handleAddArrow = () => {
-		setActiveAnnotation(SubMenu.ARROW);
+		if (activeAnnotation === SubMenu.ARROW) {
+			return;
+		}
 
 		const line = new Line([50, 50, 100, 50], {
 			angle: 0,
@@ -649,7 +584,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			angle: 90,
 		});
 
-		hoverRectRef.current = new Group([line, arrowhead], {
+		const hoverArrow = new Group([line, arrowhead], {
 			angle: 0,
 			fill: 'transparent',
 			stroke: '#ff0000',
@@ -660,39 +595,35 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			evented: false,
 			excludeFromExport: true,
 		});
-
-		hoverRectRef.current.set({
+		hoverArrow.set({
 			shapeType: SubMenu.AI_ARROW,
 		});
 
-		hoverRectRef.current.visible = false;
-		canvas.current.add(hoverRectRef.current);
-		canvas.current.discardActiveObject();
-		canvas.current.requestRenderAll();
+		startShapeTool(SubMenu.ARROW, hoverArrow);
 
 		canvas.current.on('mouse:down', handleArrowMouseDown);
 		canvas.current.on('mouse:move', handleArrowMouseMove);
 	};
 
 	const handleCircularShape = () => {
-		setActiveAnnotation(SubMenu.CIRCLE);
+		if (activeAnnotation === SubMenu.CIRCLE) {
+			return;
+		}
 
-		hoverRectRef.current = new Circle({
-			fill: 'rgba(171, 211, 255, 0.3)',
-			stroke: '#ff0000',
-			strokeWidth: 2,
-			strokeDashArray: [4, 2],
-			strokeUniform: true,
-			selectable: false,
-			evented: false,
-			excludeFromExport: true,
-			shapeType: SubMenu.AI_CIRCLE,
-		});
-
-		hoverRectRef.current.visible = false;
-		canvas.current.discardActiveObject();
-		canvas.current.add(hoverRectRef.current);
-		canvas.current.requestRenderAll();
+		startShapeTool(
+			SubMenu.CIRCLE,
+			new Circle({
+				fill: 'rgba(171, 211, 255, 0.3)',
+				stroke: '#ff0000',
+				strokeWidth: 2,
+				strokeDashArray: [4, 2],
+				strokeUniform: true,
+				selectable: false,
+				evented: false,
+				excludeFromExport: true,
+				shapeType: SubMenu.AI_CIRCLE,
+			}),
+		);
 
 		canvas.current.on('mouse:down', handleCircleMouseDown);
 		canvas.current.on('mouse:move', handleCircleMouseMove);
@@ -700,16 +631,16 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 
 	const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
+		// reset so that selecting the same file again still triggers onChange
+		event.target.value = '';
 		if (!file) {
 			return;
 		}
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			const imageUrl = e.target?.result as string;
-			if (imageUrl) {
-				const id = crypto.randomUUID();
-				const height = canvas.current.getHeight();
-				const width = canvas.current.getWidth();
+			if (imageUrl && canvas.current) {
+				const id = generateId();
 
 				imageEditorShapes({
 					canvas,
@@ -720,8 +651,6 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 						src: imageUrl,
 						angle: 0,
 						fill: 'transparent',
-						left: width / 2 - 50,
-						top: height / 2 - 50,
 						scaleX: 1,
 						scaleY: 1,
 					},
@@ -736,6 +665,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 
 		canvas.current.discardActiveObject();
 		canvas.current.requestRenderAll();
+		fileInputRef.current?.click();
 	};
 
 	const handleCommentBox = () => {
@@ -748,7 +678,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			shapeType: SubMenu.COMMENT_BOX,
 			isNewShape: true,
 			canvasData: {
-				id: crypto.randomUUID(),
+				id: generateId(),
 				top: canvas.current.getHeight() / 2 - 50,
 				left: canvas.current.getWidth() / 2 - 100,
 				borderColor: commentBoxRef.current.borderColor,
@@ -771,26 +701,13 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 		});
 
 		setActiveAnnotation('');
-		canvas.current.renderAll();
+		canvas.current.requestRenderAll();
 	};
 
 	const handleShapeClick = () => {
-		if (
-			activeAnnotation === SubMenu.RECTANGLE ||
-			activeAnnotation === SubMenu.CIRCLE ||
-			activeAnnotation === SubMenu.ARROW
-		) {
+		if (shapeAnnotations.includes(activeAnnotation)) {
 			setActiveAnnotation('');
-			if (hoverRectRef.current) {
-				canvas.current.remove(hoverRectRef.current);
-				hoverRectRef.current = null;
-			}
-			canvas.current.off('mouse:move', handleRectMouseMove);
-			canvas.current.off('mouse:down', handleRectMouseDown);
-			canvas.current.off('mouse:move', handleCircleMouseMove);
-			canvas.current.off('mouse:down', handleCircleMouseDown);
-			canvas.current.off('mouse:move', handleArrowMouseMove);
-			canvas.current.off('mouse:down', handleArrowMouseDown);
+			clearShapeTool(canvas.current);
 			return;
 		}
 		handleRectangularShape();
@@ -828,47 +745,12 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 			onClick: handleCommentBox,
 		},
 		{
-			label: '',
+			label: 'Add Custom',
 			key: 'add-custom',
-			icon: (
-				<div>
-					<input
-						type='file'
-						accept='image/*'
-						ref={fileInputRef}
-						onChange={handleImageUpload}
-						style={{ display: 'none' }}
-					/>
-
-					<button
-						type='button'
-						style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-						onClick={() => fileInputRef.current?.click()}
-					>
-						<PlusIcon disabled={false} />
-						<span style={{ marginLeft: '6px' }}>Add Custom</span>
-					</button>
-				</div>
-			),
+			icon: <PlusIcon disabled={false} />,
 			onClick: handleAddCustom,
 		},
 	];
-
-	const handleShowDropdown = () => {
-		document.getElementById('shape-dropdown').classList.add('show-shape-dropdown');
-	};
-
-	const handleHideDropdown = () => {
-		document.getElementById('shape-dropdown').classList.remove('show-shape-dropdown');
-	};
-
-	const handleDropdownClick = () => {
-		if (document.getElementById('shape-dropdown').classList.contains('show-shape-dropdown')) {
-			handleHideDropdown();
-		} else {
-			handleShowDropdown();
-		}
-	};
 
 	return (
 		<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -879,21 +761,31 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 				stepCreatorRef={stepCreatorRef}
 			/>
 			<button
-				className={`custom-button ${
-					[SubMenu.RECTANGLE, SubMenu.CIRCLE, SubMenu.ARROW].includes(activeAnnotation as SubMenu)
-						? 'active'
-						: ''
-				}`}
+				type='button'
+				className={`custom-button ${shapeAnnotations.includes(activeAnnotation) ? 'active' : ''}`}
 				style={{ paddingRight: '8px' }}
 				onClick={handleShapeClick}
 			>
 				Shapes
 			</button>
 			<div className='dropdown' ref={dropdownRef}>
-				<button onClick={handleDropdownClick} className='custom-button' style={{ padding: '0px' }}>
+				<button
+					type='button'
+					onClick={() => setIsShapeDropdownOpen((open) => !open)}
+					className='custom-button'
+					style={{ padding: '0px' }}
+				>
 					<DownOneIcon />
 				</button>
-				<div id='shape-dropdown' className='dropdown-content'>
+				{/* kept outside of the dropdown so that it stays mounted while the file dialog is open */}
+				<input
+					type='file'
+					accept='image/*'
+					ref={fileInputRef}
+					onChange={handleImageUpload}
+					style={{ display: 'none' }}
+				/>
+				<div className={`dropdown-content ${isShapeDropdownOpen ? 'show-shape-dropdown' : ''}`}>
 					<ul style={{ padding: 12, margin: 0 }}>
 						{menuProps.map((item) => (
 							<li
@@ -906,7 +798,7 @@ const ImageAnnotation: React.FC<IProps> = (props) => {
 								}}
 								onClick={() => {
 									item.onClick();
-									handleHideDropdown();
+									setIsShapeDropdownOpen(false);
 								}}
 							>
 								<span style={{ marginRight: 8, marginTop: '3px' }}>{item.icon}</span>

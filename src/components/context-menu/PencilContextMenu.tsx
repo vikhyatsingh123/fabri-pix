@@ -9,7 +9,8 @@ import React from 'react';
 import DeleteIcon from '../../icons/DeleteIcon';
 import HandleRoundIcon from '../../icons/HandleRoundIcon';
 import ColorPicker from '../widgets/ColorPicker';
-import InputNumber from '../widgets/InputNumber.tsx';
+import InputNumber from '../widgets/InputNumber';
+import { commitActiveObjectChange, removeCanvasObject } from '../../utils/canvasHelpers';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -31,6 +32,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 
 	const handleStrokeColorChangeComplete = (val: string) => {
 		setFreeDrawingBrushContextMenu({ ...freeDrawingBrushContextMenu, color: val });
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -44,11 +46,11 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 		}
 		setFreeDrawingBrushContextMenu({ ...freeDrawingBrushContextMenu, width: val });
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleDeleteAnnotations = () => {
-		canvas.current.remove(selectedObject);
-		canvas.current.renderAll();
+		removeCanvasObject(canvas.current, selectedObject);
 	};
 
 	return (
@@ -79,7 +81,7 @@ const PencilContextMenu: React.FC<IProps> = (props) => {
 				/>
 			</div>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
-			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+			<button type='button' className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>
 		</div>

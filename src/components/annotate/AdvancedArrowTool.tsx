@@ -8,7 +8,7 @@ import { Canvas, Polygon, Triangle } from 'fabric';
 
 import ArrowRightUpIcon from '../../icons/ArrowRightUpIcon';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
+import { generateId, multiSelectAnnotation, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -36,12 +36,12 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 		if (activeObj) {
 			return;
 		}
-		const pointer = canvas.current.getViewportPoint(e.e);
+		const pointer = canvas.current.getScenePoint(e.e);
 
 		if (!isDrawing.current) {
 			isDrawing.current = true;
 
-			const id = crypto.randomUUID();
+			const id = generateId();
 			imageEditorShapes({
 				canvas,
 				shapeType: SubMenu.TEMP_ADVANCED_ARROW,
@@ -76,7 +76,7 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(e.e);
+		const pointer = canvas.current.getScenePoint(e.e);
 		const points = currentPolyline.current?.points;
 		points[1] = { x: pointer.x, y: pointer.y };
 		currentPolyline.current?.set({ points });
@@ -90,7 +90,7 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 			top: pointer.y,
 			angle: angle + 90,
 		});
-		canvas.current.renderAll();
+		canvas.current.requestRenderAll();
 	}, []);
 
 	const handleMouseUp = useCallback((event: any) => {
@@ -104,15 +104,7 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 				canvas.current.remove(currentPolyline.current);
 				canvas.current.remove(arrowHead.current);
 			} else {
-				const target = canvas.current.findTarget(event.e) as any;
-				const pointer = canvas.current.getViewportPoint(event.e);
-
-				if (target) {
-					const size = target._objects ? target._objects.length : 0;
-					if (size > 0) {
-						canvas.current.setActiveObject(target._objects ? target._objects[size - 1] : null);
-					}
-				}
+				const pointer = canvas.current.getScenePoint(event.e);
 
 				canvas.current.remove(currentPolyline.current);
 				canvas.current.remove(arrowHead.current);
@@ -128,7 +120,7 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 						strokeWidth: advancedArrowRef.current.width,
 						cornerColor: 'blue',
 						points: polylinePoints.current,
-						id: crypto.randomUUID(),
+						id: generateId(),
 					},
 				});
 
@@ -192,6 +184,10 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 		canvas.current.discardActiveObject();
 		canvas.current.requestRenderAll();
 
+		// remove first so that the listeners can never be registered twice
+		canvas.current.off('mouse:down', handleMouseDown);
+		canvas.current.off('mouse:move', handleMouseMove);
+		canvas.current.off('mouse:up', handleMouseUp);
 		canvas.current.on('mouse:down', handleMouseDown);
 		canvas.current.on('mouse:move', handleMouseMove);
 		canvas.current.on('mouse:up', handleMouseUp);
@@ -199,6 +195,7 @@ const AdvancedArrowTool: React.FC<IProps> = (props) => {
 
 	return (
 		<button
+			type='button'
 			className={`custom-button ${activeAnnotation === SubMenu.ADVANCED_ARROW ? 'active' : ''}`}
 			onClick={handleArrowTool}
 		>

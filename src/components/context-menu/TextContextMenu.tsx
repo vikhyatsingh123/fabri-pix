@@ -7,8 +7,9 @@ import { Canvas, Textbox } from 'fabric';
 import React from 'react';
 
 import ColorPicker from '../widgets/ColorPicker';
-import InputNumber from '../widgets/InputNumber.tsx';
+import InputNumber from '../widgets/InputNumber';
 import TextAlignSegmented from '../widgets/TextAlignSegmented';
+import { commitActiveObjectChange, removeCanvasObject } from '../../utils/canvasHelpers';
 import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
 import DeleteIcon from '../../icons/DeleteIcon';
 import AddTextIcon from '../../icons/AddTextIcon';
@@ -49,6 +50,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 
 	const handleFontColorChangeComplete = (val: string) => {
 		setTextBoxContextMenu({ ...textBoxContextMenu, fontColor: val });
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleBackgroundColorChange = (val: string) => {
@@ -61,6 +63,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 
 	const handleBackgroundColorChangeComplete = (val: string) => {
 		setTextBoxContextMenu({ ...textBoxContextMenu, backgroundColor: val });
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleAlignChange = (value: string) => {
@@ -71,6 +74,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 			});
 		}
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleFontStyleChange = () => {
@@ -85,6 +89,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 			fontStyle: textBoxContextMenu.fontStyle === 'italic' ? 'normal' : 'italic',
 		});
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleFontSizeChange = (value: number | null) => {
@@ -97,6 +102,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 		}
 		setTextBoxContextMenu({ ...textBoxContextMenu, fontSize: value });
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleFontTypeChange = () => {
@@ -111,11 +117,11 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 			fontWeight: textBoxContextMenu.fontWeight === 'bold' ? 'normal' : 'bold',
 		});
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleDeleteAnnotations = () => {
-		canvas.current.remove(selectedObject);
-		canvas.current.renderAll();
+		removeCanvasObject(canvas.current, selectedObject);
 	};
 
 	return (
@@ -160,6 +166,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
 				<button
+					type='button'
 					className={`custom-button ${
 						(Object.keys(selectedObject).length === 0
 							? textBoxContextMenu.fontWeight
@@ -172,6 +179,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 					<TextBoldIcon />
 				</button>
 				<button
+					type='button'
 					className={`custom-button ${
 						(Object.keys(selectedObject).length === 0
 							? textBoxContextMenu.fontStyle
@@ -187,7 +195,7 @@ const TextContextMenu: React.FC<IProps> = (props) => {
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 			<TextAlignSegmented defaultValue={selectedObject.textAlign} onChange={handleAlignChange} />
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
-			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+			<button type='button' className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>
 		</div>

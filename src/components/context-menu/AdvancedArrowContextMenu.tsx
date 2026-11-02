@@ -8,7 +8,8 @@ import { Canvas, Triangle } from 'fabric';
 import HandleRoundIcon from '../../icons/HandleRoundIcon';
 import DeleteIcon from '../../icons/DeleteIcon';
 import ColorPicker from '../widgets/ColorPicker';
-import InputNumber from '../widgets/InputNumber.tsx';
+import InputNumber from '../widgets/InputNumber';
+import { commitActiveObjectChange, removeCanvasObject } from '../../utils/canvasHelpers';
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	selectedObject: any;
@@ -34,15 +35,11 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 
 	const handleBorderColorChangeComplete = (val: string) => {
 		advancedArrowRef.current.stroke = val;
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleDeleteAnnotations = () => {
-		const arrowHead = canvas.current?.getObjects().find((obj: any) => obj.id === selectedObject.id + '-arrowhead');
-		if (arrowHead) {
-			canvas.current?.remove(arrowHead);
-		}
-		canvas.current.remove(selectedObject);
-		canvas.current.renderAll();
+		removeCanvasObject(canvas.current, selectedObject);
 	};
 
 	const modifyArrowHeadOnMoving = (arrowHead: Triangle, coords: any) => {
@@ -75,9 +72,12 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 			});
 		}
 
-		modifyArrowHeadOnMoving(arrowHead, currentObject?.oCoords);
+		if (arrowHead && currentObject?.oCoords) {
+			modifyArrowHeadOnMoving(arrowHead as Triangle, currentObject.oCoords);
+		}
 		advancedArrowRef.current.width = val;
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
 	};
 
 	return (
@@ -109,7 +109,7 @@ const AdvancedArrowContextMenu: React.FC<IProps> = (props) => {
 			</div>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 
-			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+			<button type='button' className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>
 		</div>

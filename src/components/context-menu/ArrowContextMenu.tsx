@@ -9,6 +9,7 @@ import { Canvas } from 'fabric';
 import DeleteIcon from '../../icons/DeleteIcon';
 import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
 import ColorPicker from '../widgets/ColorPicker';
+import { commitActiveObjectChange, removeCanvasObject } from '../../utils/canvasHelpers';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -19,7 +20,7 @@ const ArrowContextMenu: React.FC<IProps> = (props) => {
 
 	const handleBackgroundColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
-		if (currentObject) {
+		if (currentObject?._objects) {
 			currentObject._objects[1].set({ fill: val });
 			currentObject._objects[0].set({ stroke: val });
 		}
@@ -27,8 +28,11 @@ const ArrowContextMenu: React.FC<IProps> = (props) => {
 	};
 
 	const handleDeleteAnnotations = () => {
-		canvas.current.remove(selectedObject);
-		canvas.current.renderAll();
+		removeCanvasObject(canvas.current, selectedObject);
+	};
+
+	const handleColorChangeComplete = () => {
+		commitActiveObjectChange(canvas.current);
 	};
 
 	return (
@@ -36,11 +40,15 @@ const ArrowContextMenu: React.FC<IProps> = (props) => {
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 				<BackgroundColorIcon />
 				<span style={{ margin: '0 8px 0 4px' }}>Fill</span>
-				<ColorPicker value={selectedObject?._objects?.[1]?.fill} onChange={handleBackgroundColorChange} />
+				<ColorPicker
+					value={selectedObject?._objects?.[1]?.fill}
+					onChange={handleBackgroundColorChange}
+					onChangeComplete={handleColorChangeComplete}
+				/>
 			</div>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 
-			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+			<button type='button' className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>
 		</div>

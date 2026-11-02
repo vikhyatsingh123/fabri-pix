@@ -27,7 +27,8 @@
 	border: 1px solid #000000;
 }
 
-button:disabled {
+/* scoped, a bare `button:disabled` rule leaked into the host application */
+.custom-button:disabled {
 	cursor: not-allowed;
 }
 

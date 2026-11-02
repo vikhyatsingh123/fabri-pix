@@ -8,7 +8,7 @@ import { Canvas, Rect } from 'fabric';
 
 import OrderedListIcon from '../../icons/OrderedListIcon';
 import imageEditorShapes from '../../utils/imageEditorShapes';
-import { multiSelectAnnotation, SubMenu } from '../../utils/utils';
+import { generateId, multiSelectAnnotation, SubMenu } from '../../utils/utils';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -29,8 +29,16 @@ const StepsCreator: React.FC<IProps> = (props) => {
 	const isDrawing = useRef<boolean>(false);
 	const stepRectRef = useRef<Rect | null>(null);
 	const startPointer = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+	// generating the cursor image is expensive, it is only re-created when the step or colors change
+	const cursorRef = useRef<{ key: string; cursor: string } | null>(null);
 
 	const updateCustomCursor = (nextStep: number) => {
+		const cursorKey = `${nextStep}|${stepCreatorRef.current.backgroundColor}|${stepCreatorRef.current.fontColor}`;
+		if (cursorRef.current?.key === cursorKey) {
+			canvas.current.setCursor(cursorRef.current.cursor);
+			return;
+		}
+
 		const canvasElement = document.createElement('canvas');
 		canvasElement.width = 60;
 		canvasElement.height = 60;
@@ -53,13 +61,22 @@ const StepsCreator: React.FC<IProps> = (props) => {
 		ctx.fillText(nextStep.toString(), 30, 30);
 
 		const cursorUrl = canvasElement.toDataURL();
+		cursorRef.current = { key: cursorKey, cursor: `url(${cursorUrl}) 30 30, auto` };
+		canvas.current.setCursor(cursorRef.current.cursor);
+	};
 
-		canvas.current.setCursor(`url(${cursorUrl}) 30 30, auto`);
-		canvas.current.requestRenderAll();
+	// continue numbering after the highest step on the canvas instead of restarting from 1
+	const getNextStepNumber = () => {
+		const stepNumbers = canvas.current
+			.getObjects()
+			.filter((obj: any) => obj.shapeType === SubMenu.STEPS_CREATOR)
+			.map((obj: any) => Number(obj._objects?.[1]?._objects?.[1]?.text))
+			.filter((stepNumber) => !isNaN(stepNumber));
+		return stepNumbers.length > 0 ? Math.max(...stepNumbers) + 1 : 1;
 	};
 
 	const createStepCircle = (x: number, y: number, number: number) => {
-		const id = crypto.randomUUID();
+		const id = generateId();
 		const coordinates = stepRectRef.current?.getCoords();
 
 		let circleLeft = 0,
@@ -128,15 +145,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 
 	const handleMouseUp = useCallback((e: any) => {
 		if (isDrawing.current && stepRectRef.current) {
-			const target = canvas.current.findTarget(e.e) as any;
-			if (target) {
-				const size = target._objects ? target._objects.length : 0;
-				if (size > 0) {
-					canvas.current.setActiveObject(target._objects ? target._objects[size - 1] : null);
-					canvas.current.requestRenderAll();
-				}
-			}
-			const pointer = canvas.current.getViewportPoint(e.e);
+			const pointer = canvas.current.getScenePoint(e.e);
 			createStepCircle(pointer.x, pointer.y, stepCreatorRef.current.stepNumber);
 
 			stepCreatorRef.current.stepNumber += 1;
@@ -150,7 +159,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 	const handleMouseMove = useCallback((e: any) => {
 		const target = canvas.current.findTarget(e.e);
 		if (target) {
-			canvas.current.setCursor('resize');
+			canvas.current.setCursor('move');
 		} else {
 			updateCustomCursor(stepCreatorRef.current.stepNumber);
 		}
@@ -159,7 +168,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(e.e);
+		const pointer = canvas.current.getScenePoint(e.e);
 		const rect = stepRectRef.current;
 
 		rect.set({
@@ -170,7 +179,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 		});
 
 		stepRectRef.current.setCoords();
-		canvas.current.renderAll();
+		canvas.current.requestRenderAll();
 	}, []);
 
 	const handleMouseDown = useCallback((e: any) => {
@@ -179,7 +188,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			return;
 		}
 
-		const pointer = canvas.current.getViewportPoint(e.e);
+		const pointer = canvas.current.getScenePoint(e.e);
 		startPointer.current = { x: pointer.x, y: pointer.y };
 		isDrawing.current = true;
 
@@ -244,7 +253,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 			setActiveAnnotation(SubMenu.STEPS_CREATOR);
 			canvas.current.discardActiveObject();
 			canvas.current.defaultCursor = 'crosshair';
-			stepCreatorRef.current.stepNumber = 1;
+			stepCreatorRef.current.stepNumber = getNextStepNumber();
 			canvas.current.selection = false;
 			canvas.current.on('mouse:up', handleMouseUp);
 			canvas.current.on('mouse:down', handleMouseDown);
@@ -262,6 +271,7 @@ const StepsCreator: React.FC<IProps> = (props) => {
 
 	return (
 		<button
+			type='button'
 			className={`custom-button ${activeAnnotation === SubMenu.STEPS_CREATOR ? 'active' : ''}`}
 			onClick={handleStepsCreator}
 		>

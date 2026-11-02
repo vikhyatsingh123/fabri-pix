@@ -11,8 +11,9 @@ import HandleRoundIcon from '../../icons/HandleRoundIcon';
 import DeleteIcon from '../../icons/DeleteIcon';
 import ListNumbersIcon from '../../icons/ListNumbersIcon';
 import ColorPicker from '../widgets/ColorPicker';
-import InputNumber from '../widgets/InputNumber.tsx';
+import InputNumber from '../widgets/InputNumber';
 import AddTextTwoIcon from '../../icons/AddTextTwoIcon';
+import { commitActiveObjectChange, removeCanvasObject } from '../../utils/canvasHelpers';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -39,6 +40,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 
 	const handleBorderColorChangeComplete = (val: string) => {
 		stepCreatorRef.current.borderColor = val;
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleBackgroundColorChange = (val: string) => {
@@ -51,6 +53,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 
 	const handleBackgroundColorChangeComplete = (val: string) => {
 		stepCreatorRef.current.backgroundColor = val;
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -64,6 +67,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 		}
 		stepCreatorRef.current.strokeWidth = val;
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleFontColorChange = (val: string) => {
@@ -76,6 +80,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 
 	const handleFontColorChangeComplete = (val: string) => {
 		stepCreatorRef.current.fontColor = val;
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleSizeChange = (currentObject: any) => {
@@ -107,12 +112,13 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 			return;
 		}
 		const currentObject = canvas.current.getActiveObject() as any;
-		if (currentObject) {
+		if (currentObject?._objects) {
 			currentObject._objects?.[1]?._objects?.[1]?.set({ fontSize: val });
 			handleSizeChange(currentObject);
 		}
 		stepCreatorRef.current.fontSize = val;
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleStartStepNumberChange = (val: number | null) => {
@@ -120,17 +126,20 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 			return;
 		}
 		const currentObject = canvas.current.getActiveObject() as any;
-		if (currentObject) {
+		if (currentObject?._objects) {
 			currentObject._objects?.[1]?._objects?.[1]?.set({ text: val.toString() });
 			handleSizeChange(currentObject);
+			// the next step continues after the edited one instead of repeating its number
+			stepCreatorRef.current.stepNumber = val + 1;
+		} else {
+			stepCreatorRef.current.stepNumber = val;
 		}
-		stepCreatorRef.current.stepNumber = val;
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleDeleteAnnotations = () => {
-		canvas.current.remove(selectedObject);
-		canvas.current.renderAll();
+		removeCanvasObject(canvas.current, selectedObject);
 	};
 
 	return (
@@ -142,7 +151,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 					value={
 						Object.keys(selectedObject).length === 0
 							? stepCreatorRef.current.backgroundColor
-							: selectedObject._objects?.[1].fill
+							: selectedObject._objects?.[1]?._objects?.[0]?.fill
 					}
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
@@ -221,7 +230,7 @@ const StepsCreatorContextMenu: React.FC<IProps> = (props) => {
 			</div>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 
-			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+			<button type='button' className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>
 		</div>

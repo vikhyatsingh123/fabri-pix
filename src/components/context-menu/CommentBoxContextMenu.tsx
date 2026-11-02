@@ -3,8 +3,8 @@
  * Context menu for comment box
  */
 
-import React from 'react';
-import { Canvas } from 'fabric';
+import React, { useEffect, useReducer, useRef } from 'react';
+import { Canvas, FabricObject } from 'fabric';
 
 import HandleRoundIcon from '../../icons/HandleRoundIcon';
 import DeleteIcon from '../../icons/DeleteIcon';
@@ -12,8 +12,9 @@ import TextBoldIcon from '../../icons/TextBoldIcon';
 import TextItalicIcon from '../../icons/TextItalicIcon';
 import AddTextIcon from '../../icons/AddTextIcon';
 import ColorPicker from '../widgets/ColorPicker';
-import InputNumber from '../widgets/InputNumber.tsx';
+import InputNumber from '../widgets/InputNumber';
 import BackgroundColorIcon from '../../icons/BackgroundColorIcon';
+import { commitActiveObjectChange, removeCanvasObject } from '../../utils/canvasHelpers';
 
 interface IProps {
 	canvas: React.RefObject<Canvas>;
@@ -32,6 +33,13 @@ interface IProps {
 const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 	const { canvas, selectedObject, commentBoxRef } = props;
 
+	// the values shown here live on the fabric object / ref, which don't trigger a re-render by themselves
+	const [, forceUpdate] = useReducer((count: number) => count + 1, 0);
+	// clicking the canvas deselects the callout before the input blurs, so remember what is being edited
+	const editedObjectRef = useRef<FabricObject | null>(null);
+
+	const hasSelection = Object.keys(selectedObject).length > 0 && !!selectedObject.test;
+
 	const handleBorderColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject();
 		if (currentObject) {
@@ -42,6 +50,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 
 	const handleBorderColorChangeComplete = (val: string) => {
 		commentBoxRef.current.borderColor = val;
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleBackgroundColorChange = (val: string) => {
@@ -54,6 +63,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 
 	const handleBackgroundColorChangeComplete = (val: string) => {
 		commentBoxRef.current.backgroundColor = val;
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleStrokeWidthChange = (val: number | null) => {
@@ -67,11 +77,13 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 		}
 		commentBoxRef.current.strokeWidth = val;
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
+		forceUpdate();
 	};
 
 	const handleFontColorChange = (val: string) => {
 		const currentObject = canvas.current.getActiveObject() as any;
-		if (currentObject) {
+		if (currentObject?.test) {
 			currentObject.test.set({ fill: val });
 		}
 		canvas.current.renderAll();
@@ -79,6 +91,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 
 	const handleFontColorChangeComplete = (val: string) => {
 		commentBoxRef.current.fontColor = val;
+		commitActiveObjectChange(canvas.current);
 	};
 
 	const handleFontSizeChange = (val: number | null) => {
@@ -86,47 +99,71 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 			return;
 		}
 		const currentObject = canvas.current.getActiveObject() as any;
-		if (currentObject) {
+		if (currentObject?.test) {
 			currentObject.test.set({ fontSize: val });
 		}
 		commentBoxRef.current.fontSize = val;
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
+		forceUpdate();
 	};
 
-	const handleChangeTextboxText = (e: any) => {
+	const handleChangeTextboxText = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const currentObject = canvas.current.getActiveObject() as any;
-		if (currentObject) {
+		if (currentObject?.test) {
 			currentObject.test.set({ text: e.target.value });
 		}
 		commentBoxRef.current.text = e.target.value;
 		canvas.current.renderAll();
+		// the input is controlled by values outside of react state, without a re-render it would reset
+		forceUpdate();
+	};
+
+	// the menu can unmount (callout deselected) before the input receives its blur event
+	useEffect(() => {
+		return () => handleTextboxTextBlur();
+	}, []);
+
+	const handleTextboxTextFocus = () => {
+		editedObjectRef.current = canvas.current.getActiveObject() ?? null;
+	};
+
+	const handleTextboxTextBlur = () => {
+		const target = editedObjectRef.current;
+		editedObjectRef.current = null;
+		if (target?.canvas) {
+			canvas.current.fire('object:modified', { target });
+		}
 	};
 
 	const handleDeleteAnnotations = () => {
-		canvas.current.remove(selectedObject);
-		canvas.current.renderAll();
+		removeCanvasObject(canvas.current, selectedObject);
 	};
 
 	const handleFontStyleChange = () => {
 		const currentObject = canvas.current.getActiveObject() as any;
-		if (currentObject) {
+		if (currentObject?.test) {
 			currentObject.test.set({
 				fontStyle: currentObject.test.fontStyle === 'italic' ? 'normal' : 'italic',
 			});
 		}
 		commentBoxRef.current.fontStyle = commentBoxRef.current.fontStyle === 'italic' ? 'normal' : 'italic';
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
+		forceUpdate();
 	};
 
 	const handleFontTypeChange = () => {
 		const currentObject = canvas.current.getActiveObject() as any;
-		if (currentObject) {
+		if (currentObject?.test) {
 			currentObject.test.set({
 				fontWeight: currentObject.test.fontWeight === 'bold' ? 'normal' : 'bold',
 			});
 		}
 		commentBoxRef.current.fontWeight = commentBoxRef.current.fontWeight === 'bold' ? 'normal' : 'bold';
 		canvas.current.renderAll();
+		commitActiveObjectChange(canvas.current);
+		forceUpdate();
 	};
 
 	return (
@@ -135,11 +172,7 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 				<BackgroundColorIcon />
 				<span style={{ margin: '0 8px 0 4px' }}>Fill</span>
 				<ColorPicker
-					value={
-						Object.keys(selectedObject).length === 0
-							? commentBoxRef.current.backgroundColor
-							: selectedObject.fill
-					}
+					value={hasSelection ? selectedObject.fill : commentBoxRef.current.backgroundColor}
 					onChange={handleBackgroundColorChange}
 					onChangeComplete={handleBackgroundColorChangeComplete}
 				/>
@@ -152,22 +185,14 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					<span>Stroke</span>
 				</div>
 				<ColorPicker
-					value={
-						Object.keys(selectedObject).length === 0
-							? commentBoxRef.current.borderColor
-							: selectedObject.stroke
-					}
+					value={hasSelection ? selectedObject.stroke : commentBoxRef.current.borderColor}
 					onChange={handleBorderColorChange}
 					onChangeComplete={handleBorderColorChangeComplete}
 				/>
 				<InputNumber
 					min={1}
 					max={15}
-					value={
-						Object.keys(selectedObject).length === 0
-							? commentBoxRef.current.strokeWidth
-							: selectedObject.strokeWidth
-					}
+					value={hasSelection ? selectedObject.strokeWidth : commentBoxRef.current.strokeWidth}
 					onChange={handleStrokeWidthChange}
 				/>
 			</div>
@@ -175,11 +200,10 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 
 			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
 				<button
+					type='button'
 					className={`custom-button ${
-						(Object.keys(selectedObject).length === 0
-							? commentBoxRef.current.fontWeight
-							: selectedObject.test.fontWeight) === 'bold'
-							? 'bg-gray-200 shadow-sm'
+						(hasSelection ? selectedObject.test.fontWeight : commentBoxRef.current.fontWeight) === 'bold'
+							? 'active'
 							: ''
 					}`}
 					onClick={handleFontTypeChange}
@@ -187,11 +211,10 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					<TextBoldIcon />
 				</button>
 				<button
+					type='button'
 					className={`custom-button ${
-						(Object.keys(selectedObject).length === 0
-							? commentBoxRef.current.fontStyle
-							: selectedObject.test.fontStyle) === 'italic'
-							? 'bg-gray-200 shadow-sm'
+						(hasSelection ? selectedObject.test.fontStyle : commentBoxRef.current.fontStyle) === 'italic'
+							? 'active'
 							: ''
 					}`}
 					onClick={handleFontStyleChange}
@@ -207,36 +230,28 @@ const CommentBoxContextMenu: React.FC<IProps> = (props) => {
 					<span>Text</span>
 				</div>
 				<ColorPicker
-					value={
-						Object.keys(selectedObject).length === 0
-							? commentBoxRef.current.fontColor
-							: selectedObject.test.fill
-					}
+					value={hasSelection ? selectedObject.test.fill : commentBoxRef.current.fontColor}
 					onChange={handleFontColorChange}
 					onChangeComplete={handleFontColorChangeComplete}
 				/>
 				<InputNumber
 					min={1}
 					max={100}
-					value={
-						Object.keys(selectedObject).length === 0
-							? commentBoxRef.current.fontSize
-							: selectedObject.test.fontSize
-					}
+					value={hasSelection ? selectedObject.test.fontSize : commentBoxRef.current.fontSize}
 					onChange={handleFontSizeChange}
 				/>
 				<input
 					type='text'
 					className='text-input small-input'
-					value={
-						Object.keys(selectedObject).length === 0 ? commentBoxRef.current.text : selectedObject.test.text
-					}
+					value={hasSelection ? selectedObject.test.text : commentBoxRef.current.text}
 					onChange={handleChangeTextboxText}
+					onFocus={handleTextboxTextFocus}
+					onBlur={handleTextboxTextBlur}
 				/>
 			</div>
 			<hr style={{ borderTop: '30px solid #d9d9d9', margin: '0 5px' }} />
 
-			<button className={`custom-button`} onClick={handleDeleteAnnotations}>
+			<button type='button' className={`custom-button`} onClick={handleDeleteAnnotations}>
 				<DeleteIcon />
 			</button>
 		</div>

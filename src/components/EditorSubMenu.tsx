@@ -14,7 +14,8 @@ import { Menu, SubMenu } from '../utils/utils';
 interface IProps {
 	canvas: React.RefObject<Canvas>;
 	menu: Menu | '';
-	aIAnnotation: any;
+	// optional pre-detected regions (e.g. from an AI model) that shapes snap to
+	aIAnnotation?: any;
 	handleTrackChange: (e?: any) => void;
 	activeAnnotation: SubMenu | '';
 	setActiveAnnotation: React.Dispatch<React.SetStateAction<SubMenu | ''>>;
@@ -94,6 +95,7 @@ const EditorSubMenu: React.FC<IProps> = (props) => {
 			return (
 				<ImageCrop
 					canvas={canvas}
+					handleTrackChange={handleTrackChange}
 					activeAnnotation={activeAnnotation}
 					setActiveAnnotation={setActiveAnnotation}
 				/>

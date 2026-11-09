@@ -1,138 +1,321 @@
-.custom-button {
+/*
+ * fabri-pix default styles
+ *
+ * Every selector is wrapped in :where() so it has zero specificity: any class passed through `classNames`
+ * (or your own stylesheet) overrides these rules without !important.
+ * Layout rules always apply, visual rules (colors, borders, spacing) are skipped with the `unstyled` prop.
+ * Theme through the CSS variables below (or the `theme` prop).
+ */
+
+/* ------------------------------------------------------------------ variables */
+
+:where(.fp-root) {
+	--fp-color-primary: #1677ff;
+	--fp-color-background: transparent;
+	--fp-color-surface: #f5f5f5;
+	--fp-color-text: #1f1f1f;
+	--fp-color-muted-text: rgba(16, 16, 16, 0.3);
+	--fp-color-border: #d9d9d9;
+	--fp-color-hover: #e8e8e8;
+	--fp-color-active: #f0f0f0;
+	--fp-color-danger: #eb1919;
+	--fp-color-success: #74c00d;
+	--fp-color-stage-background: transparent;
+	--fp-radius: 20px;
+	--fp-font-family: inherit;
+	--fp-font-size: 14px;
+	--fp-gap: 12px;
+	--fp-stage-min-height: 400px;
+}
+
+/* ------------------------------------------------------------------ layout */
+
+:where(.fp-root) {
 	display: flex;
+	flex-direction: column;
+	gap: var(--fp-gap);
+	box-sizing: border-box;
+	min-width: 0;
+}
+
+:where(.fp-root *, .fp-root *::before, .fp-root *::after) {
+	box-sizing: border-box;
+}
+
+:where(.fp-header, .fp-toolbar, .fp-context-panel, .fp-actions) {
+	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 8px;
-	padding: 8px 16px;
-	border: none;
-	border-radius: 20px; /* Rounded shape */
-	background-color: transparent;
-	font-size: 14px;
-	cursor: pointer;
-	transition: background 0.2s ease-in-out;
+	justify-content: center;
+	gap: 4px;
 }
 
-/* Default state */
-.custom-button.default {
-	background-color: #f0f0f0;
+:where(.fp-actions) {
+	justify-content: flex-end;
 }
 
-/* Hover effect */
-.custom-button:hover {
-	background-color: #e0e0e0;
+/* keeps the parts below the canvas from jumping when the panel appears */
+:where(.fp-context-panel) {
+	min-height: 40px;
 }
 
-/* Active state */
-.custom-button.active {
-	background-color: #f0f0f0;
-	border: 1px solid #000000;
-}
-
-/* scoped, a bare `button:disabled` rule leaked into the host application */
-.custom-button:disabled {
-	cursor: not-allowed;
-}
-
-.color-picker {
-	display: inline-block;
-	position: relative;
-}
-
-.color-input {
-	width: 25px;
-	height: 25px;
-	border: none;
-	padding: 0;
-	cursor: pointer;
-	background: none;
-}
-
-.number-input {
-	width: 46px;
-	height: 24px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	text-align: center;
-	font-size: 14px;
-}
-
-.number-input:focus {
-	border-color: #1890ff;
-}
-
-.text-input {
-	width: 100%;
-	padding: 4px 8px;
-	font-size: 14px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	outline: none;
-}
-
-.text-input:focus {
-	border-color: #1890ff;
-}
-
-.small-input {
-	width: 150px;
-}
-
-.segmented-container {
+:where(.fp-body) {
 	display: flex;
-	border: 1px solid #ccc;
-	border-radius: 6px;
-	overflow: hidden;
-	background: white;
+	flex: 1 1 auto;
+	gap: var(--fp-gap);
+	min-height: var(--fp-stage-min-height);
 }
 
-.segmented-option {
-	flex: 1;
-	padding: 8px;
-	border: none;
-	background: white;
-	cursor: pointer;
-	transition: background 0.3s;
+:where(.fp-body--menu-right) {
+	flex-direction: row-reverse;
+}
+
+:where(.fp-body--menu-top) {
+	flex-direction: column;
+}
+
+:where(.fp-body--menu-bottom) {
+	flex-direction: column-reverse;
+}
+
+:where(.fp-menu) {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 16px;
+}
+
+:where(.fp-menu--top, .fp-menu--bottom) {
+	flex-direction: row;
+}
+
+:where(.fp-stage) {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+}
+
+:where(.fp-stage-canvas) {
+	position: absolute;
+	inset: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
-.segmented-option:hover {
-	background: #f4f2f2;
-}
-
-.segmented-option.active {
-	background: #d4d5d6;
-}
-
-.dropdown {
-	position: relative;
-	display: inline-block;
-}
-
-.dropdown-content {
-	display: none;
+:where(.fp-loading) {
 	position: absolute;
-	bottom: 40px;
-	background-color: #f1f1f1;
-	min-width: 160px;
-	overflow: auto;
-	box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-	z-index: 1;
-	border-radius: 10px;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.show-emoji-dropdown,
-.show-shape-dropdown,
-.show-history-dropdown {
-	display: block;
-}
-
-.history-log {
+:where(.fp-button) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
 	cursor: pointer;
-	padding: 5px;
-	border-radius: 4px;
+	font: inherit;
+	line-height: 1;
 }
 
-.history-log:hover {
-	background-color: #ceeffd !important;
+:where(.fp-button:disabled) {
+	cursor: not-allowed;
+}
+
+:where(.fp-dropdown) {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+}
+
+:where(.fp-dropdown-content) {
+	position: absolute;
+	left: 0;
+	z-index: 10;
+}
+
+:where(.fp-dropdown-content--top) {
+	bottom: calc(100% + 4px);
+}
+
+:where(.fp-dropdown-content--bottom) {
+	top: calc(100% + 4px);
+}
+
+:where(.fp-dropdown-list, .fp-history-panel) {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+:where(.fp-dropdown-list .fp-button, .fp-history-item) {
+	justify-content: flex-start;
+	white-space: nowrap;
+}
+
+:where(.fp-history-panel) {
+	width: 230px;
+	max-height: 224px;
+	overflow-y: auto;
+}
+
+:where(.fp-history-labels) {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+}
+
+:where(.fp-field, .fp-field-label, .fp-segmented) {
+	display: inline-flex;
+	align-items: center;
+}
+
+:where(.fp-field) {
+	gap: 8px;
+}
+
+:where(.fp-field-label) {
+	gap: 4px;
+}
+
+:where(.fp-divider) {
+	align-self: stretch;
+	width: 1px;
+}
+
+/* ------------------------------------------------------------------ visual (skipped by `unstyled`) */
+
+:where(.fp-root:not(.fp-unstyled)) {
+	color: var(--fp-color-text);
+	background: var(--fp-color-background);
+	font-family: var(--fp-font-family);
+	font-size: var(--fp-font-size);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-stage) {
+	background: var(--fp-color-stage-background);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-loading) {
+	color: var(--fp-color-muted-text);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-button) {
+	padding: 8px 16px;
+	border: 1px solid transparent;
+	border-radius: var(--fp-radius);
+	background: transparent;
+	color: inherit;
+	transition: background-color 0.2s ease-in-out;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-button:hover:not(:disabled)) {
+	background: var(--fp-color-hover);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-button--active) {
+	background: var(--fp-color-active);
+	border-color: var(--fp-color-text);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-button:disabled) {
+	color: var(--fp-color-muted-text);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-button--danger) {
+	color: var(--fp-color-danger);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-tool-button) {
+	padding-inline: 12px;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-dropdown .fp-tool-button + .fp-tool-button) {
+	padding-inline: 2px;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-dropdown-content) {
+	min-width: 160px;
+	padding: 8px;
+	border-radius: 10px;
+	background: var(--fp-color-surface);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-history-item) {
+	gap: 10px;
+	padding: 8px 12px;
+	border-radius: 4px;
+	font-size: 12px;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-history-item.fp-button--active) {
+	border-color: transparent;
+	background: #ceeffd;
+	font-weight: bold;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-history-item:hover:not(:disabled)) {
+	background: #ceeffd;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-history-check) {
+	color: var(--fp-color-success);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-divider) {
+	margin: 4px 5px;
+	background: var(--fp-color-border);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-color-picker) {
+	width: 25px;
+	height: 25px;
+	padding: 0;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-number-input, .fp-root:not(.fp-unstyled) .fp-text-input) {
+	height: 26px;
+	border: 1px solid var(--fp-color-border);
+	border-radius: 4px;
+	background: var(--fp-color-background);
+	color: inherit;
+	font: inherit;
+	outline: none;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-number-input) {
+	width: 52px;
+	text-align: center;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-text-input) {
+	width: 150px;
+	padding: 4px 8px;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-number-input:focus, .fp-root:not(.fp-unstyled) .fp-text-input:focus) {
+	border-color: var(--fp-color-primary);
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-segmented) {
+	overflow: hidden;
+	border: 1px solid var(--fp-color-border);
+	border-radius: 6px;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-segmented .fp-button) {
+	padding: 8px;
+	border: none;
+	border-radius: 0;
 }

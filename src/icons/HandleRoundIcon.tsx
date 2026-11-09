@@ -5,15 +5,15 @@
 
 import React from 'react';
 
-const HandleRoundIcon: React.FC = () => {
+const HandleRoundIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => {
 	return (
-		<svg width='20' height='20' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'>
+		<svg width='20' height='20' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg' {...props}>
 			<circle
 				cx='24'
 				cy='24'
 				r='20'
 				fill='none'
-				stroke='#000000'
+				stroke='currentColor'
 				strokeWidth='4'
 				strokeLinecap='round'
 				strokeLinejoin='round'
@@ -22,7 +22,7 @@ const HandleRoundIcon: React.FC = () => {
 				cx='24'
 				cy='24'
 				r='12'
-				stroke='#000000'
+				stroke='currentColor'
 				strokeWidth='4'
 				strokeLinecap='round'
 				strokeLinejoin='round'

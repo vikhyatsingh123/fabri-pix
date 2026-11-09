@@ -4,7 +4,8 @@ import dts from 'vite-plugin-dts';
 
 export default defineConfig({
 	// a single bundled index.d.ts instead of one declaration file per component
-	plugins: [react(), dts({ rollupTypes: true })],
+	// keep the doc comments, they show up in the IDE of the package users
+	plugins: [react(), dts({ rollupTypes: true, compilerOptions: { removeComments: false } })],
 	build: {
 		lib: {
 			entry: 'src/index.ts',

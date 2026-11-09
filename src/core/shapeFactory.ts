@@ -1,6 +1,6 @@
 /**
  * @author Vikhyat Singh
- * hooks for creating shapes in image editor
+ * @description Creates (and re-creates from JSON) the objects of the built-in tools
  */
 
 import {
@@ -21,10 +21,12 @@ import {
 	TransformActionHandler,
 } from 'fabric';
 
-import { SubMenu } from './utils';
+import { ShapeType } from './constants';
 import CustomFabricPolygon from './CustomFabricPolygon';
 
-export const applyBlurEffect = (canvas: React.RefObject<Canvas>, rect: any) => {
+export type CanvasRef = { current: Canvas | null };
+
+export const applyBlurEffect = (canvas: CanvasRef, rect: any) => {
 	const img = canvas.current?.backgroundImage as any;
 
 	if (!img || !rect) {
@@ -95,7 +97,7 @@ export const applyBlurEffect = (canvas: React.RefObject<Canvas>, rect: any) => {
 			selectable: false,
 			evented: false,
 			excludeFromExport: true,
-			shapeType: SubMenu.BLUR_INNER_PART,
+			shapeType: ShapeType.BLUR_INNER_PART,
 			id: rect.id + '-blur',
 		});
 
@@ -115,7 +117,7 @@ const addBlurEffect = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape?: boolean;
 	canvasData?: any;
 }) => {
@@ -138,7 +140,7 @@ const addBlurEffect = ({
 		hasBorders: true,
 		hasControls: true,
 		lockRotation: true,
-		shapeType: SubMenu.BLUR,
+		shapeType: ShapeType.BLUR,
 	});
 
 	if (!isNewShape) {
@@ -190,10 +192,10 @@ const addAdvancedArrow = ({
 	canvasData,
 	shapeType,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape?: boolean;
 	canvasData?: any;
-	shapeType: SubMenu;
+	shapeType: string;
 }) => {
 	const currentPolyline = new Polygon(canvasData.points, {
 		fill: 'transparent',
@@ -231,7 +233,7 @@ const addAdvancedArrow = ({
 
 	arrowHead.set({
 		shapeType:
-			shapeType === SubMenu.TEMP_ADVANCED_ARROW ? SubMenu.TEMP_ADVANCED_ARROW_HEAD : SubMenu.ADVANCED_ARROW_HEAD,
+			shapeType === ShapeType.TEMP_ADVANCED_ARROW ? ShapeType.TEMP_ADVANCED_ARROW_HEAD : ShapeType.ADVANCED_ARROW_HEAD,
 		id: `${canvasData.id}-arrowhead`,
 	});
 
@@ -274,10 +276,10 @@ const addLinePath = ({
 	canvasData,
 	shapeType,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape?: boolean;
 	canvasData?: any;
-	shapeType: SubMenu;
+	shapeType: string;
 }) => {
 	const currentPolyline = new Polyline(canvasData.points, {
 		fill: 'transparent',
@@ -321,7 +323,7 @@ const addPencil = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape?: boolean;
 	canvasData?: any;
 }) => {
@@ -341,7 +343,7 @@ const addPencil = ({
 			strokeLineCap: canvasData.strokeLineCap,
 			strokeLineJoin: canvasData.strokeLineJoin,
 			strokeMiterLimit: canvasData.strokeMiterLimit,
-			shapeType: SubMenu.DRAW,
+			shapeType: ShapeType.DRAW,
 			id: canvasData.id,
 		});
 		canvas.current.add(path);
@@ -354,7 +356,7 @@ const addText = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData?: any;
 }) => {
@@ -366,7 +368,7 @@ const addText = ({
 		cornerStyle: 'circle',
 		fill: canvasData.fill,
 		padding: 6,
-		fontFamily: 'Arial',
+		fontFamily: canvasData.fontFamily ?? 'Arial',
 		fontSize: canvasData.fontSize,
 		fontStyle: canvasData.fontStyle,
 		fontWeight: canvasData.fontWeight,
@@ -379,7 +381,7 @@ const addText = ({
 	});
 
 	text.set({
-		shapeType: SubMenu.TEXT,
+		shapeType: ShapeType.TEXT,
 		id: canvasData.id,
 	});
 
@@ -394,7 +396,7 @@ const addEmoji = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData?: any;
 }) => {
@@ -413,7 +415,7 @@ const addEmoji = ({
 	});
 
 	emoj.set({
-		shapeType: SubMenu.EMOJI,
+		shapeType: ShapeType.EMOJI,
 		id: canvasData.id,
 	});
 
@@ -428,7 +430,7 @@ const addRectangle = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData?: any;
 }) => {
@@ -454,7 +456,7 @@ const addRectangle = ({
 	});
 
 	rect.set({
-		shapeType: SubMenu.RECTANGLE,
+		shapeType: ShapeType.RECTANGLE,
 		id: canvasData.id,
 	});
 
@@ -469,7 +471,7 @@ const addCircle = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData?: any;
 }) => {
@@ -492,7 +494,7 @@ const addCircle = ({
 	});
 
 	circle.set({
-		shapeType: SubMenu.CIRCLE,
+		shapeType: ShapeType.CIRCLE,
 		id: canvasData.id,
 	});
 
@@ -525,7 +527,7 @@ const addStar = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData?: any;
 }) => {
@@ -558,7 +560,7 @@ const addStar = ({
 	});
 
 	star.set({
-		shapeType: SubMenu.STAR,
+		shapeType: ShapeType.STAR,
 		id: canvasData.id,
 	});
 
@@ -573,7 +575,7 @@ const addArrow = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData?: any;
 }) => {
@@ -615,7 +617,7 @@ const addArrow = ({
 	});
 
 	arrow.set({
-		shapeType: SubMenu.ARROW,
+		shapeType: ShapeType.ARROW,
 		id: canvasData.id,
 	});
 
@@ -630,7 +632,7 @@ const addCustomShape = async ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData?: any;
 }) => {
@@ -642,8 +644,8 @@ const addCustomShape = async ({
 	let { left, top, scaleX, scaleY } = canvasData;
 	if (isNewShape) {
 		// fit big uploads into half of the canvas and center them
-		const canvasWidth = canvas.current.getWidth();
-		const canvasHeight = canvas.current.getHeight();
+		const canvasWidth = canvasData.sceneWidth ?? canvas.current.getWidth();
+		const canvasHeight = canvasData.sceneHeight ?? canvas.current.getHeight();
 		const scale = Math.min(1, (canvasWidth / 2) / img.width, (canvasHeight / 2) / img.height);
 		scaleX = scale;
 		scaleY = scale;
@@ -658,7 +660,7 @@ const addCustomShape = async ({
 		scaleY,
 		angle: canvasData.angle,
 		fill: canvasData.fill,
-		shapeType: SubMenu.CUSTOM_SHAPE,
+		shapeType: ShapeType.CUSTOM_SHAPE,
 		id: canvasData.id,
 	});
 
@@ -669,7 +671,7 @@ const addCustomShape = async ({
 	canvas.current.requestRenderAll();
 };
 
-const handleTextChangedStepsCreator = (group: Group, canvas: React.RefObject<Canvas>) => {
+const handleTextChangedStepsCreator = (group: Group, canvas: CanvasRef) => {
 	const textObject = (group.getObjects()[1] as Group).getObjects()[1] as IText;
 	const circleObject = (group.getObjects()[1] as Group).getObjects()[0] as Circle;
 	const textWidth = textObject.width;
@@ -691,13 +693,13 @@ const handleTextChangedStepsCreator = (group: Group, canvas: React.RefObject<Can
 	canvas.current.requestRenderAll();
 };
 
-const handleDoubleClickStepsCreator = (e: any, canvas: React.RefObject<Canvas>) => {
+const handleDoubleClickStepsCreator = (e: any, canvas: CanvasRef) => {
 	const target = e.target;
 	if (!target) {
 		return;
 	}
 
-	if (target?.shapeType === SubMenu.STEPS_CREATOR) {
+	if (target?.shapeType === ShapeType.STEPS_CREATOR) {
 		const group = target as Group;
 		const textObject = (group.getObjects()[1] as Group).getObjects()[1] as IText;
 
@@ -708,7 +710,7 @@ const handleDoubleClickStepsCreator = (e: any, canvas: React.RefObject<Canvas>) 
 	}
 };
 
-const handleDeselectStepsCreator = (group: Group, canvas: React.RefObject<Canvas>) => {
+const handleDeselectStepsCreator = (group: Group, canvas: CanvasRef) => {
 	((group.getObjects()[1] as Group).getObjects()[1] as IText).exitEditing();
 	canvas.current.requestRenderAll();
 };
@@ -718,7 +720,7 @@ const addStepsCreator = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData: any;
 }) => {
@@ -731,7 +733,7 @@ const addStepsCreator = ({
 		fontWeight: 'bold',
 		editable: true,
 		objectCaching: false,
-		shapeType: SubMenu.TEXT_STEPS_CREATOR,
+		shapeType: ShapeType.TEXT_STEPS_CREATOR,
 		originX: 'center',
 		originY: 'center',
 	});
@@ -758,7 +760,7 @@ const addStepsCreator = ({
 		strokeUniform: true,
 		objectCaching: false,
 		selectable: false,
-		shapeType: SubMenu.RECT_STEPS_CREATOR,
+		shapeType: ShapeType.RECT_STEPS_CREATOR,
 		id: canvasData.id,
 		...(isNewShape
 			? {}
@@ -815,7 +817,7 @@ const addStepsCreator = ({
 	});
 
 	group.set({
-		shapeType: SubMenu.STEPS_CREATOR,
+		shapeType: ShapeType.STEPS_CREATOR,
 		id: canvasData.id,
 	});
 
@@ -845,7 +847,7 @@ const addCommentBox = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData: any;
 }): void => {
@@ -909,7 +911,7 @@ const addCommentBox = ({
 			evented: true,
 			excludeFromExport: true,
 			fontStyle: canvasData?.['test']?.fontStyle || 'normal',
-			shapeType: SubMenu.COMMENT_BOX_TEXTBOX,
+			shapeType: ShapeType.COMMENT_BOX_TEXTBOX,
 		}),
 		canvas.current,
 		clonedDefaultPoints.pointIndex,
@@ -932,7 +934,7 @@ const addCommentBox = ({
 		dirty: true,
 		hasControls: true,
 		evented: true,
-		shapeType: SubMenu.COMMENT_BOX,
+		shapeType: ShapeType.COMMENT_BOX,
 	});
 
 	if (isNewShape) {
@@ -1021,12 +1023,13 @@ const addCropRectangle = ({
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
+	canvas: CanvasRef;
 	isNewShape: boolean;
 	canvasData?: any;
 }) => {
-	const canvasWidth = canvas.current.getWidth();
-	const canvasHeight = canvas.current.getHeight();
+	// overlays cover the whole scene, which differs from the canvas element size when the view is zoomed
+	const canvasWidth = canvasData.sceneWidth ?? canvas.current.getWidth();
+	const canvasHeight = canvasData.sceneHeight ?? canvas.current.getHeight();
 
 	const cropRect = new Rect({
 		left: canvasData.left,
@@ -1046,7 +1049,7 @@ const addCropRectangle = ({
 	});
 	cropRect.set({
 		id: canvasData.id,
-		shapeType: SubMenu.CROP_RECTANGLE,
+		shapeType: ShapeType.CROP_RECTANGLE,
 	});
 
 	cropRect.controls = {
@@ -1071,7 +1074,7 @@ const addCropRectangle = ({
 		hoverCursor: 'default',
 		excludeFromExport: true,
 	});
-	overlayTop.set({ shapeType: SubMenu.CROP_GREYED_TOP });
+	overlayTop.set({ shapeType: ShapeType.CROP_GREYED_TOP });
 
 	const overlayLeft = new Rect({
 		left: 0,
@@ -1084,7 +1087,7 @@ const addCropRectangle = ({
 		hoverCursor: 'default',
 		excludeFromExport: true,
 	});
-	overlayLeft.set({ shapeType: SubMenu.CROP_GREYED_LEFT });
+	overlayLeft.set({ shapeType: ShapeType.CROP_GREYED_LEFT });
 
 	const overlayRight = new Rect({
 		left: cropRect.left + cropRect.getScaledWidth(),
@@ -1097,7 +1100,7 @@ const addCropRectangle = ({
 		hoverCursor: 'default',
 		excludeFromExport: true,
 	});
-	overlayRight.set({ shapeType: SubMenu.CROP_GREYED_RIGHT });
+	overlayRight.set({ shapeType: ShapeType.CROP_GREYED_RIGHT });
 
 	const overlayBottom = new Rect({
 		left: 0,
@@ -1110,7 +1113,7 @@ const addCropRectangle = ({
 		hoverCursor: 'default',
 		excludeFromExport: true,
 	});
-	overlayBottom.set({ shapeType: SubMenu.CROP_GREYED_BOTTOM });
+	overlayBottom.set({ shapeType: ShapeType.CROP_GREYED_BOTTOM });
 
 	canvas.current.add(overlayTop, overlayLeft, overlayRight, overlayBottom);
 	canvas.current.add(cropRect);
@@ -1165,60 +1168,60 @@ const addCropRectangle = ({
 	cropRect.on('scaling', updateOverlays);
 };
 
-const imageEditorShapes = ({
+const createShape = ({
 	canvas,
 	shapeType,
 	isNewShape,
 	canvasData,
 }: {
-	canvas: React.RefObject<Canvas>;
-	shapeType: SubMenu;
+	canvas: CanvasRef;
+	shapeType: string;
 	isNewShape: boolean;
 	canvasData?: any;
 }): Promise<void> | void => {
 	switch (shapeType) {
-		case SubMenu.BLUR:
+		case ShapeType.BLUR:
 			addBlurEffect({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.ADVANCED_ARROW:
-		case SubMenu.TEMP_ADVANCED_ARROW:
+		case ShapeType.ADVANCED_ARROW:
+		case ShapeType.TEMP_ADVANCED_ARROW:
 			addAdvancedArrow({ canvas, isNewShape, canvasData, shapeType });
 			break;
-		case SubMenu.LINE_PATH:
-		case SubMenu.TEMP_LINE_PATH:
+		case ShapeType.LINE_PATH:
+		case ShapeType.TEMP_LINE_PATH:
 			addLinePath({ canvas, isNewShape, canvasData, shapeType });
 			break;
-		case SubMenu.DRAW:
+		case ShapeType.DRAW:
 			addPencil({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.TEXT:
+		case ShapeType.TEXT:
 			addText({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.EMOJI:
+		case ShapeType.EMOJI:
 			addEmoji({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.RECTANGLE:
+		case ShapeType.RECTANGLE:
 			addRectangle({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.CIRCLE:
+		case ShapeType.CIRCLE:
 			addCircle({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.STAR:
+		case ShapeType.STAR:
 			addStar({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.ARROW:
+		case ShapeType.ARROW:
 			addArrow({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.CUSTOM_SHAPE:
+		case ShapeType.CUSTOM_SHAPE:
 			// returned so callers restoring a saved state can wait for the image to load
 			return addCustomShape({ canvas, isNewShape, canvasData }).catch((err) => console.error(err));
-		case SubMenu.STEPS_CREATOR:
+		case ShapeType.STEPS_CREATOR:
 			addStepsCreator({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.COMMENT_BOX:
+		case ShapeType.COMMENT_BOX:
 			addCommentBox({ canvas, isNewShape, canvasData });
 			break;
-		case SubMenu.CROP_RECTANGLE:
+		case ShapeType.CROP_RECTANGLE:
 			addCropRectangle({ canvas, isNewShape, canvasData });
 			break;
 		default:
@@ -1226,4 +1229,4 @@ const imageEditorShapes = ({
 	}
 };
 
-export default imageEditorShapes;
+export default createShape;

@@ -12,7 +12,15 @@ import AlignTextRightIcon from '../icons/AlignTextRightIcon';
 import BackgroundColorIcon from '../icons/BackgroundColorIcon';
 import CancelIcon from '../icons/CancelIcon';
 import CheckOneIcon from '../icons/CheckOneIcon';
+import ClearIcon from '../icons/ClearIcon';
 import DeleteIcon from '../icons/DeleteIcon';
+import FlipHorizontalIcon from '../icons/FlipHorizontalIcon';
+import FlipVerticalIcon from '../icons/FlipVerticalIcon';
+import LoadIcon from '../icons/LoadIcon';
+import RotateLeftIcon from '../icons/RotateLeftIcon';
+import RotateRightIcon from '../icons/RotateRightIcon';
+import StrikethroughIcon from '../icons/StrikethroughIcon';
+import UnderlineIcon from '../icons/UnderlineIcon';
 import DownOneIcon from '../icons/DownOneIcon';
 import ExportJsonIcon from '../icons/ExportJsonIcon';
 import FiveIcon from '../icons/FiveIcon';
@@ -59,7 +67,25 @@ export const defaultLabels: EditorLabels = {
 	deleted: 'Deleted',
 	cropApplied: 'Crop Applied',
 	cropRemoved: 'Crop Removed',
+	imageEdited: 'Image Edited',
 	loading: 'Loading...',
+	underline: 'Underline',
+	strikethrough: 'Strikethrough',
+	font: 'Font',
+	color: 'Color',
+	rotateLeft: 'Rotate left',
+	rotateRight: 'Rotate right',
+	rotation: 'Angle',
+	flipHorizontal: 'Flip horizontal',
+	flipVertical: 'Flip vertical',
+	resetImage: 'Reset rotation',
+	ratio: 'Ratio',
+	ratioCustom: 'Custom',
+	ratioSquare: 'Square',
+	apply: 'Apply',
+	load: 'Load',
+	deleteAll: 'Delete All',
+	clearFilters: 'Clear',
 };
 
 export const defaultIcons: EditorIcons = {
@@ -85,4 +111,12 @@ export const defaultIcons: EditorIcons = {
 	alignCenter: <AlignTextCenterIcon />,
 	alignRight: <AlignTextRightIcon />,
 	stepNumber: <ListNumbersIcon />,
+	underline: <UnderlineIcon />,
+	strikethrough: <StrikethroughIcon />,
+	rotateLeft: <RotateLeftIcon />,
+	rotateRight: <RotateRightIcon />,
+	flipHorizontal: <FlipHorizontalIcon />,
+	flipVertical: <FlipVerticalIcon />,
+	load: <LoadIcon />,
+	deleteAll: <ClearIcon />,
 };

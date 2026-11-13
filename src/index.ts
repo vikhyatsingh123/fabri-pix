@@ -22,7 +22,19 @@ export {
 export type { EditorRootProps } from './react/components';
 
 // UI primitives (replaceable through the `components` prop)
-export { Button, ColorPicker, cx, Divider, Dropdown, Field, NumberInput, Segmented, toHexColor } from './react/ui';
+export {
+	Button,
+	ColorPicker,
+	cx,
+	Divider,
+	Dropdown,
+	Field,
+	NumberInput,
+	Segmented,
+	Select,
+	Slider,
+	toHexColor,
+} from './react/ui';
 export type { DropdownProps, SegmentedOption } from './react/ui';
 
 // hooks
@@ -35,6 +47,7 @@ export { defaultIcons, defaultLabels } from './react/defaults';
 export { ImageEditorController } from './core/controller';
 export type { EditorRegistry } from './core/controller';
 export { builtInShapes } from './core/shapes';
+export { builtInFilters } from './core/filters';
 export { generateId, MAX_ZOOM, MIN_ZOOM, SCENE_REFERENCE_SIZE, ShapeType } from './core/constants';
 export { downloadBlob } from './core/dom';
 

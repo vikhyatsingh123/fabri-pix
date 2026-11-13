@@ -37,6 +37,7 @@ export interface EditorUIContextValue {
 	toolIcon: (tool: ToolDefinition<any>) => ReactNode;
 	menuLabel: (menu: { id: string; label: string }) => string;
 	menuIcon: (menu: MenuDefinition | { id: string; icon?: ReactNode }) => ReactNode;
+	filterLabel: (filter: { id: string; label: string }) => string;
 }
 
 export const EditorContext = createContext<ImageEditorController | null>(null);

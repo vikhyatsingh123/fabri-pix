@@ -264,7 +264,13 @@ const detectChanges = (previous: any, current: any) => {
 		return old && JSON.stringify(old) !== JSON.stringify(obj);
 	});
 	const cropChanged = JSON.stringify(previous?.clipPath ?? null) !== JSON.stringify(current?.clipPath ?? null);
-	return { created, deleted, modified, cropChanged, hasCrop: !!current?.clipPath };
+	// rotation, flip and filters are stored on the photo
+	const imageState = (state: any) => {
+		const image = state?.backgroundImage;
+		return JSON.stringify([image?.angle ?? 0, !!image?.flipX, !!image?.flipY, image?.fpFilters ?? {}]);
+	};
+	const imageChanged = imageState(previous) !== imageState(current);
+	return { created, deleted, modified, cropChanged, hasCrop: !!current?.clipPath, imageChanged };
 };
 
 /** list of history entries, click one to go back to it */
@@ -289,6 +295,7 @@ export const HistoryPanel: React.FC<{ onSelect?: () => void }> = (props) => {
 				changes.modified[0] && `${shapeLabel(changes.modified[0].shapeType)} ${ui.labels.modified}`,
 				changes.deleted[0] && `${shapeLabel(changes.deleted[0].shapeType)} ${ui.labels.deleted}`,
 				changes.cropChanged && (changes.hasCrop ? ui.labels.cropApplied : ui.labels.cropRemoved),
+				changes.imageChanged && ui.labels.imageEdited,
 			].filter((label): label is string => !!label);
 		});
 	}, [entries, editor, ui.labels]);
@@ -437,7 +444,8 @@ export const ContextPanel: React.FC = () => {
 					setOptions={(options) => editor.setToolOptions(tool.id, options)}
 				/>
 			)}
-			{selection.length > 0 && (
+			{/* editing UI (e.g. the crop rectangle) has its own controls instead of a delete button */}
+			{selection.some((object) => !editor.getShape((object as any).shapeType)?.transient) && (
 				<>
 					{Panel && <Divider />}
 					<Button
@@ -462,6 +470,19 @@ export const Actions: React.FC = () => {
 	const { Button } = ui.components;
 
 	const handlers: Record<string, () => void> = {
+		load: () => {
+			const input = document.createElement('input');
+			input.type = 'file';
+			input.accept = 'image/*';
+			input.onchange = () => {
+				const file = input.files?.[0];
+				if (file) {
+					void editor.setSource(file);
+				}
+			};
+			input.click();
+		},
+		deleteAll: () => editor.clearAnnotations(),
 		reset: () => editor.reset(),
 		cancel: () => ui.onCancel?.(),
 		exportJson: () => {

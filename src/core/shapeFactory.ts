@@ -18,6 +18,7 @@ import {
 	Line,
 	FabricImage,
 	Control,
+	Point,
 	TransformActionHandler,
 } from 'fabric';
 
@@ -34,82 +35,64 @@ export const applyBlurEffect = (canvas: CanvasRef, rect: any) => {
 	}
 
 	const { left, top, width, height, scaleX, scaleY } = rect;
-	const { scaleX: imgScaleX = 1, scaleY: imgScaleY = 1 } = img;
-
-	const croppedCanvas = document.createElement('canvas');
-	croppedCanvas.width = width * scaleX;
-	croppedCanvas.height = height * scaleY;
-
-	if (croppedCanvas.width === 0 || croppedCanvas.height === 0) {
+	const patchWidth = Math.round(width * scaleX);
+	const patchHeight = Math.round(height * scaleY);
+	if (patchWidth <= 0 || patchHeight <= 0) {
 		return;
 	}
 
+	// the photo as it is displayed (rotated, flipped, filtered), cut out at the rect position
+	const source = document.createElement('canvas');
+	source.width = patchWidth;
+	source.height = patchHeight;
+	const sourceCtx = source.getContext('2d');
+	const croppedCanvas = document.createElement('canvas');
+	croppedCanvas.width = patchWidth;
+	croppedCanvas.height = patchHeight;
 	const ctx = croppedCanvas.getContext('2d');
-	if (ctx) {
-		const sourceX = (left - img.left) / imgScaleX;
-		const sourceY = (top - img.top) / imgScaleY;
-		const sourceWidth = (width * scaleX) / imgScaleX;
-		const sourceHeight = (height * scaleY) / imgScaleY;
-
-		if (typeof ctx.filter === 'string') {
-			ctx.filter = 'blur(5px)';
-			ctx.drawImage(
-				img.getElement(),
-				sourceX,
-				sourceY,
-				sourceWidth,
-				sourceHeight,
-				0,
-				0,
-				croppedCanvas.width,
-				croppedCanvas.height,
-			);
-		} else {
-			// ctx.filter is not supported (Safari), pixelate by down-scaling and up-scaling instead,
-			// otherwise the redacted area would be drawn without any blur
-			const pixelatedCanvas = document.createElement('canvas');
-			pixelatedCanvas.width = Math.max(1, Math.round(croppedCanvas.width / 10));
-			pixelatedCanvas.height = Math.max(1, Math.round(croppedCanvas.height / 10));
-			pixelatedCanvas
-				.getContext('2d')
-				?.drawImage(
-					img.getElement(),
-					sourceX,
-					sourceY,
-					sourceWidth,
-					sourceHeight,
-					0,
-					0,
-					pixelatedCanvas.width,
-					pixelatedCanvas.height,
-				);
-			ctx.imageSmoothingEnabled = true;
-			ctx.drawImage(pixelatedCanvas, 0, 0, croppedCanvas.width, croppedCanvas.height);
-		}
-
-		const blurredImage = new FabricImage(croppedCanvas);
-
-		blurredImage.set({
-			left,
-			top,
-			width: width * scaleX,
-			height: height * scaleY,
-			selectable: false,
-			evented: false,
-			excludeFromExport: true,
-			shapeType: ShapeType.BLUR_INNER_PART,
-			id: rect.id + '-blur',
-		});
-
-		canvas.current.getObjects().forEach((obj: any) => {
-			if (obj.type === 'image' && obj !== img && obj.id === rect.id + '-blur') {
-				canvas.current.remove(obj);
-			}
-		});
-
-		canvas.current.add(blurredImage);
-		canvas.current.renderAll();
+	if (!sourceCtx || !ctx) {
+		return;
 	}
+	sourceCtx.translate(-left, -top);
+	sourceCtx.transform(...(img.calcTransformMatrix() as [number, number, number, number, number, number]));
+	img._render(sourceCtx);
+
+	if (typeof ctx.filter === 'string') {
+		ctx.filter = 'blur(5px)';
+		ctx.drawImage(source, 0, 0);
+	} else {
+		// ctx.filter is not supported (Safari), pixelate by down-scaling and up-scaling instead,
+		// otherwise the redacted area would be drawn without any blur
+		const pixelatedCanvas = document.createElement('canvas');
+		pixelatedCanvas.width = Math.max(1, Math.round(patchWidth / 10));
+		pixelatedCanvas.height = Math.max(1, Math.round(patchHeight / 10));
+		pixelatedCanvas.getContext('2d')?.drawImage(source, 0, 0, pixelatedCanvas.width, pixelatedCanvas.height);
+		ctx.imageSmoothingEnabled = true;
+		ctx.drawImage(pixelatedCanvas, 0, 0, patchWidth, patchHeight);
+	}
+
+	const blurredImage = new FabricImage(croppedCanvas);
+
+	blurredImage.set({
+		left,
+		top,
+		width: patchWidth,
+		height: patchHeight,
+		selectable: false,
+		evented: false,
+		excludeFromExport: true,
+		shapeType: ShapeType.BLUR_INNER_PART,
+		id: rect.id + '-blur',
+	});
+
+	canvas.current.getObjects().forEach((obj: any) => {
+		if (obj.type === 'image' && obj !== img && obj.id === rect.id + '-blur') {
+			canvas.current.remove(obj);
+		}
+	});
+
+	canvas.current.add(blurredImage);
+	canvas.current.renderAll();
 };
 
 const addBlurEffect = ({
@@ -175,15 +158,23 @@ const modifyArrowHeadFirstTime = (arrowHead: Triangle, points: any) => {
 	});
 };
 
-const modifyArrowHeadOnMoving = (arrowHead: Triangle, coords: any) => {
-	const dx = coords.p1.x - coords.p0.x;
-	const dy = coords.p1.y - coords.p0.y;
-	const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-	arrowHead?.set({
-		left: coords.p1.x,
-		top: coords.p1.y,
-		angle: angle + 90,
-	});
+/** the first two points of the arrow polygon in scene coordinates (oCoords are viewport coordinates) */
+export const getArrowEndpoints = (polygon: Polygon) => {
+	const matrix = polygon.calcTransformMatrix();
+	const [p0, p1] = polygon.points.slice(0, 2).map((point) =>
+		new Point(point.x - polygon.pathOffset.x, point.y - polygon.pathOffset.y).transform(matrix),
+	);
+	return { p0, p1 };
+};
+
+export const positionArrowHead = (arrowHead: Triangle | undefined, polygon: Polygon) => {
+	if (!arrowHead || !polygon?.points || polygon.points.length < 2) {
+		return;
+	}
+	const { p0, p1 } = getArrowEndpoints(polygon);
+	const angle = (Math.atan2(p1.y - p0.y, p1.x - p0.x) * 180) / Math.PI;
+	arrowHead.set({ left: p1.x, top: p1.y, angle: angle + 90 });
+	arrowHead.setCoords();
 };
 
 const addAdvancedArrow = ({
@@ -238,11 +229,11 @@ const addAdvancedArrow = ({
 	});
 
 	currentPolyline.on('modifyPoly', () => {
-		modifyArrowHeadOnMoving(arrowHead, currentPolyline?.oCoords);
+		positionArrowHead(arrowHead, currentPolyline);
 	});
 
 	currentPolyline.on('moving', () => {
-		modifyArrowHeadOnMoving(arrowHead, currentPolyline?.oCoords);
+		positionArrowHead(arrowHead, currentPolyline);
 	});
 
 	let hasAddedRun = false;
@@ -251,7 +242,7 @@ const addAdvancedArrow = ({
 			if (isNewShape) {
 				modifyArrowHeadFirstTime(arrowHead, currentPolyline?.points);
 			} else {
-				modifyArrowHeadOnMoving(arrowHead, currentPolyline?.oCoords);
+				positionArrowHead(arrowHead, currentPolyline);
 			}
 			hasAddedRun = true;
 		}
@@ -372,6 +363,8 @@ const addText = ({
 		fontSize: canvasData.fontSize,
 		fontStyle: canvasData.fontStyle,
 		fontWeight: canvasData.fontWeight,
+		underline: !!canvasData.underline,
+		linethrough: !!canvasData.linethrough,
 		left: canvasData.left,
 		scaleX: canvasData.scaleX,
 		scaleY: canvasData.scaleY,

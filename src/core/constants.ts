@@ -34,6 +34,9 @@ export const ShapeType = {
 	CROP_GREYED_BOTTOM: 'crop_greyed_bottom',
 	TEMP_LINE_PATH: 'temp_line_path',
 	LINE_PATH: 'line_path',
+	TRIANGLE: 'triangle',
+	LINE: 'line',
+	ICON: 'icon',
 } as const;
 
 export type BuiltInShapeType = (typeof ShapeType)[keyof typeof ShapeType];
@@ -52,7 +55,7 @@ export const cropOverlayShapeTypes: string[] = [
 export const SCENE_REFERENCE_SIZE = { width: 1000, height: 508 };
 
 /** custom object properties which are serialized together with fabric's own properties */
-export const CUSTOM_OBJECT_PROPERTIES = ['id', 'shapeType', 'lastLeft', 'lastTop', 'test'];
+export const CUSTOM_OBJECT_PROPERTIES = ['id', 'shapeType', 'lastLeft', 'lastTop', 'test', 'fpFilters'];
 
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 4;

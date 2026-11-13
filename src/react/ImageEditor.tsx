@@ -63,7 +63,7 @@ export const ImageEditorProvider = forwardRef<ImageEditorController, ImageEditor
 	}, [editor, editorOptions.src]);
 
 	const ui = useMemo<EditorUIContextValue>(() => {
-		const { tools: toolLabels, menus: menuLabels, ...textLabels } = labels ?? {};
+		const { tools: toolLabels, menus: menuLabels, filters: filterLabels, ...textLabels } = labels ?? {};
 		const { tools: toolIcons, menus: menuIcons, ...uiIcons } = icons ?? {};
 		const resolvedComponents: EditorComponents = {
 			...defaultUIComponents,
@@ -99,6 +99,7 @@ export const ImageEditorProvider = forwardRef<ImageEditorController, ImageEditor
 			toolLabel: (tool) => toolLabels?.[tool.id] ?? tool.label,
 			toolIcon: (tool) => (toolIcons && tool.id in toolIcons ? toolIcons[tool.id] : tool.icon),
 			menuLabel: (menu) => menuLabels?.[menu.id] ?? toolLabels?.[menu.id] ?? menu.label,
+			filterLabel: (filter) => filterLabels?.[filter.id] ?? filter.label,
 			menuIcon: (menu) =>
 				menuIcons && menu.id in menuIcons
 					? menuIcons[menu.id]

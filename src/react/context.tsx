@@ -16,6 +16,7 @@ import type {
 	EditorSlot,
 	EditorTheme,
 	EditorUIOptions,
+	ObjectControl,
 } from './types';
 
 export interface EditorUIContextValue {
@@ -24,12 +25,16 @@ export interface EditorUIContextValue {
 	components: EditorComponents;
 	layout: Required<EditorLayout>;
 	actions: EditorAction[];
+	objectControls: ObjectControl[];
 	theme?: EditorTheme;
 	unstyled: boolean;
 	onCancel?: () => void;
 	onExportJson?: EditorUIOptions['onExportJson'];
 	/** class name (default `fp-*` class + the one from `classNames`) and style of an editor part */
-	slot: (name: EditorSlot, ...extraClassNames: (string | false | undefined | null)[]) => {
+	slot: (
+		name: EditorSlot,
+		...extraClassNames: (string | false | undefined | null)[]
+	) => {
 		className: string;
 		style?: CSSProperties;
 	};

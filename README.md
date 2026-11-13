@@ -13,9 +13,13 @@ it renders, and your own tools. You can also build a completely custom UI on top
 ## ✨ Features
 
 -   ✂️ **Crop** (free or 1:1, 3:2, 4:3, 5:4, 7:5, 16:9), 🔄 **Rotate** (90° steps or any angle) and ↔️ **Flip**
--   🎨 **Filters**: grayscale, invert, sepia, vintage, brightness, contrast, saturation, blur, sharpen, emboss,
-    remove white, noise, pixelate, tint, multiply, blend (and your own)
+-   🎨 **Filters**: grayscale, black & white, invert, sepia, vintage, kodachrome, polaroid, technicolor, brownie, blur,
+    sharpen, emboss, remove white, noise, pixelate, tint, multiply, blend (and your own)
+-   🎚️ **Adjust**: brightness, contrast, saturation, vibrance, hue, gamma; 📐 **Resize** the output (with or without
+    keeping the aspect ratio)
 -   🔒 **Redact** (blur) sensitive parts, 🔍 **Zoom** and ✋ **Pan**
+-   ⌨️ **Keyboard shortcuts**, 📋 **copy / cut / paste / duplicate** (also images from the clipboard), 🗂️ **layer order**
+-   🖌️ **Object styles**: opacity, shadow, dashed strokes, rounded corners
 -   ↩️ **Undo / Redo** with an 🕒 **edit history** panel
 -   🔢 **Steps**, 🧩 **Shapes** (rectangle, circle, triangle, arrow, star), 🗨️ **Callouts**, ⭐ **Icons**,
     📝 **Text** (bold, italic, underline, strikethrough, fonts), 😄 **Emoji**, 🖼️ **Images**, ✏️ **Free drawing**,
@@ -78,7 +82,7 @@ export default function App() {
 | `filters`           | `FilterDefinition[]`                        | Additional / replacement filters of the Filter menu                                                     |
 | `exportOptions`     | `{ format, quality, multiplier, maxPixels }` | Image export settings (default: PNG at the original resolution)                                         |
 | `historyLimit`      | `number`                                    | Maximum undo steps (default `50`)                                                                       |
-| `keyboardShortcuts` | `boolean`                                   | Delete the selection with Delete / Backspace (default `true`)                                           |
+| `keyboardShortcuts` | `boolean \| Partial<Record<EditorShortcut, string[] \| null>>` | Keyboard shortcuts, see [Keyboard shortcuts](#-keyboard-shortcuts) (default: on) |
 | `onSave`            | `({ blob, json }) => void`                  | Called by the Save button. Without it the image is downloaded                                           |
 | `onCancel`          | `() => void`                                | Shows a Cancel button                                                                                   |
 | `onExportJson`      | `(json) => void`                            | Called by the Export JSON button. Without it the JSON is downloaded                                     |
@@ -102,7 +106,8 @@ export default function App() {
 | `classNames` | `Partial<Record<EditorSlot, string>>`         | Extra class name per part (`root`, `toolbar`, `button`, `toolButton`, `stage`...)        |
 | `styles`     | `Partial<Record<EditorSlot, CSSProperties>>`  | Inline styles per part                                                                   |
 | `unstyled`   | `boolean`                                     | Drop all default colors, borders and spacing (keeps the layout)                          |
-| `components` | `Partial<EditorComponents>`                   | Replace the `Button`, `ColorPicker`, `NumberInput` or whole layout parts                |
+| `components` | `Partial<EditorComponents>`                   | Replace the `Button`, `ColorPicker`, `NumberInput`, `Slider`, `Select` or whole layout parts |
+| `objectControls` | `ObjectControl[]`                         | Controls shown for selected objects: `opacity`, `shadow`, `dashed`, `cornerRadius`, `layers`, `duplicate`, `delete` (default: all) |
 | `children`   | `ReactNode`                                   | Replaces the default layout (see [Custom layout](#-custom-layout))                       |
 
 ---
@@ -116,7 +121,8 @@ export default function App() {
 ```
 
 Built-in tool ids: `steps`, `rectangle`, `circle`, `triangle`, `arrowShape`, `star`, `comment`, `image`, `icon`,
-`emoji`, `text`, `draw`, `line`, `arrow`, `path`, `crop`, `transform` (rotate & flip), `filter`, `redact`. Menus without any visible tool are hidden, and so is the menu bar when only one menu is
+`emoji`, `text`, `draw`, `line`, `arrow`, `path`, `crop`, `transform` (rotate & flip), `resize`, `adjust`, `filter`,
+`redact`. Menus without any visible tool are hidden, and so is the menu bar when only one menu is
 left.
 
 Arrange tools and menus yourself with `menus` (a group is shown as a dropdown):
@@ -159,7 +165,8 @@ import { defaultIconLibrary } from 'fabri-pix';
 />;
 ```
 
-Filters are definitions too. Add your own (any [Fabric.js filter](http://fabricjs.com/image-filters)) or replace a
+Filters are definitions too (`group: 'adjust'` shows a filter as a slider in the Adjust menu, removed again at its
+`neutral` value). Add your own (any [Fabric.js filter](http://fabricjs.com/image-filters)) or replace a
 built-in one with the same id:
 
 ```tsx
@@ -249,6 +256,34 @@ Layout parts can be replaced or hidden the same way: `components={{ Header: MyHe
 
 ---
 
+## ⌨️ Keyboard shortcuts
+
+| Action                                    | Default                 |
+| ----------------------------------------- | ----------------------- |
+| `undo` / `redo`                           | ⌘Z / ⇧⌘Z, ⌘Y            |
+| `delete`                                  | Delete, Backspace       |
+| `copy` / `cut` / `paste`                  | ⌘C / ⌘X / ⌘V            |
+| `duplicate`                               | ⌘D                      |
+| `selectAll` / `deselect`                  | ⌘A / Escape             |
+| `nudgeLeft` / `nudgeRight` / `nudgeUp` / `nudgeDown` | Arrow keys (⇧ = 10 px) |
+| `bringForward` / `sendBackward`           | ⌘] / ⌘[                 |
+| `bringToFront` / `sendToBack`             | ⇧⌘] / ⇧⌘[               |
+
+⌘ is Ctrl on Windows and Linux. Shortcuts only apply to the editor the user worked with last and never while typing.
+Pasting an image copied in another application (e.g. a screenshot) adds it to the photo.
+
+```tsx
+// rebind or disable single shortcuts (`mod` = ⌘ on macOS, Ctrl elsewhere)
+<ImageEditor src={url} keyboardShortcuts={{ duplicate: ['mod+j'], selectAll: null }} />
+
+// disable all of them
+<ImageEditor src={url} keyboardShortcuts={false} />
+```
+
+The defaults are exported as `defaultShortcuts`.
+
+---
+
 ## 🧭 Controlling the editor
 
 The `ref` (or the `useImageEditor()` hook) gives you the editor:
@@ -264,6 +299,8 @@ editor.current.addShape('rectangle', { left: 50, top: 50, width: 200, height: 10
 editor.current.addImage(logoFile);
 editor.current.rotateImage(90);
 editor.current.setImageFilter('brightness', { value: 0.2 });
+editor.current.setOutputSize({ width: 1200 });
+editor.current.setObjectStyle(editor.current.canvas.getActiveObject(), { opacity: 0.5, dashed: true });
 const blob = await editor.current.exportImage({ format: 'jpeg', quality: 0.9 });
 const json = editor.current.toJSON();
 editor.current.on('change', ({ json }) => autosave(json));
@@ -277,7 +314,11 @@ editor.current.canvas; // the Fabric.js canvas for anything else
 | `zoomIn()`, `zoomOut()`, `setZoom(zoom)`, `fitToView()`, `setPanning(on)` | View                                  |
 | `addShape(type, data)`, `addImage(src)`, `updateObject(object, props)`, `deleteObject(object)`, `deleteSelection()`, `clearAnnotations()`, `reset()` | Objects |
 | `rotateImage(degrees)`, `setImageRotation(degrees)`, `flipImage('horizontal' \| 'vertical')`, `getImageRotation()`, `getImageFlip()` | Rotate / flip the photo (annotations follow) |
-| `setImageFilter(id, options \| null)`, `getImageFilters()`, `clearImageFilters()` | Filters |
+| `setImageFilter(id, options \| null)`, `getImageFilters()`, `clearImageFilters()` | Filters and adjustments |
+| `setOutputSize({ width, height }, { keepAspect })`, `setOutputScale(x, y?)`, `getOutputSize()`, `getNaturalSize()` | Size of the exported image |
+| `copySelection()`, `cutSelection()`, `paste()`, `duplicateSelection()`, `selectAll()`, `deselect()`, `nudgeSelection(dx, dy)` | Selection and clipboard |
+| `arrangeSelection('forward' \| 'backward' \| 'front' \| 'back')`, `canArrangeSelection(direction)` | Layer order |
+| `setObjectStyle(objects, { opacity, shadow, dashed, cornerRadius })`, `getObjectStyle(object)` | Object styles |
 | `exportImage(options)`, `save()`, `toJSON()`, `loadState(json)`, `setSource(src, state?)` | Import / export |
 | `getState()`, `subscribe(listener)`, `on(event, listener)` | State and events                                   |
 | `getToolOptions(id)`, `setToolOptions(id, options)`       | Tool options                                        |

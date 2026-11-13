@@ -102,7 +102,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
 };
 
 export const NumberInput: React.FC<NumberInputProps> = (props) => {
-	const { value, onChange, min, max, 'aria-label': ariaLabel } = props;
+	const { value, onChange, onChangeComplete, min, max, 'aria-label': ariaLabel } = props;
 	const ui = useEditorUI();
 
 	const [inputValue, setInputValue] = useState(value);
@@ -135,6 +135,12 @@ export const NumberInput: React.FC<NumberInputProps> = (props) => {
 			min={min}
 			max={max}
 			onChange={handleChange}
+			onBlur={() => onChangeComplete?.(Number(inputValue))}
+			onKeyDown={(event) => {
+				if (event.key === 'Enter') {
+					onChangeComplete?.(Number(inputValue));
+				}
+			}}
 			{...ui.slot('numberInput')}
 		/>
 	);
@@ -178,7 +184,12 @@ export const Select: React.FC<SelectProps> = (props) => {
 	const { value, options, onChange, 'aria-label': ariaLabel } = props;
 	const ui = useEditorUI();
 	return (
-		<select aria-label={ariaLabel} value={value} onChange={(event) => onChange(event.target.value)} {...ui.slot('select')}>
+		<select
+			aria-label={ariaLabel}
+			value={value}
+			onChange={(event) => onChange(event.target.value)}
+			{...ui.slot('select')}
+		>
 			{options.map((option) => (
 				<option key={option.value} value={option.value}>
 					{option.label}

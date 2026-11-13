@@ -215,6 +215,18 @@
 	cursor: pointer;
 }
 
+:where(.fp-object-controls) {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+}
+
+:where(.fp-value) {
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
 /* ------------------------------------------------------------------ visual (skipped by `unstyled`) */
 
 :where(.fp-root:not(.fp-unstyled)) {
@@ -362,4 +374,10 @@
 
 :where(.fp-root:not(.fp-unstyled) .fp-filter .fp-button, .fp-root:not(.fp-unstyled) .fp-icon-grid .fp-button) {
 	padding: 6px 10px;
+}
+
+:where(.fp-root:not(.fp-unstyled) .fp-value) {
+	min-width: 36px;
+	color: var(--fp-color-muted-text);
+	font-size: 12px;
 }

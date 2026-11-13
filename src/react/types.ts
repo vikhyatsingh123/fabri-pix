@@ -3,12 +3,7 @@
  * @description Public types of the react components
  */
 
-import type {
-	ButtonHTMLAttributes,
-	ComponentType,
-	CSSProperties,
-	ReactNode,
-} from 'react';
+import type { ButtonHTMLAttributes, ComponentType, CSSProperties, ReactNode } from 'react';
 
 import type { ImageEditorOptions } from '../core/types';
 
@@ -62,6 +57,20 @@ export interface EditorLabels {
 	load: string;
 	deleteAll: string;
 	clearFilters: string;
+	duplicate: string;
+	bringForward: string;
+	sendBackward: string;
+	bringToFront: string;
+	sendToBack: string;
+	opacity: string;
+	shadow: string;
+	dashed: string;
+	cornerRadius: string;
+	width: string;
+	height: string;
+	keepAspect: string;
+	originalSize: string;
+	resetAdjustments: string;
 }
 
 export interface EditorIcons {
@@ -95,6 +104,14 @@ export interface EditorIcons {
 	flipVertical: ReactNode;
 	load: ReactNode;
 	deleteAll: ReactNode;
+	duplicate: ReactNode;
+	bringForward: ReactNode;
+	sendBackward: ReactNode;
+	bringToFront: ReactNode;
+	sendToBack: ReactNode;
+	shadow: ReactNode;
+	dashed: ReactNode;
+	keepAspect: ReactNode;
 }
 
 /** parts of the editor which accept a class name / style through `classNames` / `styles` */
@@ -123,7 +140,8 @@ export type EditorSlot =
 	| 'slider'
 	| 'select'
 	| 'filterList'
-	| 'iconGrid';
+	| 'iconGrid'
+	| 'objectControls';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	/** pressed / selected state (active tool, bold text...) */
@@ -146,6 +164,8 @@ export interface ColorPickerProps {
 export interface NumberInputProps {
 	value: number | string | undefined;
 	onChange: (value: number) => void;
+	/** called when the input loses focus or Enter is pressed, used to record history once */
+	onChangeComplete?: (value: number) => void;
 	min?: number;
 	max?: number;
 	'aria-label'?: string;
@@ -208,6 +228,9 @@ export type EditorAction = 'load' | 'deleteAll' | 'reset' | 'cancel' | 'exportJs
 
 export type EditorPosition = 'top' | 'bottom' | 'none';
 
+/** controls shown for selected objects in the options panel */
+export type ObjectControl = 'opacity' | 'shadow' | 'dashed' | 'cornerRadius' | 'layers' | 'duplicate' | 'delete';
+
 export interface EditorLayout {
 	/** menu tabs (Annotate / Crop / Redact), default 'left' */
 	menu?: 'left' | 'right' | 'top' | 'bottom' | 'none';
@@ -240,6 +263,8 @@ export interface EditorUIOptions {
 	layout?: EditorLayout;
 	/** buttons in the actions bar, default ['reset', 'save'] (+ 'cancel' when `onCancel` is set) */
 	actions?: EditorAction[];
+	/** controls shown for selected objects and their order, default: all */
+	objectControls?: ObjectControl[];
 	onCancel?: () => void;
 	/** called by the Export JSON button, the JSON is downloaded when not provided */
 	onExportJson?: (json: Record<string, any>) => void;

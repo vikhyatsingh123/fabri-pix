@@ -61,7 +61,11 @@ export const usePanel = <O extends ToolOptions>(props: ToolPanelProps<O>) => {
 		}
 	};
 
-	const apply = (optionValues: Partial<O>, objectProps?: Record<string, any>, object: FabricObject | null = target) => {
+	const apply = (
+		optionValues: Partial<O>,
+		objectProps?: Record<string, any>,
+		object: FabricObject | null = target,
+	) => {
 		if (object && objectProps) {
 			editor.updateObject(object, objectProps, { commit: true });
 		}

@@ -201,8 +201,8 @@ export default class CustomFabricPolygon extends Polygon {
 
 	updateTextboxPosition(): void {
 		const pointIndex = this.pointIndex;
-		const extraTop = this.arrowType === 'top' ? this.points[pointIndex]?.y ?? 0 : 0;
-		const extraLeft = this.arrowType === 'left' ? this.points[pointIndex]?.x ?? 0 : 0;
+		const extraTop = this.arrowType === 'top' ? (this.points[pointIndex]?.y ?? 0) : 0;
+		const extraLeft = this.arrowType === 'left' ? (this.points[pointIndex]?.x ?? 0) : 0;
 
 		const x2Point = this.points[this.widthPointer.x2];
 		const x1Point = this.points[this.widthPointer.x1];

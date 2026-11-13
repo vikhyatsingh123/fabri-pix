@@ -8,15 +8,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, use
 import { ImageEditorController } from '../core/controller';
 import type { ImageEditorOptions } from '../core/types';
 import { builtInTools, defaultMenus } from '../tools';
-import {
-	Actions,
-	ContextPanel,
-	DefaultLayout,
-	EditorRoot,
-	Header,
-	MenuBar,
-	Toolbar,
-} from './components';
+import { Actions, ContextPanel, DefaultLayout, EditorRoot, Header, MenuBar, Toolbar } from './components';
 import { EditorContext, EditorUIContext, EditorUIContextValue } from './context';
 import { defaultIcons, defaultLabels } from './defaults';
 import { cx, defaultUIComponents } from './ui';
@@ -36,6 +28,7 @@ export const ImageEditorProvider = forwardRef<ImageEditorController, ImageEditor
 		unstyled = false,
 		layout,
 		actions,
+		objectControls,
 		onCancel,
 		onExportJson,
 		...options
@@ -88,6 +81,15 @@ export const ImageEditorProvider = forwardRef<ImageEditorController, ImageEditor
 				actions: layout?.actions ?? 'bottom',
 			},
 			actions: resolvedActions,
+			objectControls: objectControls ?? [
+				'opacity',
+				'shadow',
+				'dashed',
+				'cornerRadius',
+				'layers',
+				'duplicate',
+				'delete',
+			],
 			theme,
 			unstyled,
 			onCancel,
@@ -107,7 +109,20 @@ export const ImageEditorProvider = forwardRef<ImageEditorController, ImageEditor
 						? toolIcons[menu.id]
 						: menu.icon,
 		};
-	}, [labels, icons, components, classNames, styles, layout, actions, theme, unstyled, onCancel, onExportJson]);
+	}, [
+		labels,
+		icons,
+		components,
+		classNames,
+		styles,
+		layout,
+		actions,
+		objectControls,
+		theme,
+		unstyled,
+		onCancel,
+		onExportJson,
+	]);
 
 	return (
 		<EditorContext.Provider value={editor}>

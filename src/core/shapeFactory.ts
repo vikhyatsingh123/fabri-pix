@@ -91,7 +91,13 @@ export const applyBlurEffect = (canvas: CanvasRef, rect: any) => {
 		}
 	});
 
-	canvas.current.add(blurredImage);
+	// right above its blur area, so that the stacking order (layers) is kept
+	const rectIndex = canvas.current.getObjects().indexOf(rect);
+	if (rectIndex >= 0) {
+		canvas.current.insertAt(rectIndex + 1, blurredImage);
+	} else {
+		canvas.current.add(blurredImage);
+	}
 	canvas.current.renderAll();
 };
 
@@ -161,9 +167,9 @@ const modifyArrowHeadFirstTime = (arrowHead: Triangle, points: any) => {
 /** the first two points of the arrow polygon in scene coordinates (oCoords are viewport coordinates) */
 export const getArrowEndpoints = (polygon: Polygon) => {
 	const matrix = polygon.calcTransformMatrix();
-	const [p0, p1] = polygon.points.slice(0, 2).map((point) =>
-		new Point(point.x - polygon.pathOffset.x, point.y - polygon.pathOffset.y).transform(matrix),
-	);
+	const [p0, p1] = polygon.points
+		.slice(0, 2)
+		.map((point) => new Point(point.x - polygon.pathOffset.x, point.y - polygon.pathOffset.y).transform(matrix));
 	return { p0, p1 };
 };
 
@@ -204,7 +210,7 @@ const addAdvancedArrow = ({
 					top: canvasData.top,
 					scaleX: canvasData.scaleX,
 					scaleY: canvasData.scaleY,
-			  }),
+				}),
 	});
 
 	const arrowHead = new Triangle({
@@ -224,7 +230,9 @@ const addAdvancedArrow = ({
 
 	arrowHead.set({
 		shapeType:
-			shapeType === ShapeType.TEMP_ADVANCED_ARROW ? ShapeType.TEMP_ADVANCED_ARROW_HEAD : ShapeType.ADVANCED_ARROW_HEAD,
+			shapeType === ShapeType.TEMP_ADVANCED_ARROW
+				? ShapeType.TEMP_ADVANCED_ARROW_HEAD
+				: ShapeType.ADVANCED_ARROW_HEAD,
 		id: `${canvasData.id}-arrowhead`,
 	});
 
@@ -288,7 +296,7 @@ const addLinePath = ({
 					top: canvasData.top,
 					scaleX: canvasData.scaleX,
 					scaleY: canvasData.scaleY,
-			  }),
+				}),
 	});
 
 	currentPolyline.set({
@@ -342,15 +350,7 @@ const addPencil = ({
 	}
 };
 
-const addText = ({
-	canvas,
-	isNewShape,
-	canvasData,
-}: {
-	canvas: CanvasRef;
-	isNewShape: boolean;
-	canvasData?: any;
-}) => {
+const addText = ({ canvas, isNewShape, canvasData }: { canvas: CanvasRef; isNewShape: boolean; canvasData?: any }) => {
 	const text = new IText(canvasData.text, {
 		backgroundColor: canvasData.backgroundColor,
 		cornerColor: '#000',
@@ -384,15 +384,7 @@ const addText = ({
 	}
 };
 
-const addEmoji = ({
-	canvas,
-	isNewShape,
-	canvasData,
-}: {
-	canvas: CanvasRef;
-	isNewShape: boolean;
-	canvasData?: any;
-}) => {
+const addEmoji = ({ canvas, isNewShape, canvasData }: { canvas: CanvasRef; isNewShape: boolean; canvasData?: any }) => {
 	const emoj = new Textbox(canvasData.text, {
 		cornerColor: '#000',
 		cornerSize: 8,
@@ -436,8 +428,8 @@ const addRectangle = ({
 		fill: canvasData.fill,
 		height: canvasData.height,
 		left: canvasData.left,
-		rx: 0,
-		ry: 0,
+		rx: canvasData.rx ?? 0,
+		ry: canvasData.ry ?? canvasData.rx ?? 0,
 		scaleX: canvasData.scaleX,
 		scaleY: canvasData.scaleY,
 		stroke: canvasData.stroke,
@@ -515,15 +507,7 @@ const createStarPoints = (
 	return starPoints;
 };
 
-const addStar = ({
-	canvas,
-	isNewShape,
-	canvasData,
-}: {
-	canvas: CanvasRef;
-	isNewShape: boolean;
-	canvasData?: any;
-}) => {
+const addStar = ({ canvas, isNewShape, canvasData }: { canvas: CanvasRef; isNewShape: boolean; canvasData?: any }) => {
 	const centerX = 200;
 	const centerY = 150;
 	const outerRadius = 50;
@@ -563,15 +547,7 @@ const addStar = ({
 	}
 };
 
-const addArrow = ({
-	canvas,
-	isNewShape,
-	canvasData,
-}: {
-	canvas: CanvasRef;
-	isNewShape: boolean;
-	canvasData?: any;
-}) => {
+const addArrow = ({ canvas, isNewShape, canvasData }: { canvas: CanvasRef; isNewShape: boolean; canvasData?: any }) => {
 	const line = new Line([50, 50, 100, 50], {
 		angle: canvasData.objects[0].angle,
 		fill: canvasData.objects[0].fill,
@@ -639,7 +615,7 @@ const addCustomShape = async ({
 		// fit big uploads into half of the canvas and center them
 		const canvasWidth = canvasData.sceneWidth ?? canvas.current.getWidth();
 		const canvasHeight = canvasData.sceneHeight ?? canvas.current.getHeight();
-		const scale = Math.min(1, (canvasWidth / 2) / img.width, (canvasHeight / 2) / img.height);
+		const scale = Math.min(1, canvasWidth / 2 / img.width, canvasHeight / 2 / img.height);
 		scaleX = scale;
 		scaleY = scale;
 		left = (canvasWidth - img.width * scale) / 2;
@@ -760,7 +736,7 @@ const addStepsCreator = ({
 			: {
 					left: canvasData.objects[0].left,
 					top: canvasData.objects[0].top,
-			  }),
+				}),
 	});
 
 	const internalGroup = new Group([circle, text], {

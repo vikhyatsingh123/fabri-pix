@@ -5,14 +5,16 @@
 
 import React from 'react';
 
+import AdjustIcon from '../icons/AdjustIcon';
 import FilterIcon from '../icons/FilterIcon';
+import ResizeIcon from '../icons/ResizeIcon';
 import SubtractSelectionIcon from '../icons/SubtractSelectionIcon';
 import TailoringIcon from '../icons/TailoringIcon';
 import TransformIcon from '../icons/TransformIcon';
 import WriteIcon from '../icons/WriteIcon';
 import type { MenuDefinition, ToolDefinition } from '../core/types';
 import { arrowTool, lineTool, pathTool, stepsTool } from './drawing';
-import { cropTool, filterTool, redactTool, transformTool } from './image';
+import { adjustTool, cropTool, filterTool, redactTool, resizeTool, transformTool } from './image';
 import {
 	arrowShapeTool,
 	circleTool,
@@ -28,16 +30,20 @@ import { drawTool, emojiTool, textTool } from './text';
 export { arrowTool, lineTool, pathTool, stepsTool, StepsPanel, StrokePanel } from './drawing';
 export type { StepsOptions, StrokeOptions } from './drawing';
 export {
+	AdjustPanel,
+	adjustTool,
 	applyCropMask,
 	CropPanel,
 	cropTool,
 	FilterPanel,
 	filterTool,
 	redactTool,
+	ResizePanel,
+	resizeTool,
 	TransformPanel,
 	transformTool,
 } from './image';
-export type { CropOptions, CropRatio } from './image';
+export type { CropOptions, CropRatio, ResizeOptions } from './image';
 export {
 	ArrowShapePanel,
 	arrowShapeTool,
@@ -87,6 +93,8 @@ export const builtInTools: ToolDefinition<any>[] = [
 	pathTool,
 	cropTool,
 	transformTool,
+	resizeTool,
+	adjustTool,
 	filterTool,
 	redactTool,
 ];
@@ -114,6 +122,8 @@ export const defaultMenus: MenuDefinition[] = [
 	},
 	{ id: 'crop', label: 'Crop', icon: <TailoringIcon />, tools: ['crop'], defaultTool: 'crop' },
 	{ id: 'transform', label: 'Rotate', icon: <TransformIcon />, tools: ['transform'], defaultTool: 'transform' },
+	{ id: 'resize', label: 'Resize', icon: <ResizeIcon />, tools: ['resize'], defaultTool: 'resize' },
+	{ id: 'adjust', label: 'Adjust', icon: <AdjustIcon />, tools: ['adjust'], defaultTool: 'adjust' },
 	{ id: 'filter', label: 'Filter', icon: <FilterIcon />, tools: ['filter'], defaultTool: 'filter' },
 	{ id: 'redact', label: 'Redact', icon: <SubtractSelectionIcon />, tools: ['redact'], defaultTool: 'redact' },
 ];

@@ -6,7 +6,7 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 
 import { useEditorUI } from './context';
-import type { ButtonProps, ColorPickerProps, EditorSlot, NumberInputProps } from './types';
+import type { ButtonProps, ColorPickerProps, EditorSlot, NumberInputProps, SelectProps, SliderProps } from './types';
 
 export const cx = (...classNames: (string | false | undefined | null)[]) => classNames.filter(Boolean).join(' ');
 
@@ -140,6 +140,54 @@ export const NumberInput: React.FC<NumberInputProps> = (props) => {
 	);
 };
 
+export const Slider: React.FC<SliderProps> = (props) => {
+	const { value, min, max, step = 1, onChange, onChangeComplete, 'aria-label': ariaLabel } = props;
+	const ui = useEditorUI();
+	const inputRef = useRef<HTMLInputElement | null>(null);
+	const onChangeCompleteRef = useRef(onChangeComplete);
+	onChangeCompleteRef.current = onChangeComplete;
+
+	// the native "change" event fires once the thumb is released
+	useEffect(() => {
+		const input = inputRef.current;
+		const handleNativeChange = (event: Event) => {
+			onChangeCompleteRef.current?.(Number((event.target as HTMLInputElement).value));
+		};
+		input?.addEventListener('change', handleNativeChange);
+		return () => {
+			input?.removeEventListener('change', handleNativeChange);
+		};
+	}, []);
+
+	return (
+		<input
+			ref={inputRef}
+			type='range'
+			aria-label={ariaLabel}
+			value={value}
+			min={min}
+			max={max}
+			step={step}
+			onChange={(event) => onChange(Number(event.target.value))}
+			{...ui.slot('slider')}
+		/>
+	);
+};
+
+export const Select: React.FC<SelectProps> = (props) => {
+	const { value, options, onChange, 'aria-label': ariaLabel } = props;
+	const ui = useEditorUI();
+	return (
+		<select aria-label={ariaLabel} value={value} onChange={(event) => onChange(event.target.value)} {...ui.slot('select')}>
+			{options.map((option) => (
+				<option key={option.value} value={option.value}>
+					{option.label}
+				</option>
+			))}
+		</select>
+	);
+};
+
 export const Divider: React.FC = () => {
 	const ui = useEditorUI();
 	return <span role='separator' {...ui.slot('divider')} />;
@@ -246,6 +294,8 @@ export const defaultUIComponents = {
 	Button,
 	ColorPicker,
 	NumberInput,
+	Slider,
+	Select,
 };
 
 export type { EditorSlot };

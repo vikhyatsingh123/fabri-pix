@@ -1,4 +1,4 @@
-# fabri-pix 3.0.0
+# fabri-pix 3.1.0
 
 A new, fully configurable editor, plus a large stability and size release. Undo/redo, crop, redaction and saving all
 work more reliably, the package is smaller, and your users download less when the editor loads.
@@ -21,6 +21,19 @@ JSON saved with 2.x still loads.
 -   ↩️ **Undo/redo is reliable.** Crops, style changes and text edits are recorded, and undo no longer wipes redo.
 -   💾 **Saved images are cropped and at full resolution**, no matter how far you are zoomed in.
 -   📦 **Smaller install and app bundle.** The emoji picker (~62 KB gzipped) is only downloaded when it is opened.
+
+## New tools
+
+-   🔄 **Rotate & Flip** menu: rotate by 90° or to any angle with a slider, flip horizontally / vertically. Annotations
+    turn with the photo; text, steps and callouts stay upright.
+-   🎨 **Filter** menu: grayscale, invert, sepia, vintage, brightness, contrast, saturation, blur, sharpen, emboss,
+    remove white, noise, pixelate, tint, multiply and blend, with sliders and colors. Add your own with `filters`.
+-   ✂️ **Crop ratios**: Custom, Square, 3:2, 4:3, 5:4, 7:5, 16:9, plus **Apply** and **Cancel** buttons.
+-   🔺 **Triangle** shape, 📏 **Line** tool, ⭐ **Icon** tool (arrows, check, cancel, heart, location, polygon, star,
+    bubble, warning, recolorable and extendable).
+-   📝 **Text**: underline, strikethrough and a font select.
+-   **Load** (open another image) and **Delete All** (remove the annotations) action buttons.
+-   Rotation, flip and filters are saved in the JSON, recorded in the history and included in the exported image.
 
 ## Before you upgrade
 

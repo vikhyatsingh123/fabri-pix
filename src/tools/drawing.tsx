@@ -4,13 +4,15 @@
  */
 
 import React from 'react';
-import { Polygon, Polyline, Rect, Triangle } from 'fabric';
+import { Line, Polygon, Polyline, Rect, Triangle } from 'fabric';
 
 import AddTextTwoIcon from '../icons/AddTextTwoIcon';
 import ArrowRightUpIcon from '../icons/ArrowRightUpIcon';
+import LineIcon from '../icons/LineIcon';
 import OrderedListIcon from '../icons/OrderedListIcon';
 import WholeSiteAcceleratorIcon from '../icons/WholeSiteAcceleratorIcon';
 import { generateId, ShapeType } from '../core/constants';
+import { positionArrowHead } from '../core/shapeFactory';
 import type { ToolDefinition, ToolPanelProps } from '../core/types';
 import { Divider, Field } from '../react/ui';
 import { createCursorCache, usePanel } from './shared';
@@ -32,13 +34,6 @@ export interface StepsOptions {
 
 const findById = (objects: any[], id: string) => objects.find((obj) => obj.id === id);
 
-const positionArrowHead = (arrowHead: Triangle | undefined, coords: any) => {
-	if (!arrowHead || !coords) {
-		return;
-	}
-	const angle = (Math.atan2(coords.p1.y - coords.p0.y, coords.p1.x - coords.p0.x) * 180) / Math.PI;
-	arrowHead.set({ left: coords.p1.x, top: coords.p1.y, angle: angle + 90 });
-};
 
 /** stroke color and width, used by the arrow and path tools */
 export const StrokePanel: React.FC<ToolPanelProps<StrokeOptions>> = (props) => {
@@ -64,7 +59,7 @@ export const StrokePanel: React.FC<ToolPanelProps<StrokeOptions>> = (props) => {
 			target.setCoords();
 			if (arrowHead) {
 				arrowHead.set({ width: width * 2, height: width * 2 });
-				positionArrowHead(arrowHead, target.oCoords);
+				positionArrowHead(arrowHead, target as Polygon);
 			}
 		}
 		apply({ width });
@@ -168,6 +163,72 @@ export const arrowTool: ToolDefinition<StrokeOptions> = {
 		});
 
 		return removePreview;
+	},
+	OptionsPanel: StrokePanel,
+};
+
+export const lineTool: ToolDefinition<StrokeOptions> = {
+	id: 'line',
+	label: 'Line',
+	icon: <LineIcon />,
+	shapeTypes: [ShapeType.LINE],
+	defaultOptions: { stroke: '#ff0000', width: 3 },
+	activate: (context) => {
+		const { canvas, editor } = context;
+		let line: Line | undefined;
+
+		context.setSelectionEnabled(false);
+		context.setCursor('crosshair');
+		canvas.discardActiveObject();
+		canvas.requestRenderAll();
+
+		context.on('mouse:down', (event: any) => {
+			if (line || canvas.findTarget(event.e)) {
+				return;
+			}
+			const { x, y } = canvas.getScenePoint(event.e);
+			const id = generateId();
+			// created through the shape definition directly: the line is recorded once the drag ends
+			void editor.getShape(ShapeType.LINE)?.create?.(
+				{ id, points: [x, y, x, y], stroke: context.options.stroke, strokeWidth: context.options.width },
+				{ editor, canvas },
+			);
+			line = findById(canvas.getObjects(), id);
+			canvas.discardActiveObject();
+		});
+
+		context.on('mouse:move', (event: any) => {
+			if (!line) {
+				return;
+			}
+			const { x, y } = canvas.getScenePoint(event.e);
+			line.set({ x2: x, y2: y });
+			line.setCoords();
+			canvas.requestRenderAll();
+		});
+
+		context.on('mouse:up', () => {
+			if (!line) {
+				return;
+			}
+			const drawn = line;
+			line = undefined;
+			if (drawn.x1 === drawn.x2 && drawn.y1 === drawn.y2) {
+				canvas.remove(drawn);
+			} else {
+				drawn.setCoords();
+				canvas.setActiveObject(drawn);
+				editor.commit();
+			}
+			canvas.requestRenderAll();
+		});
+
+		return () => {
+			if (line) {
+				canvas.remove(line);
+				line = undefined;
+			}
+		};
 	},
 	OptionsPanel: StrokePanel,
 };

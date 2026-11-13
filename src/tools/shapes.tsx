@@ -3,7 +3,7 @@
  * @description Rectangle, circle, arrow, star, comment and image tools
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { FabricObject } from 'fabric';
 
 import CommentOneIcon from '../icons/CommentOneIcon';
@@ -12,9 +12,12 @@ import RectangleIcon from '../icons/RectangleIcon';
 import RightTwoIcon from '../icons/RightTwoIcon';
 import RoundIcon from '../icons/RoundIcon';
 import StarIcon from '../icons/StarIcon';
+import IconsIcon from '../icons/IconsIcon';
+import TriangleIcon from '../icons/TriangleIcon';
 import { ShapeType } from '../core/constants';
-import type { ToolDefinition, ToolPanelProps } from '../core/types';
-import { Field, Divider } from '../react/ui';
+import type { ToolButtonProps, ToolDefinition, ToolPanelProps } from '../core/types';
+import { useEditorUI, useImageEditor, useToolOptions } from '../react/context';
+import { Divider, Dropdown, Field } from '../react/ui';
 import { placeOnClick, usePanel } from './shared';
 
 export interface ShapeOptions {
@@ -27,6 +30,72 @@ export interface RectangleOptions extends ShapeOptions {
 	width: number;
 	height: number;
 }
+
+export interface TriangleOptions extends ShapeOptions {
+	width: number;
+	height: number;
+}
+
+export interface IconShape {
+	id: string;
+	label: string;
+	/** SVG path data, any viewBox */
+	path: string;
+	fillRule?: 'nonzero' | 'evenodd';
+}
+
+export interface IconOptions {
+	/** id of the icon in `library` */
+	icon: string;
+	color: string;
+	/** size of the longer side in image pixels */
+	size: number;
+	library: IconShape[];
+}
+
+/** icons of the Icon tool (24 × 24 paths), extend it through `defaults={{ icon: { library: [...] } }}` */
+export const defaultIconLibrary: IconShape[] = [
+	{ id: 'arrowRight', label: 'Arrow right', path: 'M2 9H14V4L22 12L14 20V15H2Z' },
+	{ id: 'arrowLeft', label: 'Arrow left', path: 'M22 9H10V4L2 12L10 20V15H22Z' },
+	{ id: 'arrowUp', label: 'Arrow up', path: 'M9 22V10H4L12 2L20 10H15V22Z' },
+	{ id: 'arrowDown', label: 'Arrow down', path: 'M9 2V14H4L12 22L20 14H15V2Z' },
+	{ id: 'check', label: 'Check', path: 'M9 16.2L4.8 12L3.4 13.4L9 19L21 7L19.6 5.6Z' },
+	{
+		id: 'cancel',
+		label: 'Cancel',
+		path: 'M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12Z',
+	},
+	{
+		id: 'heart',
+		label: 'Heart',
+		path: 'M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04Z',
+	},
+	{
+		id: 'location',
+		label: 'Location',
+		path: 'M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z',
+		fillRule: 'evenodd',
+	},
+	{ id: 'polygon', label: 'Polygon', path: 'M12 2L21 7V17L12 22L3 17V7Z' },
+	{
+		id: 'star',
+		label: 'Star',
+		path: 'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z',
+	},
+	{
+		id: 'bubble',
+		label: 'Bubble',
+		path: 'M4 3H20C21.1 3 22 3.9 22 5V15C22 16.1 21.1 17 20 17H9L4 21V17C2.9 17 2 16.1 2 15V5C2 3.9 2.9 3 4 3Z',
+	},
+	{ id: 'warning', label: 'Warning', path: 'M1 21H23L12 2ZM13 18H11V16H13ZM13 14H11V10H13Z', fillRule: 'evenodd' },
+];
+
+const IconPreview: React.FC<{ icon?: IconShape }> = ({ icon }) =>
+	icon ? (
+		<svg width='20' height='20' viewBox='0 0 24 24' aria-hidden='true'>
+			<path d={icon.path} fill='currentColor' fillRule={icon.fillRule} />
+		</svg>
+	) : null;
 
 export interface CircleOptions extends ShapeOptions {
 	radius: number;
@@ -400,4 +469,124 @@ export const imageTool: ToolDefinition<ImageToolOptions> = {
 		};
 		input.click();
 	},
+};
+
+export const triangleTool: ToolDefinition<TriangleOptions> = {
+	id: 'triangle',
+	label: 'Triangle',
+	icon: <TriangleIcon />,
+	shapeTypes: [ShapeType.TRIANGLE],
+	defaultOptions: { fill: 'transparent', stroke: '#ff0000', strokeWidth: 5, width: 90, height: 80 },
+	activate: (context) => {
+		placeOnClick(context, ({ x, y }) => {
+			const { fill, stroke, strokeWidth, width, height } = context.options;
+			void context.editor.addShape(ShapeType.TRIANGLE, {
+				fill,
+				stroke,
+				strokeWidth,
+				width,
+				height,
+				left: x - width / 2,
+				top: y - height / 2,
+			});
+		});
+	},
+	OptionsPanel: ShapesPanel,
+};
+
+/** the icon button with a dropdown of the icon library */
+export const IconToolButton: React.FC<ToolButtonProps> = (props) => {
+	const { tool, active, onClick } = props;
+	const editor = useImageEditor();
+	const ui = useEditorUI();
+	const [options, setOptions] = useToolOptions<IconOptions>(tool.id);
+	const [open, setOpen] = useState(false);
+	const { Button } = ui.components;
+	const current = options.library?.find((icon) => icon.id === options.icon);
+
+	return (
+		<Dropdown
+			open={open}
+			onOpenChange={setOpen}
+			trigger={
+				<>
+					<Button slot='toolButton' active={active} onClick={onClick}>
+						{current ? <IconPreview icon={current} /> : ui.toolIcon(tool)}
+						<span>{ui.toolLabel(tool)}</span>
+					</Button>
+					<Button
+						slot='toolButton'
+						aria-label={`${ui.toolLabel(tool)} ${ui.labels.more}`}
+						aria-expanded={open}
+						onClick={() => setOpen((isOpen) => !isOpen)}
+					>
+						{ui.icons.dropdown}
+					</Button>
+				</>
+			}
+		>
+			<div role='menu' {...ui.slot('iconGrid')}>
+				{options.library?.map((icon) => (
+					<Button
+						key={icon.id}
+						role='menuitem'
+						title={icon.label}
+						aria-label={icon.label}
+						active={icon.id === options.icon}
+						onClick={() => {
+							setOpen(false);
+							setOptions({ icon: icon.id });
+							if (!active) {
+								editor.setActiveTool(tool.id);
+							}
+						}}
+					>
+						<IconPreview icon={icon} />
+					</Button>
+				))}
+			</div>
+		</Dropdown>
+	);
+};
+
+export const IconPanel: React.FC<ToolPanelProps<IconOptions>> = (props) => {
+	const { value, preview, apply, ColorPicker, labels, icons } = usePanel(props);
+	return (
+		<Field icon={icons.fill} label={labels.color}>
+			<ColorPicker
+				aria-label={labels.color}
+				value={value('color', 'fill')}
+				onChange={(fill) => preview({ fill })}
+				onChangeComplete={(color) => apply({ color }, { fill: color })}
+			/>
+		</Field>
+	);
+};
+
+export const iconTool: ToolDefinition<IconOptions> = {
+	id: 'icon',
+	label: 'Icon',
+	icon: <IconsIcon />,
+	shapeTypes: [ShapeType.ICON],
+	defaultOptions: { icon: 'arrowRight', color: '#ff0000', size: 60, library: defaultIconLibrary },
+	activate: (context) => {
+		context.setCursor('crosshair');
+		placeOnClick(context, ({ x, y }) => {
+			const { icon: iconId, color, size, library } = context.options;
+			const icon = library.find((item) => item.id === iconId) ?? library[0];
+			if (!icon) {
+				return;
+			}
+			void context.editor.addShape(ShapeType.ICON, {
+				path: icon.path,
+				fillRule: icon.fillRule,
+				fill: color,
+				size,
+				left: x,
+				top: y,
+			});
+		});
+	},
+	OptionsPanel: IconPanel,
+	ToolbarButton: IconToolButton,
 };

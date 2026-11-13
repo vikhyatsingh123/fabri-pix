@@ -26,7 +26,11 @@ export interface TextOptions {
 	fontWeight: string;
 	fontFamily: string;
 	textAlign: string;
+	underline: boolean;
+	linethrough: boolean;
 	text: string;
+	/** fonts offered in the font select */
+	fonts: string[];
 }
 
 export interface EmojiOptions {
@@ -39,10 +43,17 @@ export interface DrawOptions {
 }
 
 export const TextPanel: React.FC<ToolPanelProps<TextOptions>> = (props) => {
-	const { value, preview, apply, Button, ColorPicker, NumberInput, labels, icons } = usePanel(props);
+	const { value, preview, apply, Button, ColorPicker, NumberInput, Select, labels, icons } = usePanel(props);
+	const fonts = props.options.fonts ?? [];
+	const fontFamily = value('fontFamily');
 
 	const toggle = (key: 'fontWeight' | 'fontStyle', on: string) => {
 		const next = value(key) === on ? 'normal' : on;
+		apply({ [key]: next } as Partial<TextOptions>, { [key]: next });
+	};
+
+	const toggleDecoration = (key: 'underline' | 'linethrough') => {
+		const next = !value(key);
 		apply({ [key]: next } as Partial<TextOptions>, { [key]: next });
 	};
 
@@ -90,7 +101,38 @@ export const TextPanel: React.FC<ToolPanelProps<TextOptions>> = (props) => {
 				>
 					{icons.italic}
 				</Button>
+				<Button
+					title={labels.underline}
+					aria-label={labels.underline}
+					active={!!value('underline')}
+					onClick={() => toggleDecoration('underline')}
+				>
+					{icons.underline}
+				</Button>
+				<Button
+					title={labels.strikethrough}
+					aria-label={labels.strikethrough}
+					active={!!value('linethrough')}
+					onClick={() => toggleDecoration('linethrough')}
+				>
+					{icons.strikethrough}
+				</Button>
 			</Field>
+			{fonts.length > 0 && (
+				<>
+					<Divider />
+					<Select
+						aria-label={labels.font}
+						value={fontFamily}
+						// the current font stays selectable even when it is not part of the list
+						options={[...new Set([fontFamily, ...fonts].filter(Boolean))].map((font) => ({
+							value: font,
+							label: font,
+						}))}
+						onChange={(font) => apply({ fontFamily: font }, { fontFamily: font })}
+					/>
+				</>
+			)}
 			<Divider />
 			<Segmented
 				value={value('textAlign')}
@@ -118,7 +160,10 @@ export const textTool: ToolDefinition<TextOptions> = {
 		fontWeight: 'normal',
 		fontFamily: 'Arial',
 		textAlign: 'left',
+		underline: false,
+		linethrough: false,
 		text: 'Add your text here',
+		fonts: ['Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Courier New', 'Verdana', 'Trebuchet MS', 'Impact'],
 	},
 	activate: (context) => {
 		const cursor = createCursorCache();

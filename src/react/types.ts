@@ -43,7 +43,25 @@ export interface EditorLabels {
 	deleted: string;
 	cropApplied: string;
 	cropRemoved: string;
+	imageEdited: string;
 	loading: string;
+	underline: string;
+	strikethrough: string;
+	font: string;
+	color: string;
+	rotateLeft: string;
+	rotateRight: string;
+	rotation: string;
+	flipHorizontal: string;
+	flipVertical: string;
+	resetImage: string;
+	ratio: string;
+	ratioCustom: string;
+	ratioSquare: string;
+	apply: string;
+	load: string;
+	deleteAll: string;
+	clearFilters: string;
 }
 
 export interface EditorIcons {
@@ -69,6 +87,14 @@ export interface EditorIcons {
 	alignCenter: ReactNode;
 	alignRight: ReactNode;
 	stepNumber: ReactNode;
+	underline: ReactNode;
+	strikethrough: ReactNode;
+	rotateLeft: ReactNode;
+	rotateRight: ReactNode;
+	flipHorizontal: ReactNode;
+	flipVertical: ReactNode;
+	load: ReactNode;
+	deleteAll: ReactNode;
 }
 
 /** parts of the editor which accept a class name / style through `classNames` / `styles` */
@@ -93,7 +119,11 @@ export type EditorSlot =
 	| 'colorPicker'
 	| 'numberInput'
 	| 'textInput'
-	| 'segmented';
+	| 'segmented'
+	| 'slider'
+	| 'select'
+	| 'filterList'
+	| 'iconGrid';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	/** pressed / selected state (active tool, bold text...) */
@@ -121,11 +151,32 @@ export interface NumberInputProps {
 	'aria-label'?: string;
 }
 
+export interface SliderProps {
+	value: number;
+	min: number;
+	max: number;
+	step?: number;
+	/** called while dragging */
+	onChange: (value: number) => void;
+	/** called once the value is chosen, used to record history */
+	onChangeComplete?: (value: number) => void;
+	'aria-label'?: string;
+}
+
+export interface SelectProps {
+	value: string | undefined;
+	options: { value: string; label: string }[];
+	onChange: (value: string) => void;
+	'aria-label'?: string;
+}
+
 export interface EditorComponents {
 	/** used for every button of the editor */
 	Button: ComponentType<ButtonProps>;
 	ColorPicker: ComponentType<ColorPickerProps>;
 	NumberInput: ComponentType<NumberInputProps>;
+	Slider: ComponentType<SliderProps>;
+	Select: ComponentType<SelectProps>;
 	/** layout parts, pass a component to replace or `null` to hide them */
 	Header: ComponentType | null;
 	MenuBar: ComponentType | null;
@@ -152,7 +203,8 @@ export interface EditorTheme {
 	fontSize?: string;
 }
 
-export type EditorAction = 'reset' | 'cancel' | 'exportJson' | 'save';
+/** `load` opens another image, `deleteAll` removes the annotations, `reset` also the crop and image adjustments */
+export type EditorAction = 'load' | 'deleteAll' | 'reset' | 'cancel' | 'exportJson' | 'save';
 
 export type EditorPosition = 'top' | 'bottom' | 'none';
 
@@ -179,6 +231,7 @@ export interface EditorUIOptions {
 	labels?: Partial<EditorLabels> & {
 		tools?: Record<string, string>;
 		menus?: Record<string, string>;
+		filters?: Record<string, string>;
 	};
 	components?: Partial<EditorComponents>;
 	theme?: EditorTheme;

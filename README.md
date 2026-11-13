@@ -12,10 +12,14 @@ it renders, and your own tools. You can also build a completely custom UI on top
 
 ## ✨ Features
 
--   ✂️ **Crop**, 🔒 **Redact** (blur) sensitive parts, 🔍 **Zoom** and ✋ **Pan**
+-   ✂️ **Crop** (free or 1:1, 3:2, 4:3, 5:4, 7:5, 16:9), 🔄 **Rotate** (90° steps or any angle) and ↔️ **Flip**
+-   🎨 **Filters**: grayscale, invert, sepia, vintage, brightness, contrast, saturation, blur, sharpen, emboss,
+    remove white, noise, pixelate, tint, multiply, blend (and your own)
+-   🔒 **Redact** (blur) sensitive parts, 🔍 **Zoom** and ✋ **Pan**
 -   ↩️ **Undo / Redo** with an 🕒 **edit history** panel
--   🔢 **Steps**, 🧩 **Shapes** (rectangle, circle, arrow, star), 🗨️ **Callouts**, 📝 **Text**, 😄 **Emoji**,
-    🖼️ **Images**, ✏️ **Free drawing**, 🎯 **Arrows**, ➰ **Paths**
+-   🔢 **Steps**, 🧩 **Shapes** (rectangle, circle, triangle, arrow, star), 🗨️ **Callouts**, ⭐ **Icons**,
+    📝 **Text** (bold, italic, underline, strikethrough, fonts), 😄 **Emoji**, 🖼️ **Images**, ✏️ **Free drawing**,
+    📏 **Lines**, 🎯 **Arrows**, ➰ **Paths**
 -   💾 **Export** as PNG / JPEG / WebP at the original resolution, 📄 **save and restore** the editing state as JSON
 -   🎛️ **Fully configurable**: tools, defaults, labels (i18n), icons, theme, class names, layout, components
 -   🧱 **Composable**: every part of the UI is exported, build your own layout with hooks
@@ -71,6 +75,7 @@ export default function App() {
 | `menus`             | `MenuDefinition[]`                          | Menus (tabs) and the tools in each (default: Annotate / Crop / Redact)                                  |
 | `defaults`          | `Record<toolId, options>`                   | Default options per tool, e.g. `{ text: { fontSize: 32 } }`                                             |
 | `shapes`            | `ShapeDefinition[]`                         | Additional / replacement object definitions (restore, delete, history behaviour)                       |
+| `filters`           | `FilterDefinition[]`                        | Additional / replacement filters of the Filter menu                                                     |
 | `exportOptions`     | `{ format, quality, multiplier, maxPixels }` | Image export settings (default: PNG at the original resolution)                                         |
 | `historyLimit`      | `number`                                    | Maximum undo steps (default `50`)                                                                       |
 | `keyboardShortcuts` | `boolean`                                   | Delete the selection with Delete / Backspace (default `true`)                                           |
@@ -89,7 +94,7 @@ export default function App() {
 | ------------ | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `width`, `height` | `number \| string`                       | Size of the editor (default `100%` of the parent)                                        |
 | `className`, `style` | —                                      | Applied to the root element                                                              |
-| `actions`    | `('reset' \| 'cancel' \| 'exportJson' \| 'save')[]` | Buttons of the actions bar and their order (default `['reset', 'save']`)       |
+| `actions`    | `('load' \| 'deleteAll' \| 'reset' \| 'cancel' \| 'exportJson' \| 'save')[]` | Buttons of the actions bar and their order (default `['reset', 'save']`). `load` opens another image, `deleteAll` removes the annotations, `reset` also the crop, rotation and filters |
 | `layout`     | `EditorLayout`                                | Where the menu, header, toolbar, options panel and actions are placed                    |
 | `labels`     | `Partial<EditorLabels>`                       | Texts of the UI, plus `labels.tools` / `labels.menus` keyed by id (i18n)                 |
 | `icons`      | `Partial<EditorIcons>`                        | Icons of the UI, plus `icons.tools` / `icons.menus` keyed by id                          |
@@ -110,8 +115,8 @@ export default function App() {
 <ImageEditor src={url} tools={['text', 'draw', 'arrow', 'crop']} />
 ```
 
-Built-in tool ids: `steps`, `rectangle`, `circle`, `arrowShape`, `star`, `comment`, `image`, `emoji`, `text`, `draw`,
-`arrow`, `path`, `crop`, `redact`. Menus without any visible tool are hidden, and so is the menu bar when only one menu is
+Built-in tool ids: `steps`, `rectangle`, `circle`, `triangle`, `arrowShape`, `star`, `comment`, `image`, `icon`,
+`emoji`, `text`, `draw`, `line`, `arrow`, `path`, `crop`, `transform` (rotate & flip), `filter`, `redact`. Menus without any visible tool are hidden, and so is the menu bar when only one menu is
 left.
 
 Arrange tools and menus yourself with `menus` (a group is shown as a dropdown):
@@ -135,8 +140,43 @@ Arrange tools and menus yourself with `menus` (a group is shown as a dropdown):
 		text: { fontSize: 32, fill: '#ffffff', backgroundColor: '#000000', fontFamily: 'Inter' },
 		draw: { color: '#00aaff', width: 4 },
 		rectangle: { stroke: '#00aaff', strokeWidth: 3 },
+		crop: { ratio: 16 / 9 },
+		text: { fonts: ['Inter', 'Roboto', 'Georgia'] },
 	}}
 />
+```
+
+### Icons and filters
+
+The Icon tool uses a library of SVG paths which you can extend or replace:
+
+```tsx
+import { defaultIconLibrary } from 'fabri-pix';
+
+<ImageEditor
+	src={url}
+	defaults={{ icon: { library: [...defaultIconLibrary, { id: 'logo', label: 'Logo', path: 'M12 2L2 22H22Z' }] } }}
+/>;
+```
+
+Filters are definitions too. Add your own (any [Fabric.js filter](http://fabricjs.com/image-filters)) or replace a
+built-in one with the same id:
+
+```tsx
+import { filters } from 'fabric';
+
+<ImageEditor
+	src={url}
+	filters={[
+		{
+			id: 'hue',
+			label: 'Hue',
+			defaultOptions: { rotation: 0.5 },
+			controls: [{ key: 'rotation', min: -1, max: 1, step: 0.01 }],
+			create: ({ rotation }) => new filters.HueRotation({ rotation }),
+		},
+	]}
+/>;
 ```
 
 The option types (`TextOptions`, `DrawOptions`, `RectangleOptions`...) are exported.
@@ -222,6 +262,8 @@ editor.current.setActiveTool('text');
 editor.current.undo();
 editor.current.addShape('rectangle', { left: 50, top: 50, width: 200, height: 100, stroke: '#ff0000' });
 editor.current.addImage(logoFile);
+editor.current.rotateImage(90);
+editor.current.setImageFilter('brightness', { value: 0.2 });
 const blob = await editor.current.exportImage({ format: 'jpeg', quality: 0.9 });
 const json = editor.current.toJSON();
 editor.current.on('change', ({ json }) => autosave(json));
@@ -233,7 +275,9 @@ editor.current.canvas; // the Fabric.js canvas for anything else
 | `setActiveTool(id \| null)`, `toggleTool(id)`, `setMenu(id)` | Tools and menus                                   |
 | `undo()`, `redo()`, `goToHistory(index)`, `canUndo()`, `canRedo()` | History                                     |
 | `zoomIn()`, `zoomOut()`, `setZoom(zoom)`, `fitToView()`, `setPanning(on)` | View                                  |
-| `addShape(type, data)`, `addImage(src)`, `updateObject(object, props)`, `deleteObject(object)`, `deleteSelection()`, `reset()` | Objects |
+| `addShape(type, data)`, `addImage(src)`, `updateObject(object, props)`, `deleteObject(object)`, `deleteSelection()`, `clearAnnotations()`, `reset()` | Objects |
+| `rotateImage(degrees)`, `setImageRotation(degrees)`, `flipImage('horizontal' \| 'vertical')`, `getImageRotation()`, `getImageFlip()` | Rotate / flip the photo (annotations follow) |
+| `setImageFilter(id, options \| null)`, `getImageFilters()`, `clearImageFilters()` | Filters |
 | `exportImage(options)`, `save()`, `toJSON()`, `loadState(json)`, `setSource(src, state?)` | Import / export |
 | `getState()`, `subscribe(listener)`, `on(event, listener)` | State and events                                   |
 | `getToolOptions(id)`, `setToolOptions(id, options)`       | Tool options                                        |

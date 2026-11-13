@@ -38,6 +38,8 @@ export interface ToolContext<O extends ToolOptions = ToolOptions> {
 	setCursor(cursor: string): void;
 	/** enables / disables fabric's drag-to-select box while the tool is active */
 	setSelectionEnabled(enabled: boolean): void;
+	/** `false` makes objects unselectable while the tool is active (e.g. while adjusting the photo) */
+	setInteractive(interactive: boolean): void;
 }
 
 export interface ToolButtonProps {
@@ -102,6 +104,31 @@ export interface ShapeDefinition {
 	/** the tool records the history entry itself once the object is complete, not when it is added */
 	recordOnAdd?: boolean;
 }
+
+export interface FilterControl {
+	/** key in the filter options */
+	key: string;
+	/** slider (default), color picker or select */
+	type?: 'range' | 'color' | 'select';
+	min?: number;
+	max?: number;
+	step?: number;
+	/** values for `type: 'select'` */
+	options?: string[];
+}
+
+/** An image filter shown in the Filter menu, applied to the photo */
+export interface FilterDefinition<O extends Record<string, any> = Record<string, any>> {
+	id: string;
+	label: string;
+	defaultOptions?: O;
+	/** inputs shown in the filter panel to change the options */
+	controls?: FilterControl[];
+	/** creates the fabric.js filter */
+	create: (options: O) => any;
+}
+
+export type FlipDirection = 'horizontal' | 'vertical';
 
 export interface ToolGroup {
 	id: string;
@@ -192,6 +219,8 @@ export interface ImageEditorOptions {
 	defaults?: Record<string, ToolOptions>;
 	/** additional / replacement shape definitions */
 	shapes?: ShapeDefinition[];
+	/** image filters of the Filter menu, a definition with the id of a built-in filter replaces it */
+	filters?: FilterDefinition<any>[];
 	exportOptions?: ExportOptions;
 	/** maximum number of undo steps (default 50) */
 	historyLimit?: number;

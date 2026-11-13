@@ -6,7 +6,9 @@
 
 import { ActiveSelection, Canvas, FabricImage, FabricObject, Point, Rect, TMat2D, util } from 'fabric';
 
+import { builtInFilters } from './filters';
 import { builtInShapes } from './shapes';
+import { applyBlurEffect } from './shapeFactory';
 import { blobToDataUrl, downloadBlob, isTypingTarget } from './dom';
 import {
 	CUSTOM_OBJECT_PROPERTIES,
@@ -21,6 +23,8 @@ import {
 	EditorEvents,
 	EditorState,
 	ExportOptions,
+	FilterDefinition,
+	FlipDirection,
 	HistoryState,
 	ImageEditorOptions,
 	MenuDefinition,
@@ -70,6 +74,7 @@ export class ImageEditorController {
 	private visibleToolIds: Set<string> | null = null;
 	private menus: MenuDefinition[] = [];
 	private shapes = new Map<string, ShapeDefinition>();
+	private filterDefinitions: FilterDefinition<any>[] = [];
 
 	private toolSession: ToolSession | null = null;
 	private pausedTool: string | null = null;
@@ -109,6 +114,7 @@ export class ImageEditorController {
 			previous.tools !== options.tools ||
 			previous.menus !== options.menus ||
 			previous.shapes !== options.shapes ||
+			previous.filters !== options.filters ||
 			previous.defaults !== options.defaults
 		) {
 			this.configure();
@@ -145,6 +151,11 @@ export class ImageEditorController {
 			: null;
 
 		this.shapes = new Map([...builtInShapes, ...(this.options.shapes ?? [])].map((shape) => [shape.type, shape]));
+		const customFilters = this.options.filters ?? [];
+		this.filterDefinitions = [
+			...builtInFilters.map((filter) => customFilters.find((custom) => custom.id === filter.id) ?? filter),
+			...customFilters.filter((custom) => !builtInFilters.some((filter) => filter.id === custom.id)),
+		];
 		this.menus = this.resolveMenus();
 	}
 
@@ -348,7 +359,7 @@ export class ImageEditorController {
 					image.scaleX = scale;
 					image.scaleY = scale;
 					canvas.backgroundImage = image;
-					this.sceneSize = { width: image.width * scale, height: image.height * scale };
+					this.normalizeBackground(image);
 				} catch (error) {
 					if (token !== this.loadToken) {
 						return;
@@ -522,25 +533,27 @@ export class ImageEditorController {
 			const existingBackgroundImage = canvas.backgroundImage;
 			canvas.clear();
 
+			const backgroundData = json.backgroundImage;
 			if (existingBackgroundImage) {
 				canvas.backgroundImage = existingBackgroundImage;
-			} else if (json.backgroundImage?.src) {
-				const image = await FabricImage.fromURL(json.backgroundImage.src, {
+				if (backgroundData) {
+					this.applyBackgroundState(existingBackgroundImage as FabricImage, backgroundData);
+				}
+			} else if (backgroundData?.src) {
+				const image = await FabricImage.fromURL(backgroundData.src, {
 					crossOrigin: this.options.crossOrigin === undefined ? 'anonymous' : this.options.crossOrigin,
 				});
 				if (isStale()) {
 					return false;
 				}
 				image.set({
-					flipX: json.backgroundImage.flipX,
-					flipY: json.backgroundImage.flipY,
-					width: json.backgroundImage.width,
-					height: json.backgroundImage.height,
-					scaleX: json.backgroundImage.scaleX,
-					scaleY: json.backgroundImage.scaleY,
+					width: backgroundData.width,
+					height: backgroundData.height,
+					scaleX: backgroundData.scaleX,
+					scaleY: backgroundData.scaleY,
 				});
 				canvas.backgroundImage = image;
-				this.sceneSize = { width: image.width * image.scaleX, height: image.height * image.scaleY };
+				this.applyBackgroundState(image, backgroundData);
 			}
 
 			canvas.clipPath = json.clipPath
@@ -849,6 +862,13 @@ export class ImageEditorController {
 			setSelectionEnabled: (enabled) => {
 				canvas.selection = enabled;
 			},
+			setInteractive: (interactive) => {
+				canvas.skipTargetFind = !interactive;
+				if (!interactive) {
+					canvas.discardActiveObject();
+					canvas.requestRenderAll();
+				}
+			},
 		};
 
 		const dispose = (resetCanvas: boolean) => {
@@ -858,6 +878,7 @@ export class ImageEditorController {
 			if (resetCanvas) {
 				canvas.isDrawingMode = false;
 				canvas.selection = true;
+				canvas.skipTargetFind = false;
 				canvas.defaultCursor = 'default';
 				canvas.setCursor('default');
 			}
@@ -964,7 +985,7 @@ export class ImageEditorController {
 		return targets;
 	}
 
-	/** removes every annotation and the crop (one history entry) */
+	/** removes every annotation, the crop, rotation, flip and filters (one history entry) */
 	reset() {
 		const canvas = this.canvas;
 		if (!canvas) {
@@ -975,6 +996,28 @@ export class ImageEditorController {
 			canvas.discardActiveObject();
 			canvas.remove(...canvas.getObjects());
 			canvas.clipPath = undefined;
+			const image = canvas.backgroundImage as FabricImage | undefined;
+			if (image) {
+				image.set({ angle: 0, flipX: false, flipY: false });
+				this.applyFilterState(image, {});
+				this.normalizeBackground(image);
+			}
+		});
+		this.applyViewport();
+		this.notifyObjectChanged({ commit: true });
+		this.resumeTool(tool);
+	}
+
+	/** removes every annotation, keeps the crop and the image adjustments (one history entry) */
+	clearAnnotations() {
+		const canvas = this.canvas;
+		if (!canvas) {
+			return;
+		}
+		const tool = this.suspendTool('restore');
+		this.withoutHistory(() => {
+			canvas.discardActiveObject();
+			canvas.remove(...canvas.getObjects());
 		});
 		canvas.requestRenderAll();
 		this.commit();
@@ -983,6 +1026,225 @@ export class ImageEditorController {
 
 	private isTransientType(type: string | undefined) {
 		return !!this.getShape(type)?.transient;
+	}
+
+	// ---------------------------------------------------------------- image adjustments
+
+	private getBackground(): FabricImage | undefined {
+		return this.canvas?.backgroundImage as FabricImage | undefined;
+	}
+
+	/** the photo is positioned by its center, the scene is the bounding box of the (rotated) photo */
+	private normalizeBackground(image: FabricImage) {
+		const width = image.width * image.scaleX;
+		const height = image.height * image.scaleY;
+		const radians = util.degreesToRadians(image.angle ?? 0);
+		const sceneWidth = Math.abs(width * Math.cos(radians)) + Math.abs(height * Math.sin(radians));
+		const sceneHeight = Math.abs(width * Math.sin(radians)) + Math.abs(height * Math.cos(radians));
+		image.set({ originX: 'center', originY: 'center', left: sceneWidth / 2, top: sceneHeight / 2 });
+		image.setCoords();
+		this.sceneSize = { width: sceneWidth, height: sceneHeight };
+	}
+
+	private applyBackgroundState(image: FabricImage, data: any) {
+		image.set({ angle: data.angle ?? 0, flipX: !!data.flipX, flipY: !!data.flipY });
+		this.applyFilterState(image, data.fpFilters ?? {});
+		this.normalizeBackground(image);
+	}
+
+	private applyFilterState(image: FabricImage, state: Record<string, ToolOptions>) {
+		(image as any).fpFilters = state;
+		image.filters = this.filterDefinitions
+			.filter((definition) => state[definition.id])
+			.map((definition) => definition.create({ ...definition.defaultOptions, ...state[definition.id] }));
+		image.applyFilters();
+	}
+
+	/** blur areas show a blurred copy of the photo, which has to be re-rendered when the photo changes */
+	private refreshBlurPatches() {
+		const canvas = this.canvas;
+		if (!canvas) {
+			return;
+		}
+		canvas
+			.getObjects()
+			.filter((obj: any) => obj.shapeType === ShapeType.BLUR)
+			.forEach((rect) => applyBlurEffect({ current: canvas }, rect));
+	}
+
+	/** filters of the Filter menu (built-in and from the `filters` option), in the order they are applied */
+	getFilterDefinitions(): FilterDefinition<any>[] {
+		return this.filterDefinitions;
+	}
+
+	/** active filters of the photo: `{ [filterId]: options }` */
+	getImageFilters(): Record<string, ToolOptions> {
+		return { ...((this.getBackground() as any)?.fpFilters ?? {}) };
+	}
+
+	/**
+	 * Enables (or changes the options of) a filter, `null` removes it. Pass `{ commit: false }` while the user drags a
+	 * slider and commit once at the end.
+	 */
+	setImageFilter(id: string, options: ToolOptions | null, { commit = true } = {}) {
+		const image = this.getBackground();
+		const definition = this.filterDefinitions.find((filter) => filter.id === id);
+		if (!image || !definition) {
+			return;
+		}
+		const state = this.getImageFilters();
+		if (options === null) {
+			delete state[id];
+		} else {
+			state[id] = { ...definition.defaultOptions, ...state[id], ...options };
+		}
+		this.applyFilterState(image, state);
+		this.refreshBlurPatches();
+		this.notifyObjectChanged({ commit });
+	}
+
+	/** removes all filters */
+	clearImageFilters({ commit = true } = {}) {
+		const image = this.getBackground();
+		if (!image) {
+			return;
+		}
+		this.applyFilterState(image, {});
+		this.refreshBlurPatches();
+		this.notifyObjectChanged({ commit });
+	}
+
+	/** rotation of the photo in degrees (0 - 360) */
+	getImageRotation(): number {
+		return this.getBackground()?.angle ?? 0;
+	}
+
+	getImageFlip(): { horizontal: boolean; vertical: boolean } {
+		const image = this.getBackground();
+		return { horizontal: !!image?.flipX, vertical: !!image?.flipY };
+	}
+
+	/** rotates the photo and the annotations by `degrees` (clockwise) */
+	rotateImage(degrees: number, { commit = true } = {}) {
+		this.transformScene({ type: 'rotate', degrees }, commit);
+	}
+
+	/** rotates the photo (and the annotations) to the given angle */
+	setImageRotation(degrees: number, { commit = true } = {}) {
+		const normalize = (value: number) => ((value % 360) + 360) % 360;
+		const delta = normalize(degrees) - normalize(this.getImageRotation());
+		if (delta !== 0) {
+			this.rotateImage(delta, { commit });
+		} else if (commit) {
+			this.commit();
+		}
+	}
+
+	/** mirrors the photo and the annotations */
+	flipImage(direction: FlipDirection, { commit = true } = {}) {
+		this.transformScene({ type: 'flip', direction }, commit);
+	}
+
+	/**
+	 * Rotates / flips the photo together with all annotations. Shapes, arrows and drawings turn with the photo. Text,
+	 * steps and callouts only move, so they stay readable. Blur areas and the crop stay axis aligned.
+	 */
+	private transformScene(
+		operation: { type: 'rotate'; degrees: number } | { type: 'flip'; direction: FlipDirection },
+		commit: boolean,
+	) {
+		const canvas = this.canvas;
+		const image = this.getBackground();
+		if (!canvas || !image || (operation.type === 'rotate' && operation.degrees % 360 === 0)) {
+			return;
+		}
+
+		const tool = this.suspendTool('switch');
+		const oldCenter = this.getSceneCenter();
+		const radians = operation.type === 'rotate' ? util.degreesToRadians(operation.degrees) : 0;
+		const quarterTurn = operation.type === 'rotate' && Math.abs(operation.degrees % 180) === 90;
+
+		this.withoutHistory(() => {
+			if (operation.type === 'rotate') {
+				image.set({ angle: (((image.angle ?? 0) + operation.degrees) % 360 + 360) % 360 });
+			} else if (operation.direction === 'horizontal') {
+				image.set({ flipX: !image.flipX, angle: (360 - (image.angle ?? 0)) % 360 });
+			} else {
+				image.set({ flipY: !image.flipY, angle: (360 - (image.angle ?? 0)) % 360 });
+			}
+			this.normalizeBackground(image);
+			const newCenter = this.getSceneCenter();
+
+			const mapPoint = (point: { x: number; y: number }) => {
+				if (operation.type === 'rotate') {
+					const dx = point.x - oldCenter.x;
+					const dy = point.y - oldCenter.y;
+					return new Point(
+						newCenter.x + dx * Math.cos(radians) - dy * Math.sin(radians),
+						newCenter.y + dx * Math.sin(radians) + dy * Math.cos(radians),
+					);
+				}
+				return operation.direction === 'horizontal'
+					? new Point(2 * oldCenter.x - point.x, point.y)
+					: new Point(point.x, 2 * oldCenter.y - point.y);
+			};
+
+			// axis aligned areas: only the center moves, a quarter turn swaps width and height
+			const moveArea = (object: FabricObject) => {
+				const center = mapPoint(object.getCenterPoint());
+				if (quarterTurn) {
+					object.set({
+						width: object.height * object.scaleY,
+						height: object.width * object.scaleX,
+						scaleX: 1,
+						scaleY: 1,
+					});
+				}
+				object.setPositionByOrigin(center, 'center', 'center');
+				object.setCoords();
+			};
+
+			const keepUpright = new Set<string>([
+				ShapeType.TEXT,
+				ShapeType.EMOJI,
+				ShapeType.STEPS_CREATOR,
+				ShapeType.COMMENT_BOX,
+			]);
+
+			for (const object of canvas.getObjects()) {
+				const type = (object as any).shapeType;
+				// re-created from their parent object
+				if (type === ShapeType.COMMENT_BOX_TEXTBOX || type === ShapeType.BLUR_INNER_PART) {
+					continue;
+				}
+				if (type === ShapeType.BLUR) {
+					moveArea(object);
+					continue;
+				}
+
+				const center = mapPoint(object.getCenterPoint());
+				if (!keepUpright.has(type)) {
+					if (operation.type === 'rotate') {
+						object.set({ angle: (object.angle ?? 0) + operation.degrees });
+					} else if (operation.direction === 'horizontal') {
+						object.set({ flipX: !object.flipX, angle: -(object.angle ?? 0) });
+					} else {
+						object.set({ flipY: !object.flipY, angle: -(object.angle ?? 0) });
+					}
+				}
+				object.setPositionByOrigin(center, 'center', 'center');
+				object.setCoords();
+			}
+
+			if (canvas.clipPath) {
+				moveArea(canvas.clipPath);
+			}
+		});
+
+		this.applyViewport();
+		this.refreshBlurPatches();
+		this.notifyObjectChanged({ commit });
+		this.resumeTool(tool);
 	}
 
 	// ---------------------------------------------------------------- view

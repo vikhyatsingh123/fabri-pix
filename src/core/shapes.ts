@@ -3,7 +3,7 @@
  * @description Definitions of the objects created by the built-in tools
  */
 
-import { Canvas, FabricObject } from 'fabric';
+import { Canvas, FabricObject, Line, Path, Point, Triangle, util } from 'fabric';
 
 import createShape, { applyBlurEffect } from './shapeFactory';
 import { cropOverlayShapeTypes, ShapeType } from './constants';
@@ -11,6 +11,10 @@ import { ShapeContext, ShapeDefinition } from './types';
 
 const withoutUndefined = (data: Record<string, any>) =>
 	Object.fromEntries(Object.entries(data ?? {}).filter(([, value]) => value !== undefined));
+
+// fabric options from shape data: no undefined values and no `id` (set separately as custom property)
+const fabricProps = (data: Record<string, any>) =>
+	Object.fromEntries(Object.entries(data ?? {}).filter(([key, value]) => value !== undefined && key !== 'id'));
 
 const transform = { angle: 0, scaleX: 1, scaleY: 1, left: 0, top: 0 };
 const shapeStyle = { ...transform, fill: 'transparent', stroke: '#ff0000', strokeWidth: 5 };
@@ -65,9 +69,43 @@ const fromFactory = (type: string): Pick<ShapeDefinition, 'create' | 'restore'> 
 			},
 		});
 	},
-	restore: (data: any, { canvas }: ShapeContext) =>
-		createShape({ canvas: { current: canvas }, shapeType: type, isNewShape: false, canvasData: data }),
+	restore: async (data: any, { canvas }: ShapeContext) => {
+		await createShape({ canvas: { current: canvas }, shapeType: type, isNewShape: false, canvasData: data });
+		// the factory functions don't restore every transform property (rotated text, flipped shapes)
+		const object = canvas.getObjects().find((obj: any) => obj.id === data.id && obj.shapeType === type);
+		if (object) {
+			object.set({ angle: data.angle ?? 0, flipX: !!data.flipX, flipY: !!data.flipY });
+			object.setCoords();
+			// re-positions the arrow head of arrows
+			(object as any).fire('modifyPoly');
+		}
+	},
 });
+
+// look of the selection controls of the built-in shapes
+const controlStyle = {
+	cornerColor: '#000',
+	cornerSize: 8,
+	cornerStrokeColor: '#1d7bb9',
+	cornerStyle: 'circle' as const,
+	transparentCorners: false,
+};
+
+/** restores objects which fabric can serialize on its own and re-applies the control style */
+const restoreWithControlStyle = async (data: any, { canvas }: ShapeContext) => {
+	const [object] = await util.enlivenObjects<FabricObject>([data]);
+	if (object) {
+		object.set(controlStyle);
+		canvas.add(object);
+	}
+};
+
+const addAndSelect = (object: FabricObject, data: any, type: string, canvas: Canvas) => {
+	object.set({ ...controlStyle, shapeType: type, id: data.id });
+	canvas.add(object);
+	canvas.setActiveObject(object);
+	canvas.requestRenderAll();
+};
 
 const relatedById =
 	(suffix: string) =>
@@ -82,6 +120,47 @@ export const builtInShapes: ShapeDefinition[] = [
 	{ type: ShapeType.TEXT, label: 'Text', ...fromFactory(ShapeType.TEXT) },
 	{ type: ShapeType.EMOJI, label: 'Emoji', ...fromFactory(ShapeType.EMOJI) },
 	{ type: ShapeType.CUSTOM_SHAPE, label: 'Image', ...fromFactory(ShapeType.CUSTOM_SHAPE) },
+	{
+		type: ShapeType.TRIANGLE,
+		label: 'Triangle',
+		create: (data, { canvas }) => {
+			const props = { ...shapeStyle, width: 90, height: 80, ...fabricProps(data) };
+			addAndSelect(new Triangle({ strokeUniform: true, ...props }), data, ShapeType.TRIANGLE, canvas);
+		},
+		restore: restoreWithControlStyle,
+	},
+	{
+		type: ShapeType.LINE,
+		label: 'Line',
+		// `points`: [x1, y1, x2, y2]
+		create: (data, { canvas }) => {
+			const { points = [0, 0, 100, 0], stroke = '#ff0000', strokeWidth = 3, ...props } = fabricProps(data);
+			addAndSelect(
+				new Line(points, { stroke, strokeWidth, strokeLineCap: 'round', perPixelTargetFind: true, ...props }),
+				data,
+				ShapeType.LINE,
+				canvas,
+			);
+		},
+		restore: restoreWithControlStyle,
+		// drawn by dragging, the line tool records it once the drag ends
+		recordOnAdd: false,
+	},
+	{
+		type: ShapeType.ICON,
+		label: 'Icon',
+		// `path`: SVG path data, `size`: size of the longer side, `left` / `top`: center of the icon
+		create: (data, { canvas }) => {
+			const { path, size = 60, left = 0, top = 0, fill = '#ff0000', fillRule = 'nonzero', ...props } =
+				fabricProps(data);
+			const icon = new Path(path, { fill, fillRule, strokeWidth: 0, ...props });
+			const scale = size / Math.max(icon.width, icon.height, 1);
+			icon.set({ scaleX: scale, scaleY: scale });
+			icon.setPositionByOrigin(new Point(left, top), 'center', 'center');
+			addAndSelect(icon, data, ShapeType.ICON, canvas);
+		},
+		restore: restoreWithControlStyle,
+	},
 	{ type: ShapeType.STEPS_CREATOR, label: 'Step', ...fromFactory(ShapeType.STEPS_CREATOR) },
 	{
 		type: ShapeType.COMMENT_BOX,

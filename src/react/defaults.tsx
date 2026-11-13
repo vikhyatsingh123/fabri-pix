@@ -13,7 +13,15 @@ import BackgroundColorIcon from '../icons/BackgroundColorIcon';
 import CancelIcon from '../icons/CancelIcon';
 import CheckOneIcon from '../icons/CheckOneIcon';
 import ClearIcon from '../icons/ClearIcon';
+import BringForwardIcon from '../icons/BringForwardIcon';
+import BringToFrontIcon from '../icons/BringToFrontIcon';
+import DashedIcon from '../icons/DashedIcon';
 import DeleteIcon from '../icons/DeleteIcon';
+import DuplicateIcon from '../icons/DuplicateIcon';
+import LockIcon from '../icons/LockIcon';
+import SendBackwardIcon from '../icons/SendBackwardIcon';
+import SendToBackIcon from '../icons/SendToBackIcon';
+import ShadowIcon from '../icons/ShadowIcon';
 import FlipHorizontalIcon from '../icons/FlipHorizontalIcon';
 import FlipVerticalIcon from '../icons/FlipVerticalIcon';
 import LoadIcon from '../icons/LoadIcon';
@@ -86,6 +94,20 @@ export const defaultLabels: EditorLabels = {
 	load: 'Load',
 	deleteAll: 'Delete All',
 	clearFilters: 'Clear',
+	duplicate: 'Duplicate',
+	bringForward: 'Bring forward',
+	sendBackward: 'Send backward',
+	bringToFront: 'Bring to front',
+	sendToBack: 'Send to back',
+	opacity: 'Opacity',
+	shadow: 'Shadow',
+	dashed: 'Dashed',
+	cornerRadius: 'Corners',
+	width: 'Width',
+	height: 'Height',
+	keepAspect: 'Keep aspect ratio',
+	originalSize: 'Original',
+	resetAdjustments: 'Reset adjustments',
 };
 
 export const defaultIcons: EditorIcons = {
@@ -119,4 +141,12 @@ export const defaultIcons: EditorIcons = {
 	flipVertical: <FlipVerticalIcon />,
 	load: <LoadIcon />,
 	deleteAll: <ClearIcon />,
+	duplicate: <DuplicateIcon />,
+	bringForward: <BringForwardIcon />,
+	sendBackward: <SendBackwardIcon />,
+	bringToFront: <BringToFrontIcon />,
+	sendToBack: <SendToBackIcon />,
+	shadow: <ShadowIcon />,
+	dashed: <DashedIcon />,
+	keepAspect: <LockIcon />,
 };

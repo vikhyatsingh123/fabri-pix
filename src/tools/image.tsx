@@ -6,14 +6,16 @@
 import React from 'react';
 import { Canvas, Rect } from 'fabric';
 
+import AdjustIcon from '../icons/AdjustIcon';
 import FilterIcon from '../icons/FilterIcon';
+import ResizeIcon from '../icons/ResizeIcon';
 import SubtractSelectionIcon from '../icons/SubtractSelectionIcon';
 import TailoringIcon from '../icons/TailoringIcon';
 import TransformIcon from '../icons/TransformIcon';
 import type { ImageEditorController } from '../core/controller';
 import { applyBlurEffect } from '../core/shapeFactory';
 import { cropOverlayShapeTypes, generateId, ShapeType } from '../core/constants';
-import type { ToolDefinition, ToolPanelProps } from '../core/types';
+import type { FilterDefinition, ToolDefinition, ToolPanelProps } from '../core/types';
 import { useEditorUI } from '../react/context';
 import { Divider, Field } from '../react/ui';
 
@@ -402,62 +404,68 @@ export const FilterPanel: React.FC<ToolPanelProps> = (props) => {
 
 	return (
 		<div {...ui.slot('filterList')}>
-			{editor.getFilterDefinitions().map((filter) => {
-				const options = active[filter.id];
-				const label = ui.filterLabel(filter);
-				const change = (key: string, value: unknown, commit: boolean) =>
-					editor.setImageFilter(filter.id, { [key]: value }, { commit });
+			{editor
+				.getFilterDefinitions()
+				.filter((filter) => filter.group !== 'adjust')
+				.map((filter) => {
+					const options = active[filter.id];
+					const label = ui.filterLabel(filter);
+					const change = (key: string, value: unknown, commit: boolean) =>
+						editor.setImageFilter(filter.id, { [key]: value }, { commit });
 
-				return (
-					<div key={filter.id} className='fp-filter'>
-						<Button
-							active={!!options}
-							onClick={() => editor.setImageFilter(filter.id, options ? null : {})}
-						>
-							{label}
-						</Button>
-						{options &&
-							filter.controls?.map((control) => {
-								const value = options[control.key];
-								const ariaLabel = `${label} ${control.key}`;
-								if (control.type === 'color') {
+					return (
+						<div key={filter.id} className='fp-filter'>
+							<Button
+								active={!!options}
+								onClick={() => editor.setImageFilter(filter.id, options ? null : {})}
+							>
+								{label}
+							</Button>
+							{options &&
+								filter.controls?.map((control) => {
+									const value = options[control.key];
+									const ariaLabel = `${label} ${control.key}`;
+									if (control.type === 'color') {
+										return (
+											<ColorPicker
+												key={control.key}
+												aria-label={ariaLabel}
+												value={value}
+												onChange={(color) => change(control.key, color, false)}
+												onChangeComplete={() => editor.commit()}
+											/>
+										);
+									}
+									if (control.type === 'select') {
+										return (
+											<Select
+												key={control.key}
+												aria-label={ariaLabel}
+												value={value}
+												options={(control.options ?? []).map((option) => ({
+													value: option,
+													label: option,
+												}))}
+												onChange={(option) => change(control.key, option, true)}
+											/>
+										);
+									}
 									return (
-										<ColorPicker
+										<Slider
 											key={control.key}
 											aria-label={ariaLabel}
+											min={control.min ?? 0}
+											max={control.max ?? 1}
+											step={control.step ?? 0.01}
 											value={value}
-											onChange={(color) => change(control.key, color, false)}
+											onChange={(number) => change(control.key, number, false)}
 											onChangeComplete={() => editor.commit()}
 										/>
 									);
-								}
-								if (control.type === 'select') {
-									return (
-										<Select
-											key={control.key}
-											aria-label={ariaLabel}
-											value={value}
-											options={(control.options ?? []).map((option) => ({ value: option, label: option }))}
-											onChange={(option) => change(control.key, option, true)}
-										/>
-									);
-								}
-								return (
-									<Slider
-										key={control.key}
-										aria-label={ariaLabel}
-										min={control.min ?? 0}
-										max={control.max ?? 1}
-										step={control.step ?? 0.01}
-										value={value}
-										onChange={(number) => change(control.key, number, false)}
-										onChangeComplete={() => editor.commit()}
-									/>
-								);
-							})}
-					</div>
-				);
-			})}
+								})}
+						</div>
+					);
+				})}
 			{Object.keys(active).length > 0 && (
 				<Button danger onClick={() => editor.clearImageFilters()}>
 					{ui.labels.clearFilters}
@@ -465,6 +473,149 @@ export const FilterPanel: React.FC<ToolPanelProps> = (props) => {
 			)}
 		</div>
 	);
+};
+
+/** always visible sliders for the `adjust` filters (brightness, contrast...) */
+export const AdjustPanel: React.FC<ToolPanelProps> = (props) => {
+	const { editor } = props;
+	const ui = useEditorUI();
+	const { Button, Slider } = ui.components;
+	const active = editor.getImageFilters();
+	const adjustments = editor.getFilterDefinitions().filter((filter) => filter.group === 'adjust');
+
+	const change = (filter: FilterDefinition, key: string, value: number, commit: boolean) => {
+		const options = { ...filter.defaultOptions, ...active[filter.id], [key]: value };
+		const neutral = filter.neutral ?? {};
+		// back at the neutral value the filter is removed, so that it costs nothing
+		const isNeutral =
+			Object.keys(neutral).length > 0 && Object.keys(neutral).every((name) => options[name] === neutral[name]);
+		editor.setImageFilter(filter.id, isNeutral ? null : options, { commit });
+	};
+
+	return (
+		<div {...ui.slot('filterList')}>
+			{adjustments.map((filter) =>
+				(filter.controls ?? []).map((control) => {
+					const value =
+						active[filter.id]?.[control.key] ??
+						filter.neutral?.[control.key] ??
+						filter.defaultOptions?.[control.key] ??
+						0;
+					return (
+						<Field key={`${filter.id}-${control.key}`} label={ui.filterLabel(filter)}>
+							<Slider
+								aria-label={ui.filterLabel(filter)}
+								min={control.min ?? -1}
+								max={control.max ?? 1}
+								step={control.step ?? 0.01}
+								value={value}
+								onChange={(number) => change(filter, control.key, number, false)}
+								onChangeComplete={() => editor.commit()}
+							/>
+							<span className='fp-value'>{Number(value).toFixed(2)}</span>
+						</Field>
+					);
+				}),
+			)}
+			{adjustments.some((filter) => active[filter.id]) && (
+				<Button
+					onClick={() => {
+						adjustments.forEach((filter) => editor.setImageFilter(filter.id, null, { commit: false }));
+						editor.commit();
+					}}
+				>
+					{ui.labels.resetAdjustments}
+				</Button>
+			)}
+		</div>
+	);
+};
+
+export const adjustTool: ToolDefinition = {
+	id: 'adjust',
+	label: 'Adjust',
+	icon: <AdjustIcon />,
+	activate: (context) => context.setInteractive(false),
+	OptionsPanel: AdjustPanel,
+};
+
+export interface ResizeOptions {
+	keepAspect: boolean;
+	/** scale presets offered as buttons, 1 = original size */
+	presets: number[];
+}
+
+export const ResizePanel: React.FC<ToolPanelProps<ResizeOptions>> = (props) => {
+	const { editor, options, setOptions } = props;
+	const ui = useEditorUI();
+	const { Button, NumberInput } = ui.components;
+	const { labels, icons } = ui;
+	const natural = editor.getNaturalSize();
+	const output = editor.getOutputSize();
+	const scale = editor.getOutputScale();
+	const keepAspect = options.keepAspect !== false;
+
+	return (
+		<>
+			<Field label={labels.width}>
+				<NumberInput
+					aria-label={labels.width}
+					min={1}
+					max={20000}
+					value={output.width}
+					onChange={(width) => editor.setOutputSize({ width }, { keepAspect, commit: false })}
+					onChangeComplete={() => editor.commit()}
+				/>
+			</Field>
+			<Button
+				title={labels.keepAspect}
+				aria-label={labels.keepAspect}
+				active={keepAspect}
+				onClick={() => {
+					setOptions({ keepAspect: !keepAspect });
+					// locking again removes a stretch
+					if (!keepAspect && scale.x !== scale.y) {
+						editor.setOutputScale(scale.x);
+					}
+				}}
+			>
+				{icons.keepAspect}
+			</Button>
+			<Field label={labels.height}>
+				<NumberInput
+					aria-label={labels.height}
+					min={1}
+					max={20000}
+					value={output.height}
+					onChange={(height) => editor.setOutputSize({ height }, { keepAspect, commit: false })}
+					onChangeComplete={() => editor.commit()}
+				/>
+			</Field>
+			<Divider />
+			{(options.presets ?? []).map((preset) => (
+				<Button
+					key={preset}
+					active={scale.x === preset && scale.y === preset}
+					onClick={() => editor.setOutputScale(preset)}
+				>
+					{Math.round(preset * 100)}%
+				</Button>
+			))}
+			<Divider />
+			<span className='fp-value'>
+				{labels.originalSize}: {natural.width} × {natural.height}
+			</span>
+		</>
+	);
+};
+
+export const resizeTool: ToolDefinition<ResizeOptions> = {
+	id: 'resize',
+	label: 'Resize',
+	icon: <ResizeIcon />,
+	defaultOptions: { keepAspect: true, presets: [0.25, 0.5, 0.75, 1, 1.5, 2] },
+	activate: (context) => context.setInteractive(false),
+	OptionsPanel: ResizePanel,
 };
 
 export const filterTool: ToolDefinition = {

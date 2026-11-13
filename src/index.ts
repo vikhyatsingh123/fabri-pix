@@ -14,6 +14,7 @@ export {
 	HistoryControls,
 	HistoryPanel,
 	MenuBar,
+	ObjectControls,
 	ToolButton,
 	Toolbar,
 	ToolGroupButton,
@@ -44,7 +45,7 @@ export type { EditorUIContextValue } from './react/context';
 export { defaultIcons, defaultLabels } from './react/defaults';
 
 // editor core
-export { ImageEditorController } from './core/controller';
+export { defaultShortcuts, ImageEditorController } from './core/controller';
 export type { EditorRegistry } from './core/controller';
 export { builtInShapes } from './core/shapes';
 export { builtInFilters } from './core/filters';

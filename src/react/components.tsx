@@ -9,7 +9,7 @@ import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState }
 import { downloadBlob } from '../core/dom';
 import type { ToolGroup } from '../core/types';
 import { useEditorState, useEditorUI, useImageEditor } from './context';
-import { cx, Divider, Dropdown } from './ui';
+import { cx, Divider, Dropdown, Field } from './ui';
 import type { EditorTheme } from './types';
 
 const themeVariables: Record<keyof EditorTheme, string> = {
@@ -49,7 +49,10 @@ export const EditorRoot: React.FC<EditorRootProps> = (props) => {
 	) as CSSProperties;
 
 	return (
-		<div className={root.className} style={{ width: width ?? '100%', height: height ?? '100%', ...variables, ...root.style, ...style }}>
+		<div
+			className={root.className}
+			style={{ width: width ?? '100%', height: height ?? '100%', ...variables, ...root.style, ...style }}
+		>
 			{children}
 		</div>
 	);
@@ -267,7 +270,13 @@ const detectChanges = (previous: any, current: any) => {
 	// rotation, flip and filters are stored on the photo
 	const imageState = (state: any) => {
 		const image = state?.backgroundImage;
-		return JSON.stringify([image?.angle ?? 0, !!image?.flipX, !!image?.flipY, image?.fpFilters ?? {}]);
+		return JSON.stringify([
+			image?.angle ?? 0,
+			!!image?.flipX,
+			!!image?.flipY,
+			image?.fpFilters ?? {},
+			image?.fpResize ?? null,
+		]);
 	};
 	const imageChanged = imageState(previous) !== imageState(current);
 	return { created, deleted, modified, cropChanged, hasCrop: !!current?.clipPath, imageChanged };
@@ -356,10 +365,20 @@ export const HistoryControls: React.FC = () => {
 			>
 				<HistoryPanel />
 			</Dropdown>
-			<Button title={ui.labels.undo} aria-label={ui.labels.undo} disabled={!canUndo} onClick={() => void editor.undo()}>
+			<Button
+				title={ui.labels.undo}
+				aria-label={ui.labels.undo}
+				disabled={!canUndo}
+				onClick={() => void editor.undo()}
+			>
 				{ui.icons.undo}
 			</Button>
-			<Button title={ui.labels.redo} aria-label={ui.labels.redo} disabled={!canRedo} onClick={() => void editor.redo()}>
+			<Button
+				title={ui.labels.redo}
+				aria-label={ui.labels.redo}
+				disabled={!canRedo}
+				onClick={() => void editor.redo()}
+			>
 				{ui.icons.redo}
 			</Button>
 		</>
@@ -386,7 +405,12 @@ export const ZoomControls: React.FC = () => {
 			<Button title={ui.labels.fit} disabled={!zoomed} onClick={() => editor.fitToView()}>
 				{ui.labels.fit}
 			</Button>
-			<Button title={ui.labels.zoomOut} aria-label={ui.labels.zoomOut} disabled={!zoomed} onClick={() => editor.zoomOut()}>
+			<Button
+				title={ui.labels.zoomOut}
+				aria-label={ui.labels.zoomOut}
+				disabled={!zoomed}
+				onClick={() => editor.zoomOut()}
+			>
 				{ui.icons.zoomOut}
 			</Button>
 			<Divider />
@@ -420,7 +444,6 @@ export const ContextPanel: React.FC = () => {
 	const editor = useImageEditor();
 	const state = useEditorState();
 	const ui = useEditorUI();
-	const { Button } = ui.components;
 	const { selection } = state;
 
 	const target = selection.length === 1 ? selection[0] : null;
@@ -430,6 +453,8 @@ export const ContextPanel: React.FC = () => {
 			? editor.getTool(state.activeTool)
 			: undefined;
 	const Panel = tool?.OptionsPanel;
+	// editing UI (e.g. the crop rectangle) has its own controls
+	const hasObjects = selection.some((object) => !editor.getShape((object as any).shapeType)?.transient);
 
 	return (
 		<div {...ui.slot('contextPanel')}>
@@ -444,20 +469,149 @@ export const ContextPanel: React.FC = () => {
 					setOptions={(options) => editor.setToolOptions(tool.id, options)}
 				/>
 			)}
-			{/* editing UI (e.g. the crop rectangle) has its own controls instead of a delete button */}
-			{selection.some((object) => !editor.getShape((object as any).shapeType)?.transient) && (
+			{hasObjects && (
 				<>
 					{Panel && <Divider />}
-					<Button
-						danger
-						title={ui.labels.delete}
-						aria-label={ui.labels.delete}
-						onClick={() => editor.deleteSelection()}
-					>
-						{ui.icons.delete}
-					</Button>
+					<ObjectControls />
 				</>
 			)}
+		</div>
+	);
+};
+
+const DEFAULT_SHADOW = { color: '#000000', blur: 10, offsetX: 5, offsetY: 5 };
+
+/** opacity, shadow, dashes, corners, layer order, duplicate and delete for the selected objects */
+export const ObjectControls: React.FC = () => {
+	const editor = useImageEditor();
+	const state = useEditorState();
+	const ui = useEditorUI();
+	const { Button, Slider, ColorPicker, NumberInput } = ui.components;
+	const { labels, icons } = ui;
+
+	const objects = state.selection.filter((object) => !editor.getShape((object as any).shapeType)?.transient);
+	if (objects.length === 0) {
+		return null;
+	}
+
+	const style = editor.getObjectStyle(objects[0]);
+	const supports = (name: 'opacity' | 'shadow' | 'dashed' | 'cornerRadius') =>
+		objects.some((object) => editor.supportsObjectStyle(object, name));
+	const shows = (control: (typeof ui.objectControls)[number]) => ui.objectControls.includes(control);
+
+	const parts: Record<string, React.ReactNode> = {
+		opacity: supports('opacity') && (
+			<Field key='opacity' label={labels.opacity}>
+				<Slider
+					aria-label={labels.opacity}
+					min={0.05}
+					max={1}
+					step={0.05}
+					value={style.opacity}
+					onChange={(opacity) => editor.setObjectStyle(objects, { opacity }, { commit: false })}
+					onChangeComplete={() => editor.commit()}
+				/>
+			</Field>
+		),
+		shadow: supports('shadow') && (
+			<Field key='shadow'>
+				<Button
+					title={labels.shadow}
+					aria-label={labels.shadow}
+					active={!!style.shadow}
+					onClick={() => editor.setObjectStyle(objects, { shadow: style.shadow ? null : DEFAULT_SHADOW })}
+				>
+					{icons.shadow}
+				</Button>
+				{style.shadow && (
+					<ColorPicker
+						aria-label={labels.shadow}
+						value={style.shadow.color}
+						onChange={(color) =>
+							editor.setObjectStyle(objects, { shadow: { ...style.shadow!, color } }, { commit: false })
+						}
+						onChangeComplete={() => editor.commit()}
+					/>
+				)}
+			</Field>
+		),
+		dashed: supports('dashed') && (
+			<Button
+				key='dashed'
+				title={labels.dashed}
+				aria-label={labels.dashed}
+				active={style.dashed}
+				onClick={() => editor.setObjectStyle(objects, { dashed: !style.dashed })}
+			>
+				{icons.dashed}
+			</Button>
+		),
+		cornerRadius: supports('cornerRadius') && (
+			<Field key='cornerRadius' label={labels.cornerRadius}>
+				<NumberInput
+					aria-label={labels.cornerRadius}
+					min={0}
+					max={200}
+					value={style.cornerRadius}
+					onChange={(cornerRadius) => editor.setObjectStyle(objects, { cornerRadius }, { commit: false })}
+					onChangeComplete={() => editor.commit()}
+				/>
+			</Field>
+		),
+		layers: (
+			<Field key='layers'>
+				{(
+					[
+						['bringToFront', 'front'],
+						['bringForward', 'forward'],
+						['sendBackward', 'backward'],
+						['sendToBack', 'back'],
+					] as const
+				).map(([label, direction]) => (
+					<Button
+						key={direction}
+						title={labels[label]}
+						aria-label={labels[label]}
+						disabled={!editor.canArrangeSelection(direction)}
+						onClick={() => editor.arrangeSelection(direction)}
+					>
+						{icons[label]}
+					</Button>
+				))}
+			</Field>
+		),
+		duplicate: (
+			<Button
+				key='duplicate'
+				title={labels.duplicate}
+				aria-label={labels.duplicate}
+				onClick={() => void editor.duplicateSelection()}
+			>
+				{icons.duplicate}
+			</Button>
+		),
+		delete: (
+			<Button
+				key='delete'
+				danger
+				title={labels.delete}
+				aria-label={labels.delete}
+				onClick={() => editor.deleteSelection()}
+			>
+				{icons.delete}
+			</Button>
+		),
+	};
+
+	const visible = ui.objectControls.filter((control) => shows(control) && parts[control]);
+	return (
+		<div {...ui.slot('objectControls')}>
+			{visible.map((control, index) => (
+				<React.Fragment key={control}>
+					{index > 0 && <Divider />}
+					{parts[control]}
+				</React.Fragment>
+			))}
 		</div>
 	);
 };
@@ -490,7 +644,10 @@ export const Actions: React.FC = () => {
 			if (ui.onExportJson) {
 				ui.onExportJson(json);
 			} else {
-				downloadBlob(new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' }), `canvas-${Date.now()}.json`);
+				downloadBlob(
+					new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' }),
+					`canvas-${Date.now()}.json`,
+				);
 			}
 		},
 		save: () => void editor.save(),
@@ -516,8 +673,13 @@ export const Actions: React.FC = () => {
 /** the default arrangement of all parts, configured through the `layout` prop */
 export const DefaultLayout: React.FC = () => {
 	const ui = useEditorUI();
-	const { Header: HeaderPart, MenuBar: MenuPart, Toolbar: ToolbarPart, ContextPanel: PanelPart, Actions: ActionsPart } =
-		ui.components;
+	const {
+		Header: HeaderPart,
+		MenuBar: MenuPart,
+		Toolbar: ToolbarPart,
+		ContextPanel: PanelPart,
+		Actions: ActionsPart,
+	} = ui.components;
 	const { layout } = ui;
 
 	const parts = (position: 'top' | 'bottom') => {

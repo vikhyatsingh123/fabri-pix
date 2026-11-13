@@ -34,7 +34,6 @@ export interface StepsOptions {
 
 const findById = (objects: any[], id: string) => objects.find((obj) => obj.id === id);
 
-
 /** stroke color and width, used by the arrow and path tools */
 export const StrokePanel: React.FC<ToolPanelProps<StrokeOptions>> = (props) => {
 	const { editor, target } = props;
@@ -189,10 +188,12 @@ export const lineTool: ToolDefinition<StrokeOptions> = {
 			const { x, y } = canvas.getScenePoint(event.e);
 			const id = generateId();
 			// created through the shape definition directly: the line is recorded once the drag ends
-			void editor.getShape(ShapeType.LINE)?.create?.(
-				{ id, points: [x, y, x, y], stroke: context.options.stroke, strokeWidth: context.options.width },
-				{ editor, canvas },
-			);
+			void editor
+				.getShape(ShapeType.LINE)
+				?.create?.(
+					{ id, points: [x, y, x, y], stroke: context.options.stroke, strokeWidth: context.options.width },
+					{ editor, canvas },
+				);
 			line = findById(canvas.getObjects(), id);
 			canvas.discardActiveObject();
 		});
@@ -357,7 +358,12 @@ export const StepsPanel: React.FC<ToolPanelProps<StepsOptions>> = (props) => {
 		editor.canvas?.setActiveObject(target!);
 	};
 
-	const change = (part: any, objectProps: Record<string, any> | null, optionValues: Partial<StepsOptions>, commit = true) => {
+	const change = (
+		part: any,
+		objectProps: Record<string, any> | null,
+		optionValues: Partial<StepsOptions>,
+		commit = true,
+	) => {
 		if (part && objectProps) {
 			part.set(objectProps);
 			if ('fontSize' in objectProps || 'text' in objectProps) {
@@ -528,7 +534,9 @@ export const stepsTool: ToolDefinition<StepsOptions> = {
 				[rect.width, rect.height],
 				[0, rect.height],
 			];
-			const cornerIndex = corners.findIndex((corner) => Math.abs(corner.x - x) <= 2 && Math.abs(corner.y - y) <= 2);
+			const cornerIndex = corners.findIndex(
+				(corner) => Math.abs(corner.x - x) <= 2 && Math.abs(corner.y - y) <= 2,
+			);
 			const [circleLeft, circleTop] = cornerOffsets[cornerIndex] ?? [0, 0];
 
 			canvas.remove(rect);
@@ -552,7 +560,12 @@ export const stepsTool: ToolDefinition<StepsOptions> = {
 					{
 						objects: [
 							{ left: circleLeft, top: circleTop, fill: options.backgroundColor },
-							{ fill: options.fontColor, text: String(options.stepNumber), fontSize: options.fontSize, angle: 0 },
+							{
+								fill: options.fontColor,
+								text: String(options.stepNumber),
+								fontSize: options.fontSize,
+								angle: 0,
+							},
 						],
 					},
 				],

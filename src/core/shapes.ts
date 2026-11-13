@@ -3,7 +3,7 @@
  * @description Definitions of the objects created by the built-in tools
  */
 
-import { Canvas, FabricObject, Line, Path, Point, Triangle, util } from 'fabric';
+import { Canvas, FabricObject, Line, Path, Point, Shadow, Triangle, util } from 'fabric';
 
 import createShape, { applyBlurEffect } from './shapeFactory';
 import { cropOverlayShapeTypes, ShapeType } from './constants';
@@ -47,7 +47,14 @@ const createDefaults: Record<string, Record<string, any>> = {
 		strokeWidth: 2,
 		width: 200,
 		height: 100,
-		test: { text: 'Textbox', fill: '#ffffff', fontSize: 20, fontStyle: 'normal', fontWeight: 'normal', textAlign: 'left' },
+		test: {
+			text: 'Textbox',
+			fill: '#ffffff',
+			fontSize: 20,
+			fontStyle: 'normal',
+			fontWeight: 'normal',
+			textAlign: 'left',
+		},
 	},
 };
 
@@ -74,7 +81,27 @@ const fromFactory = (type: string): Pick<ShapeDefinition, 'create' | 'restore'> 
 		// the factory functions don't restore every transform property (rotated text, flipped shapes)
 		const object = canvas.getObjects().find((obj: any) => obj.id === data.id && obj.shapeType === type);
 		if (object) {
-			object.set({ angle: data.angle ?? 0, flipX: !!data.flipX, flipY: !!data.flipY });
+			// styles (opacity, shadow, dashes, rounded corners) which the factory functions don't restore either
+			const shadow = data.shadow ? new Shadow(data.shadow) : null;
+			object.set({
+				angle: data.angle ?? 0,
+				flipX: !!data.flipX,
+				flipY: !!data.flipY,
+				opacity: data.opacity ?? 1,
+				shadow,
+				...(data.strokeDashArray ? { strokeDashArray: data.strokeDashArray } : {}),
+				...(type === ShapeType.RECTANGLE ? { rx: data.rx ?? 0, ry: data.ry ?? 0 } : {}),
+			});
+			// helpers drawn separately (arrow head, callout text) follow the object
+			canvas
+				.getObjects()
+				.filter((obj: any) => obj.id === `${data.id}-arrowhead` || obj.id === `${data.id}-text`)
+				.forEach((helper: any) => {
+					helper.set({ opacity: data.opacity ?? 1 });
+					if (helper.shapeType === ShapeType.ADVANCED_ARROW_HEAD) {
+						helper.set({ shadow: data.shadow ? new Shadow(data.shadow) : null });
+					}
+				});
 			object.setCoords();
 			// re-positions the arrow head of arrows
 			(object as any).fire('modifyPoly');
@@ -151,8 +178,15 @@ export const builtInShapes: ShapeDefinition[] = [
 		label: 'Icon',
 		// `path`: SVG path data, `size`: size of the longer side, `left` / `top`: center of the icon
 		create: (data, { canvas }) => {
-			const { path, size = 60, left = 0, top = 0, fill = '#ff0000', fillRule = 'nonzero', ...props } =
-				fabricProps(data);
+			const {
+				path,
+				size = 60,
+				left = 0,
+				top = 0,
+				fill = '#ff0000',
+				fillRule = 'nonzero',
+				...props
+			} = fabricProps(data);
 			const icon = new Path(path, { fill, fillRule, strokeWidth: 0, ...props });
 			const scale = size / Math.max(icon.width, icon.height, 1);
 			icon.set({ scaleX: scale, scaleY: scale });

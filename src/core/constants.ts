@@ -55,7 +55,7 @@ export const cropOverlayShapeTypes: string[] = [
 export const SCENE_REFERENCE_SIZE = { width: 1000, height: 508 };
 
 /** custom object properties which are serialized together with fabric's own properties */
-export const CUSTOM_OBJECT_PROPERTIES = ['id', 'shapeType', 'lastLeft', 'lastTop', 'test', 'fpFilters'];
+export const CUSTOM_OBJECT_PROPERTIES = ['id', 'shapeType', 'lastLeft', 'lastTop', 'test', 'fpFilters', 'fpResize'];
 
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 4;

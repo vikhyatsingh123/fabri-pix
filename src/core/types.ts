@@ -121,6 +121,13 @@ export interface FilterControl {
 export interface FilterDefinition<O extends Record<string, any> = Record<string, any>> {
 	id: string;
 	label: string;
+	/**
+	 * `filter` (default): shown in the Filter menu, toggled on / off.
+	 * `adjust`: shown as an always visible slider in the Adjust menu, removed when it is back at `neutral`.
+	 */
+	group?: 'filter' | 'adjust';
+	/** options at which an adjustment has no effect (e.g. `{ value: 0 }` for brightness) */
+	neutral?: O;
 	defaultOptions?: O;
 	/** inputs shown in the filter panel to change the options */
 	controls?: FilterControl[];
@@ -129,6 +136,38 @@ export interface FilterDefinition<O extends Record<string, any> = Record<string,
 }
 
 export type FlipDirection = 'horizontal' | 'vertical';
+
+/** actions which can be bound to keys through `keyboardShortcuts` */
+export type EditorShortcut =
+	| 'undo'
+	| 'redo'
+	| 'delete'
+	| 'copy'
+	| 'cut'
+	| 'paste'
+	| 'duplicate'
+	| 'selectAll'
+	| 'deselect'
+	| 'nudgeLeft'
+	| 'nudgeRight'
+	| 'nudgeUp'
+	| 'nudgeDown'
+	| 'bringForward'
+	| 'sendBackward'
+	| 'bringToFront'
+	| 'sendToBack';
+
+export type LayerDirection = 'forward' | 'backward' | 'front' | 'back';
+
+/** styles which can be set on any annotation through `editor.setObjectStyle` */
+export interface ObjectStyle {
+	opacity?: number;
+	/** `null` removes the shadow */
+	shadow?: { color: string; blur: number; offsetX: number; offsetY: number } | null;
+	dashed?: boolean;
+	/** rectangles only */
+	cornerRadius?: number;
+}
 
 export interface ToolGroup {
 	id: string;
@@ -224,8 +263,12 @@ export interface ImageEditorOptions {
 	exportOptions?: ExportOptions;
 	/** maximum number of undo steps (default 50) */
 	historyLimit?: number;
-	/** delete the selection with the Delete / Backspace key (default true) */
-	keyboardShortcuts?: boolean;
+	/**
+	 * Keyboard shortcuts (default: on). `false` disables all of them, an object changes single ones, e.g.
+	 * `{ duplicate: ['mod+j'], selectAll: null }`. `mod` is ⌘ on macOS and Ctrl elsewhere. Copy, cut and paste use
+	 * the browser's clipboard events, set them to `null` to disable them.
+	 */
+	keyboardShortcuts?: boolean | Partial<Record<EditorShortcut, string[] | null>>;
 	onReady?: (editor: ImageEditorController) => void;
 	/** called by `editor.save()` (the Save button), the image is downloaded when not provided */
 	onSave?: (result: SaveResult) => void;

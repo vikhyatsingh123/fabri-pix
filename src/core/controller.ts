@@ -4,7 +4,7 @@
  * The react components are a thin layer on top of it and everything they do is available through its methods.
  */
 
-import { ActiveSelection, Canvas, FabricImage, FabricObject, Point, Rect, TMat2D, util } from 'fabric';
+import { ActiveSelection, Canvas, FabricImage, FabricObject, Point, Rect, Shadow, TMat2D, util } from 'fabric';
 
 import { builtInFilters } from './filters';
 import { builtInShapes } from './shapes';
@@ -21,14 +21,17 @@ import {
 } from './constants';
 import {
 	EditorEvents,
+	EditorShortcut,
 	EditorState,
 	ExportOptions,
 	FilterDefinition,
 	FlipDirection,
 	HistoryState,
 	ImageEditorOptions,
+	LayerDirection,
 	MenuDefinition,
 	MenuItem,
+	ObjectStyle,
 	SaveResult,
 	ShapeDefinition,
 	ToolContext,
@@ -56,6 +59,70 @@ interface ToolSession {
 // the keyboard shortcuts only apply to the editor the user interacted with last (several editors on one page)
 let lastInteractedEditor: ImageEditorController | null = null;
 
+// copied objects, shared by all editors on the page
+let clipboard: { objects: Record<string, any>[]; pasteCount: number } | null = null;
+// written to the system clipboard on copy, so that a later paste knows the editor's own objects are the latest content
+const CLIPBOARD_MARKER = 'fabri-pix/objects';
+const PASTE_OFFSET = 20;
+
+/** `mod` is ⌘ on macOS and Ctrl elsewhere, combinations are written like `mod+shift+z` */
+export const defaultShortcuts: Record<EditorShortcut, string[]> = {
+	undo: ['mod+z'],
+	redo: ['mod+shift+z', 'mod+y'],
+	delete: ['delete', 'backspace'],
+	copy: ['mod+c'],
+	cut: ['mod+x'],
+	paste: ['mod+v'],
+	duplicate: ['mod+d'],
+	selectAll: ['mod+a'],
+	deselect: ['escape'],
+	// hold shift to move by 10
+	nudgeLeft: ['arrowleft'],
+	nudgeRight: ['arrowright'],
+	nudgeUp: ['arrowup'],
+	nudgeDown: ['arrowdown'],
+	bringForward: ['mod+]'],
+	sendBackward: ['mod+['],
+	bringToFront: ['mod+shift+]'],
+	sendToBack: ['mod+shift+['],
+};
+
+const isMac = () =>
+	typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent);
+
+// physical keys, so that shortcuts work with shift held and on other keyboard layouts
+const keyOf = (event: KeyboardEvent) => {
+	if (/^Key[A-Z]$/.test(event.code)) {
+		return event.code.slice(3).toLowerCase();
+	}
+	if (/^Digit[0-9]$/.test(event.code)) {
+		return event.code.slice(5);
+	}
+	if (event.code === 'BracketLeft') {
+		return '[';
+	}
+	if (event.code === 'BracketRight') {
+		return ']';
+	}
+	return event.key.toLowerCase();
+};
+
+const matchesShortcut = (event: KeyboardEvent, combination: string, ignoreShift = false) => {
+	const parts = combination.toLowerCase().split('+');
+	const key = parts[parts.length - 1];
+	const modifiers = new Set(parts.slice(0, -1));
+	const mac = isMac();
+	const wantsCtrl = modifiers.has('ctrl') || (!mac && modifiers.has('mod'));
+	const wantsMeta = modifiers.has('meta') || (mac && modifiers.has('mod'));
+	return (
+		keyOf(event) === key &&
+		event.ctrlKey === wantsCtrl &&
+		event.metaKey === wantsMeta &&
+		event.altKey === modifiers.has('alt') &&
+		(ignoreShift || event.shiftKey === modifiers.has('shift'))
+	);
+};
+
 const roundZoom = (value: number) => Math.round(value * 100) / 100;
 
 export class ImageEditorController {
@@ -79,6 +146,7 @@ export class ImageEditorController {
 	private toolSession: ToolSession | null = null;
 	private pausedTool: string | null = null;
 	private historySuspended = 0;
+	private nudgeCommitTimer: ReturnType<typeof setTimeout> | undefined;
 	private loadToken = 0;
 	private sceneSize = { ...SCENE_REFERENCE_SIZE };
 	private viewSize = { width: 0, height: 0 };
@@ -293,7 +361,10 @@ export class ImageEditorController {
 		canvas.on('selection:updated', this.handleSelectionChange);
 		canvas.on('selection:cleared', this.handleSelectionChange);
 		canvas.on('mouse:down', this.handleCanvasMouseDown);
-		window.addEventListener('keyup', this.handleKeyUp);
+		window.addEventListener('keydown', this.handleKeyDown);
+		window.addEventListener('copy', this.handleCopyEvent);
+		window.addEventListener('cut', this.handleCutEvent);
+		window.addEventListener('paste', this.handlePasteEvent);
 
 		this.applyViewport();
 		void this.load();
@@ -308,7 +379,11 @@ export class ImageEditorController {
 		this.loadToken++;
 		this.deactivateTool('dispose');
 		this.stopPanHandlers();
-		window.removeEventListener('keyup', this.handleKeyUp);
+		window.removeEventListener('keydown', this.handleKeyDown);
+		window.removeEventListener('copy', this.handleCopyEvent);
+		window.removeEventListener('cut', this.handleCutEvent);
+		window.removeEventListener('paste', this.handlePasteEvent);
+		clearTimeout(this.nudgeCommitTimer);
 		if (lastInteractedEditor === this) {
 			lastInteractedEditor = null;
 		}
@@ -371,7 +446,10 @@ export class ImageEditorController {
 			if (initialState) {
 				const json = typeof initialState === 'string' ? JSON.parse(initialState) : initialState;
 				// deep copy so that the consumer's object is never mutated
-				if (Object.keys(json).length > 0 && !(await this.restoreState(JSON.parse(JSON.stringify(json)), token))) {
+				if (
+					Object.keys(json).length > 0 &&
+					!(await this.restoreState(JSON.parse(JSON.stringify(json)), token))
+				) {
 					return;
 				}
 			}
@@ -641,24 +719,100 @@ export class ImageEditorController {
 		lastInteractedEditor = this;
 	};
 
-	private handleKeyUp = (event: KeyboardEvent) => {
-		if (event.key !== 'Backspace' && event.key !== 'Delete') {
-			return;
+	/** the key combinations of a shortcut, `null` when it is disabled */
+	getShortcut(action: EditorShortcut): string[] | null {
+		const config = this.options.keyboardShortcuts;
+		if (config === false) {
+			return null;
 		}
-		if (this.options.keyboardShortcuts === false || lastInteractedEditor !== this || isTypingTarget(event.target)) {
+		if (config && typeof config === 'object' && action in config) {
+			return config[action] ?? null;
+		}
+		return defaultShortcuts[action];
+	}
+
+	// keyboard and clipboard events are only handled for the editor the user worked with last, and never while typing
+	private acceptsShortcuts(event: Event) {
+		if (lastInteractedEditor !== this || !this.canvas || !this.state.ready || isTypingTarget(event.target)) {
+			return false;
+		}
+		const activeObject = this.canvas.getActiveObject() as any;
+		// fabric's text editing handles its own keys
+		return !(
+			activeObject?.isEditing ||
+			activeObject?._objects?.[1]?._objects?.[1]?.isEditing ||
+			activeObject?.shapeType === ShapeType.COMMENT_BOX_TEXTBOX
+		);
+	}
+
+	private handleKeyDown = (event: KeyboardEvent) => {
+		if (!this.acceptsShortcuts(event)) {
 			return;
 		}
 
-		const activeObject = this.canvas?.getActiveObject() as any;
-		if (
-			!activeObject ||
-			activeObject.isEditing ||
-			activeObject._objects?.[1]?._objects?.[1]?.isEditing ||
-			activeObject.shapeType === ShapeType.COMMENT_BOX_TEXTBOX
-		) {
+		const matches = (action: EditorShortcut, ignoreShift = false) =>
+			(this.getShortcut(action) ?? []).some((combination) => matchesShortcut(event, combination, ignoreShift));
+		const hasSelection = !!this.canvas?.getActiveObject();
+		const nudgeStep = event.shiftKey ? 10 : 1;
+
+		const handlers: [boolean, () => void][] = [
+			[matches('undo'), () => void this.undo()],
+			[matches('redo'), () => void this.redo()],
+			[hasSelection && matches('delete'), () => this.deleteSelection()],
+			[hasSelection && matches('duplicate'), () => void this.duplicateSelection()],
+			[matches('selectAll'), () => this.selectAll()],
+			[hasSelection && matches('deselect'), () => this.deselect()],
+			[hasSelection && matches('nudgeLeft', true), () => this.nudgeSelection(-nudgeStep, 0)],
+			[hasSelection && matches('nudgeRight', true), () => this.nudgeSelection(nudgeStep, 0)],
+			[hasSelection && matches('nudgeUp', true), () => this.nudgeSelection(0, -nudgeStep)],
+			[hasSelection && matches('nudgeDown', true), () => this.nudgeSelection(0, nudgeStep)],
+			[hasSelection && matches('bringForward'), () => this.arrangeSelection('forward')],
+			[hasSelection && matches('sendBackward'), () => this.arrangeSelection('backward')],
+			[hasSelection && matches('bringToFront'), () => this.arrangeSelection('front')],
+			[hasSelection && matches('sendToBack'), () => this.arrangeSelection('back')],
+		];
+		const handler = handlers.find(([matched]) => matched);
+		if (handler) {
+			// e.g. the browser's own select all / bookmark (mod+d) / scrolling with the arrow keys
+			event.preventDefault();
+			handler[1]();
+		}
+	};
+
+	private handleCopyEvent = (event: ClipboardEvent) => {
+		if (!this.getShortcut('copy') || !this.acceptsShortcuts(event) || !this.copySelection()) {
 			return;
 		}
-		this.deleteSelection();
+		event.clipboardData?.setData('text/plain', CLIPBOARD_MARKER);
+		event.preventDefault();
+	};
+
+	private handleCutEvent = (event: ClipboardEvent) => {
+		if (!this.getShortcut('cut') || !this.acceptsShortcuts(event) || !this.cutSelection()) {
+			return;
+		}
+		event.clipboardData?.setData('text/plain', CLIPBOARD_MARKER);
+		event.preventDefault();
+	};
+
+	private handlePasteEvent = (event: ClipboardEvent) => {
+		if (!this.getShortcut('paste') || !this.acceptsShortcuts(event)) {
+			return;
+		}
+		const data = event.clipboardData;
+		// an image copied in another application (e.g. a screenshot) is added on top of the photo
+		const imageFile = [...(data?.items ?? [])]
+			.find((item) => item.kind === 'file' && item.type.startsWith('image/'))
+			?.getAsFile();
+		if (imageFile && data?.getData('text/plain') !== CLIPBOARD_MARKER) {
+			event.preventDefault();
+			void this.addImage(imageFile);
+			return;
+		}
+		if (clipboard && (!data || data.getData('text/plain') === CLIPBOARD_MARKER || !data.types.length)) {
+			event.preventDefault();
+			void this.paste();
+		}
 	};
 
 	// ---------------------------------------------------------------- tools & menus
@@ -999,6 +1153,7 @@ export class ImageEditorController {
 			const image = canvas.backgroundImage as FabricImage | undefined;
 			if (image) {
 				image.set({ angle: 0, flipX: false, flipY: false });
+				(image as any).fpResize = undefined;
 				this.applyFilterState(image, {});
 				this.normalizeBackground(image);
 			}
@@ -1028,6 +1183,295 @@ export class ImageEditorController {
 		return !!this.getShape(type)?.transient;
 	}
 
+	// ---------------------------------------------------------------- selection, clipboard & layers
+
+	/** selected objects without the editing UI (crop rectangle) */
+	private getSelectedObjects(): FabricObject[] {
+		return (this.canvas?.getActiveObjects() ?? []).filter(
+			(object) => !this.getShape((object as any).shapeType)?.transient,
+		);
+	}
+
+	private select(objects: FabricObject[]) {
+		const canvas = this.canvas;
+		if (!canvas) {
+			return;
+		}
+		canvas.discardActiveObject();
+		if (objects.length === 1) {
+			canvas.setActiveObject(objects[0]);
+		} else if (objects.length > 1) {
+			canvas.setActiveObject(new ActiveSelection(objects, { canvas }));
+		}
+		canvas.requestRenderAll();
+	}
+
+	/** selects every annotation */
+	selectAll() {
+		const canvas = this.canvas;
+		if (!canvas) {
+			return;
+		}
+		this.select(
+			canvas.getObjects().filter((object) => {
+				const shape = this.getShape((object as any).shapeType);
+				return object.selectable && object.evented !== false && !shape?.helper && !shape?.transient;
+			}),
+		);
+	}
+
+	deselect() {
+		this.canvas?.discardActiveObject();
+		this.canvas?.requestRenderAll();
+	}
+
+	/** moves the selection by the given distance (image coordinates), one history entry per burst of moves */
+	nudgeSelection(dx: number, dy: number) {
+		const canvas = this.canvas;
+		const activeObject = canvas?.getActiveObject();
+		if (!canvas || !activeObject) {
+			return;
+		}
+		activeObject.set({ left: activeObject.left + dx, top: activeObject.top + dy });
+		activeObject.setCoords();
+		const objects = activeObject instanceof ActiveSelection ? activeObject.getObjects() : [activeObject];
+		// keeps helper objects (arrow heads) in place
+		objects.forEach((object) => object.fire('moving', {} as any));
+		canvas.requestRenderAll();
+
+		clearTimeout(this.nudgeCommitTimer);
+		this.nudgeCommitTimer = setTimeout(() => {
+			// e.g. blur areas re-render their blurred copy when they were modified
+			objects.forEach((object) => object.fire('modified', {} as any));
+			this.commit();
+		}, 400);
+	}
+
+	// serialized with absolute coordinates (objects in a multi selection are relative to it)
+	private serializeObjects(objects: FabricObject[]): Record<string, any>[] {
+		const canvas = this.canvas;
+		const activeObject = canvas?.getActiveObject();
+		const inSelection = activeObject instanceof ActiveSelection;
+		if (inSelection) {
+			canvas?.discardActiveObject();
+		}
+		const data = objects.map((object) => object.toObject());
+		if (inSelection) {
+			this.select(objects);
+		}
+		return data;
+	}
+
+	/** copies the selected objects into the editor clipboard, returns false when nothing is selected */
+	copySelection(): boolean {
+		const objects = this.getSelectedObjects();
+		if (objects.length === 0) {
+			return false;
+		}
+		clipboard = { objects: this.serializeObjects(objects), pasteCount: 0 };
+		return true;
+	}
+
+	cutSelection(): boolean {
+		if (!this.copySelection()) {
+			return false;
+		}
+		// pasting a cut selection puts it back at the same place
+		clipboard!.pasteCount = -1;
+		this.deleteSelection();
+		return true;
+	}
+
+	hasClipboard() {
+		return !!clipboard;
+	}
+
+	/** pastes the copied objects (slightly moved for every paste) and selects them */
+	async paste() {
+		if (!clipboard) {
+			return;
+		}
+		clipboard.pasteCount++;
+		await this.addCopies(clipboard.objects, PASTE_OFFSET * clipboard.pasteCount);
+	}
+
+	/** copies the selected objects in place (slightly moved) without touching the clipboard */
+	async duplicateSelection() {
+		const objects = this.getSelectedObjects();
+		if (objects.length > 0) {
+			await this.addCopies(this.serializeObjects(objects), PASTE_OFFSET);
+		}
+	}
+
+	private async addCopies(objects: Record<string, any>[], offset: number) {
+		const canvas = this.canvas;
+		if (!canvas) {
+			return;
+		}
+		const ids: string[] = [];
+		this.historySuspended++;
+		try {
+			for (const data of objects) {
+				const id = generateId();
+				ids.push(id);
+				await this.restoreObject(
+					{ ...JSON.parse(JSON.stringify(data)), id, left: data.left + offset, top: data.top + offset },
+					canvas,
+				);
+			}
+		} finally {
+			this.historySuspended--;
+		}
+		if (this.canvas !== canvas) {
+			return;
+		}
+		this.select(canvas.getObjects().filter((object) => ids.includes((object as any).id)));
+		this.commit();
+	}
+
+	/** objects grouped with their helpers (arrow heads, callout text, blur copies), in stacking order */
+	private getLayerUnits(): FabricObject[][] {
+		const canvas = this.canvas;
+		if (!canvas) {
+			return [];
+		}
+		const objects = canvas.getObjects();
+		const owner = new Map<FabricObject, FabricObject>();
+		objects.forEach((object) => {
+			this.getShape((object as any).shapeType)
+				?.getRelatedObjects?.(object, canvas)
+				.forEach((related) => {
+					if (this.getShape((related as any).shapeType)?.helper) {
+						owner.set(related, object);
+					}
+				});
+		});
+		return objects
+			.filter((object) => !owner.has(object))
+			.map((object) => [object, ...objects.filter((candidate) => owner.get(candidate) === object)]);
+	}
+
+	/** changes the stacking order of the selected objects */
+	arrangeSelection(direction: LayerDirection) {
+		const canvas = this.canvas;
+		const selected = new Set(this.getSelectedObjects());
+		if (!canvas || selected.size === 0) {
+			return;
+		}
+
+		const units = this.getLayerUnits();
+		const isSelected = (unit: FabricObject[]) => selected.has(unit[0]);
+		let ordered = [...units];
+		if (direction === 'front') {
+			ordered = [...units.filter((unit) => !isSelected(unit)), ...units.filter(isSelected)];
+		} else if (direction === 'back') {
+			ordered = [...units.filter(isSelected), ...units.filter((unit) => !isSelected(unit))];
+		} else if (direction === 'forward') {
+			for (let index = ordered.length - 2; index >= 0; index--) {
+				if (isSelected(ordered[index]) && !isSelected(ordered[index + 1])) {
+					[ordered[index], ordered[index + 1]] = [ordered[index + 1], ordered[index]];
+				}
+			}
+		} else {
+			for (let index = 1; index < ordered.length; index++) {
+				if (isSelected(ordered[index]) && !isSelected(ordered[index - 1])) {
+					[ordered[index], ordered[index - 1]] = [ordered[index - 1], ordered[index]];
+				}
+			}
+		}
+
+		ordered.flat().forEach((object, index) => canvas.moveObjectTo(object, index));
+		canvas.requestRenderAll();
+		this.notifyObjectChanged({ commit: true });
+	}
+
+	/** whether the selected objects can be moved in the given direction */
+	canArrangeSelection(direction: LayerDirection): boolean {
+		const selected = new Set(this.getSelectedObjects());
+		const units = this.getLayerUnits();
+		const indexes = units.map((unit, index) => (selected.has(unit[0]) ? index : -1)).filter((index) => index >= 0);
+		if (indexes.length === 0) {
+			return false;
+		}
+		const towardsFront = direction === 'forward' || direction === 'front';
+		// already at the top / bottom as one block
+		return towardsFront
+			? indexes.some((index, position) => index !== units.length - indexes.length + position)
+			: indexes.some((index, position) => index !== position);
+	}
+
+	// ---------------------------------------------------------------- object styles
+
+	/** current style of an object */
+	getObjectStyle(object: FabricObject): Required<ObjectStyle> {
+		const shadow = object.shadow as Shadow | null | undefined;
+		return {
+			opacity: object.opacity ?? 1,
+			shadow: shadow
+				? { color: String(shadow.color), blur: shadow.blur, offsetX: shadow.offsetX, offsetY: shadow.offsetY }
+				: null,
+			dashed: !!object.strokeDashArray?.length,
+			cornerRadius: (object as any).rx ?? 0,
+		};
+	}
+
+	/** whether the object supports a style (dashes need a stroke, the corner radius a rectangle) */
+	supportsObjectStyle(object: FabricObject, style: keyof ObjectStyle): boolean {
+		const type = (object as any).shapeType;
+		// a see-through or shadowed blur area would no longer hide what it covers
+		if (type === ShapeType.BLUR || this.getShape(type)?.transient) {
+			return false;
+		}
+		if (style === 'dashed') {
+			return (
+				!!object.stroke &&
+				object.stroke !== 'transparent' &&
+				object.strokeWidth > 0 &&
+				!(object as any)._objects
+			);
+		}
+		if (style === 'cornerRadius') {
+			return type === ShapeType.RECTANGLE;
+		}
+		return true;
+	}
+
+	/** sets opacity, shadow, dashes or corner radius of objects (and their helpers, e.g. the arrow head) */
+	setObjectStyle(objects: FabricObject | FabricObject[], style: ObjectStyle, { commit = true } = {}) {
+		const canvas = this.canvas;
+		if (!canvas) {
+			return;
+		}
+		for (const object of Array.isArray(objects) ? objects : [objects]) {
+			const props: Record<string, any> = {};
+			if (style.opacity !== undefined && this.supportsObjectStyle(object, 'opacity')) {
+				props.opacity = style.opacity;
+			}
+			if (style.shadow !== undefined && this.supportsObjectStyle(object, 'shadow')) {
+				props.shadow = style.shadow ? new Shadow(style.shadow) : null;
+			}
+			if (style.dashed !== undefined && this.supportsObjectStyle(object, 'dashed')) {
+				props.strokeDashArray = style.dashed ? [object.strokeWidth * 3, object.strokeWidth * 2] : null;
+			}
+			if (style.cornerRadius !== undefined && this.supportsObjectStyle(object, 'cornerRadius')) {
+				props.rx = style.cornerRadius;
+				props.ry = style.cornerRadius;
+			}
+			object.set(props);
+			// helpers are drawn separately and follow the look of their object
+			const related = this.getShape((object as any).shapeType)?.getRelatedObjects?.(object, canvas) ?? [];
+			related.forEach((helper) => {
+				if ('opacity' in props) {
+					helper.set({ opacity: props.opacity });
+				}
+				if ('shadow' in props && (helper as any).shapeType === ShapeType.ADVANCED_ARROW_HEAD) {
+					helper.set({ shadow: style.shadow ? new Shadow(style.shadow) : null });
+				}
+			});
+		}
+		this.notifyObjectChanged({ commit });
+	}
+
 	// ---------------------------------------------------------------- image adjustments
 
 	private getBackground(): FabricImage | undefined {
@@ -1048,6 +1492,7 @@ export class ImageEditorController {
 
 	private applyBackgroundState(image: FabricImage, data: any) {
 		image.set({ angle: data.angle ?? 0, flipX: !!data.flipX, flipY: !!data.flipY });
+		(image as any).fpResize = data.fpResize;
 		this.applyFilterState(image, data.fpFilters ?? {});
 		this.normalizeBackground(image);
 	}
@@ -1114,6 +1559,56 @@ export class ImageEditorController {
 		this.notifyObjectChanged({ commit });
 	}
 
+	/** output scale relative to the original resolution, `{ x: 1, y: 1 }` = original size */
+	getOutputScale(): { x: number; y: number } {
+		const resize = (this.getBackground() as any)?.fpResize;
+		return { x: resize?.x ?? 1, y: resize?.y ?? 1 };
+	}
+
+	/** scales the exported image, e.g. `setOutputScale(0.5)`; a different `y` stretches the image */
+	setOutputScale(x: number, y: number = x, { commit = true } = {}) {
+		const image = this.getBackground();
+		if (!image || !(x > 0) || !(y > 0)) {
+			return;
+		}
+		(image as any).fpResize = x === 1 && y === 1 ? undefined : { x, y };
+		this.notifyObjectChanged({ commit });
+	}
+
+	/** pixel size of the exported image at the original resolution (crop and rotation included) */
+	getNaturalSize(): { width: number; height: number } {
+		const canvas = this.canvas;
+		const clipPath = canvas?.clipPath;
+		const area = clipPath
+			? { width: clipPath.width * clipPath.scaleX, height: clipPath.height * clipPath.scaleY }
+			: this.sceneSize;
+		const scale = canvas?.backgroundImage?.scaleX || 1;
+		return { width: Math.round(area.width / scale), height: Math.round(area.height / scale) };
+	}
+
+	/** pixel size of the exported image */
+	getOutputSize(): { width: number; height: number } {
+		const natural = this.getNaturalSize();
+		const scale = this.getOutputScale();
+		return { width: Math.round(natural.width * scale.x), height: Math.round(natural.height * scale.y) };
+	}
+
+	/** resizes the exported image to the given pixels; with `keepAspect` the missing / other side follows */
+	setOutputSize(size: { width?: number; height?: number }, { keepAspect = true, commit = true } = {}) {
+		const natural = this.getNaturalSize();
+		const current = this.getOutputScale();
+		let x = size.width ? size.width / natural.width : current.x;
+		let y = size.height ? size.height / natural.height : current.y;
+		if (keepAspect) {
+			if (size.width) {
+				y = x;
+			} else {
+				x = y;
+			}
+		}
+		this.setOutputScale(x, y, { commit });
+	}
+
 	/** rotation of the photo in degrees (0 - 360) */
 	getImageRotation(): number {
 		return this.getBackground()?.angle ?? 0;
@@ -1166,7 +1661,7 @@ export class ImageEditorController {
 
 		this.withoutHistory(() => {
 			if (operation.type === 'rotate') {
-				image.set({ angle: (((image.angle ?? 0) + operation.degrees) % 360 + 360) % 360 });
+				image.set({ angle: ((((image.angle ?? 0) + operation.degrees) % 360) + 360) % 360 });
 			} else if (operation.direction === 'horizontal') {
 				image.set({ flipX: !image.flipX, angle: (360 - (image.angle ?? 0)) % 360 });
 			} else {
@@ -1400,26 +1895,36 @@ export class ImageEditorController {
 			: { left: 0, top: 0, ...this.sceneSize };
 
 		const backgroundScale = canvas.backgroundImage?.scaleX;
-		let multiplier =
-			customMultiplier ?? (backgroundScale ? 1 / backgroundScale : Math.max(1, window.devicePixelRatio || 1));
-		const exportPixels = area.width * area.height * multiplier * multiplier;
+		const baseMultiplier = backgroundScale ? 1 / backgroundScale : Math.max(1, window.devicePixelRatio || 1);
+		// the output size (Resize menu) applies unless an explicit multiplier is passed
+		const outputScale = customMultiplier !== undefined ? { x: 1, y: 1 } : this.getOutputScale();
+		let multiplierX = (customMultiplier ?? baseMultiplier) * outputScale.x;
+		let multiplierY = (customMultiplier ?? baseMultiplier) * outputScale.y;
+		const exportPixels = area.width * area.height * multiplierX * multiplierY;
 		if (exportPixels > maxPixels) {
-			multiplier *= Math.sqrt(maxPixels / exportPixels);
+			const reduction = Math.sqrt(maxPixels / exportPixels);
+			multiplierX *= reduction;
+			multiplierY *= reduction;
 		}
 
 		canvas.discardActiveObject();
+		const filter = (object: any) => !this.isTransientType(object.shapeType);
 		const viewportTransform = [...canvas.viewportTransform] as TMat2D;
 		canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
 		let blobPromise: Promise<Blob | null>;
 		try {
-			// toBlob paints synchronously, only the encoding is async, so the view is restored right away
-			blobPromise = canvas.toBlob({
-				format,
-				quality,
-				multiplier,
-				...area,
-				filter: (object: any) => !this.isTransientType(object.shapeType),
-			});
+			// rendering is synchronous, only the encoding is async, so the view is restored right away
+			if (multiplierX === multiplierY) {
+				blobPromise = canvas.toBlob({ format, quality, multiplier: multiplierX, ...area, filter });
+			} else {
+				// a resize without keeping the aspect ratio: render at the larger scale and stretch it
+				const rendered = canvas.toCanvasElement(Math.max(multiplierX, multiplierY), { ...area, filter });
+				const stretched = document.createElement('canvas');
+				stretched.width = Math.max(1, Math.round(area.width * multiplierX));
+				stretched.height = Math.max(1, Math.round(area.height * multiplierY));
+				stretched.getContext('2d')?.drawImage(rendered, 0, 0, stretched.width, stretched.height);
+				blobPromise = new Promise((resolve) => stretched.toBlob(resolve, `image/${format}`, quality));
+			}
 		} finally {
 			canvas.setViewportTransform(viewportTransform);
 		}

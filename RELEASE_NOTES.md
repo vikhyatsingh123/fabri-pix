@@ -1,4 +1,4 @@
-# fabri-pix 3.1.0
+# fabri-pix 3.2.0
 
 A new, fully configurable editor, plus a large stability and size release. Undo/redo, crop, redaction and saving all
 work more reliably, the package is smaller, and your users download less when the editor loads.
@@ -33,7 +33,17 @@ JSON saved with 2.x still loads.
     bubble, warning, recolorable and extendable).
 -   📝 **Text**: underline, strikethrough and a font select.
 -   **Load** (open another image) and **Delete All** (remove the annotations) action buttons.
--   Rotation, flip and filters are saved in the JSON, recorded in the history and included in the exported image.
+-   🎚️ **Adjust** menu: brightness, contrast, saturation, vibrance, hue and gamma sliders. **Filter** menu adds
+    Kodachrome, Polaroid, Technicolor, Brownie and Black & White.
+-   📐 **Resize** menu: set the size of the exported image in pixels or with presets (25% – 200%), with or without
+    keeping the aspect ratio.
+-   ⌨️ **Keyboard shortcuts**: undo / redo, delete, copy / cut / paste, duplicate, select all, deselect, nudge with the
+    arrow keys, layer order. Rebind or disable them with `keyboardShortcuts`.
+-   📋 **Copy, cut, paste and duplicate** objects (also between editors on one page), paste images from the clipboard.
+-   🗂️ **Layer order**: bring forward, send backward, to front, to back.
+-   🖌️ **Object styles** for selected objects: opacity, shadow, dashed strokes and rounded rectangle corners.
+-   Rotation, flip, filters, adjustments and the output size are saved in the JSON, recorded in the history and
+    included in the exported image.
 
 ## Before you upgrade
 

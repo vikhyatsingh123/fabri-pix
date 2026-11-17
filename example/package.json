@@ -3,11 +3,13 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite",
+		"dev:local": "FABRIPIX_SOURCE=local vite",
 		"build": "vite build",
+		"build:local": "FABRIPIX_SOURCE=local vite build",
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"fabri-pix": "^3.1.0",
+		"fabri-pix": "^3.2.0",
 		"fabric": "^6.6.4",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0"

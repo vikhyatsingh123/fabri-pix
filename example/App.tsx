@@ -1,13 +1,12 @@
-import { useEffect, useState, type FC } from 'react';
+import { lazy, Suspense, useEffect, useState, type FC } from 'react';
 
 import 'fabri-pix/dist/fabri-pix.css';
 import './styles.css';
 import { codeExamples, features, useCases, type FeatureIcon, type UseCaseIcon } from './content';
+import { CopyButton } from './CopyButton';
 import {
 	ArrowRightIcon,
 	BugIcon,
-	CheckIcon,
-	CopyIcon,
 	CropIcon,
 	EyeOffIcon,
 	GithubIcon,
@@ -24,12 +23,14 @@ import {
 	SunIcon,
 } from './icons';
 import { Playground } from './Playground';
+import { Link, scrollToHash, usePath } from './router';
+import { SiteThemeContext, type Theme } from './theme';
 
-type Theme = 'light' | 'dark';
+// the documentation is its own chunk
+const Docs = lazy(() => import('./docs/Docs'));
 
 const GITHUB_URL = 'https://github.com/vikhyatsingh123/fabri-pix';
 const NPM_URL = 'https://www.npmjs.com/package/fabri-pix';
-const DOCS_URL = `${GITHUB_URL}#readme`;
 const INSTALL_COMMAND = 'npm install fabri-pix fabric@6';
 
 const featureIcons: Record<FeatureIcon, FC> = {
@@ -61,41 +62,21 @@ const initialTheme = (): Theme => {
 	return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 };
 
-function CopyButton(props: { text: string; className?: string }) {
-	const { text, className = 'copy-button' } = props;
-	const [copied, setCopied] = useState(false);
+function Header(props: { theme: Theme; onToggleTheme: () => void; inDocs: boolean }) {
+	const { theme, onToggleTheme, inDocs } = props;
 	return (
-		<button
-			type='button'
-			className={className}
-			aria-label={copied ? 'Copied' : 'Copy to clipboard'}
-			onClick={() => {
-				void navigator.clipboard?.writeText(text);
-				setCopied(true);
-				setTimeout(() => setCopied(false), 1500);
-			}}
-		>
-			{copied ? <CheckIcon /> : <CopyIcon />}
-		</button>
-	);
-}
-
-function Header(props: { theme: Theme; onToggleTheme: () => void }) {
-	const { theme, onToggleTheme } = props;
-	return (
-		<header className='site-header'>
+		<header className={`site-header ${inDocs ? 'site-header--wide' : ''}`}>
 			<div className='site-header-inner'>
-				<a className='brand' href='#top'>
+				<Link className='brand' to='/'>
 					<LogoMark />
 					<span>FabriPix</span>
-				</a>
+				</Link>
 				<nav className='site-nav'>
-					<a href='#playground'>Demo</a>
-					<a href='#features'>Features</a>
-					<a href='#code'>Code</a>
-					<a href={DOCS_URL} target='_blank' rel='noreferrer'>
+					<Link to='/#playground'>Demo</Link>
+					<Link to='/docs' className={inDocs ? 'active' : ''}>
 						Docs
-					</a>
+					</Link>
+					<Link to='/docs/api/image-editor'>API</Link>
 				</nav>
 				<div className='site-header-actions'>
 					<a className='header-link' href={NPM_URL} target='_blank' rel='noreferrer'>
@@ -151,6 +132,9 @@ function Hero() {
 					Try the editor
 					<ArrowRightIcon />
 				</a>
+				<Link className='secondary-button' to='/docs/quick-start'>
+					Get started
+				</Link>
 				<div className='install'>
 					<code>{INSTALL_COMMAND}</code>
 					<CopyButton text={INSTALL_COMMAND} />
@@ -237,9 +221,9 @@ function CodeExamples() {
 						Start with one component. Configure it with props, control it through a ref, or build your own
 						interface from the exported parts and hooks.
 					</p>
-					<a className='text-link' href={DOCS_URL} target='_blank' rel='noreferrer'>
+					<Link className='text-link' to='/docs'>
 						Read the documentation <ArrowRightIcon />
-					</a>
+					</Link>
 				</div>
 				<div className='code-card'>
 					<div className='code-tabs' role='tablist'>
@@ -293,7 +277,7 @@ function Footer() {
 					FabriPix
 				</span>
 				<span className='footer-links'>
-					<a href={DOCS_URL}>Docs</a>
+					<Link to='/docs'>Docs</Link>
 					<a href={GITHUB_URL}>GitHub</a>
 					<a href={NPM_URL}>npm</a>
 					<a href={`${GITHUB_URL}/issues`}>Issues</a>
@@ -308,6 +292,8 @@ function Footer() {
 
 export default function App() {
 	const [theme, setTheme] = useState<Theme>(initialTheme);
+	const path = usePath();
+	const inDocs = path === '/docs' || path.startsWith('/docs/');
 
 	useEffect(() => {
 		document.documentElement.dataset.theme = theme;
@@ -318,21 +304,44 @@ export default function App() {
 		}
 	}, [theme]);
 
+	useEffect(() => {
+		if (!inDocs) {
+			document.title = 'FabriPix · React image editor';
+		}
+	}, [inDocs]);
+
+	useEffect(() => {
+		if (window.location.hash) {
+			scrollToHash();
+		}
+	}, []);
+
 	return (
-		<>
+		<SiteThemeContext.Provider value={theme}>
 			<Header
 				theme={theme}
+				inDocs={inDocs}
 				onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
 			/>
-			<main>
-				<Hero />
-				<Playground theme={theme} />
-				<UseCases />
-				<Features />
-				<CodeExamples />
-				<CallToAction />
-			</main>
-			<Footer />
-		</>
+			{inDocs ? (
+				<main className='docs-main'>
+					<Suspense fallback={<div className='docs-loading'>Loading…</div>}>
+						<Docs path={path} />
+					</Suspense>
+				</main>
+			) : (
+				<>
+					<main>
+						<Hero />
+						<Playground theme={theme} />
+						<UseCases />
+						<Features />
+						<CodeExamples />
+						<CallToAction />
+					</main>
+					<Footer />
+				</>
+			)}
+		</SiteThemeContext.Provider>
 	);
 }

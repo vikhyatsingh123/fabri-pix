@@ -233,9 +233,13 @@ export default function ImageEditorClient({ src }: { src: string }) {
 }`}
 			/>
 			<p>
-				If your setup still renders it on the server (you would see an error like{' '}
-				<code>window is not defined</code> or <code>document is not defined</code>), load it only in the browser
-				with <code>next/dynamic</code>:
+				A client component is still rendered once on the server for the first html. The editor supports that:
+				it renders its layout there, and the canvas starts in the browser.
+			</p>
+			<p>
+				If you don't want the editor in the server html at all, or another library of yours fails on the
+				server (an error like <code>window is not defined</code>), load it only in the browser with{' '}
+				<code>next/dynamic</code>:
 			</p>
 			<CodeBlock
 				code={`import dynamic from 'next/dynamic';
@@ -1251,8 +1255,9 @@ function Troubleshooting() {
 
 			<H3 id='ssr'>&ldquo;window is not defined&rdquo; or &ldquo;document is not defined&rdquo;</H3>
 			<p>
-				The editor only runs in the browser. In Next.js, render it in a <code>'use client'</code> component, or
-				load it with <code>next/dynamic</code> and <code>ssr: false</code>. See{' '}
+				The canvas only runs in the browser. In Next.js, render the editor in a <code>'use client'</code>{' '}
+				component; it can be rendered on the server once, the canvas starts in the browser. If the error comes
+				from code around it, load the editor with <code>next/dynamic</code> and <code>ssr: false</code>. See{' '}
 				<DocLink to='installation#nextjs'>Next.js</DocLink>.
 			</p>
 

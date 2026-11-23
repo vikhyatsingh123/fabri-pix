@@ -23,11 +23,13 @@ import {
 	SunIcon,
 } from './icons';
 import { Playground } from './Playground';
+import { isDocsPath, loadedDocs } from './preload';
 import { Link, scrollToHash, usePath } from './router';
+import { HOME_TITLE } from './seo';
 import { SiteThemeContext, type Theme } from './theme';
 
 // the documentation is its own chunk
-const Docs = lazy(() => import('./docs/Docs'));
+const LazyDocs = lazy(() => import('./docs/Docs'));
 
 const GITHUB_URL = 'https://github.com/vikhyatsingh123/fabri-pix';
 const NPM_URL = 'https://www.npmjs.com/package/fabri-pix';
@@ -51,6 +53,9 @@ const useCaseIcons: Record<UseCaseIcon, FC> = {
 };
 
 const initialTheme = (): Theme => {
+	if (typeof window === 'undefined') {
+		return 'light';
+	}
 	try {
 		const stored = localStorage.getItem('fabri-pix-theme');
 		if (stored === 'light' || stored === 'dark') {
@@ -268,6 +273,23 @@ function CallToAction() {
 	);
 }
 
+function NotFound() {
+	return (
+		<section className='cta not-found'>
+			<h2>Page not found</h2>
+			<p>This page does not exist. It may have moved to the documentation.</p>
+			<div className='hero-actions'>
+				<Link className='secondary-button' to='/'>
+					Home
+				</Link>
+				<Link className='secondary-button' to='/docs'>
+					Documentation <ArrowRightIcon />
+				</Link>
+			</div>
+		</section>
+	);
+}
+
 function Footer() {
 	return (
 		<footer className='site-footer'>
@@ -293,7 +315,8 @@ function Footer() {
 export default function App() {
 	const [theme, setTheme] = useState<Theme>(initialTheme);
 	const path = usePath();
-	const inDocs = path === '/docs' || path.startsWith('/docs/');
+	const inDocs = isDocsPath(path);
+	const Docs = loadedDocs()?.default ?? LazyDocs;
 
 	useEffect(() => {
 		document.documentElement.dataset.theme = theme;
@@ -306,9 +329,9 @@ export default function App() {
 
 	useEffect(() => {
 		if (!inDocs) {
-			document.title = 'FabriPix · React image editor';
+			document.title = path === '/' ? HOME_TITLE : 'Page not found · FabriPix';
 		}
-	}, [inDocs]);
+	}, [inDocs, path]);
 
 	useEffect(() => {
 		if (window.location.hash) {
@@ -329,6 +352,13 @@ export default function App() {
 						<Docs path={path} />
 					</Suspense>
 				</main>
+			) : path !== '/' ? (
+				<>
+					<main>
+						<NotFound />
+					</main>
+					<Footer />
+				</>
 			) : (
 				<>
 					<main>

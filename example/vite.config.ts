@@ -11,6 +11,19 @@ export default defineConfig({
 	server: {
 		port: 3000,
 	},
+	build: {
+		// scripts/prerender.mjs reads which css / js files each page needs
+		manifest: true,
+	},
+	ssr: {
+		// the build-time render (entry-server.tsx) bundles everything with the browser builds of the packages, so fabric
+		// does not need its node dependencies (jsdom, canvas)
+		noExternal: true,
+		resolve: {
+			conditions: ['browser'],
+			externalConditions: ['browser'],
+		},
+	},
 	resolve: {
 		alias: useLocalSource
 			? [

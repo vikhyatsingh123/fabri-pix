@@ -129,6 +129,8 @@ JSON saved with 2.x still loads.
 -   Custom crop ratios with the value `1` or `null` showed "Square" / "Custom" instead of their own label.
 -   After an image failed to load, `onReady` was still called with an empty canvas. Now only `onError` is called and the
     editor stays disabled until another image loads.
+-   A numbered step clicked onto the image while another step was selected landed at the top (or top-left) edge of the
+    image instead of where it was clicked.
 
 ### Stability and memory
 

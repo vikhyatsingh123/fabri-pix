@@ -1,12 +1,51 @@
-# FabriPix 🎨
+<div align="center">
+
+# FabriPix: React image editor component
+
+**Crop, rotate, filter, redact and annotate images in your React app.**<br />
+A free, open source image editor built on [Fabric.js](https://fabricjs.com/), where every tool, label, icon, color and
+layout is configurable.
 
 [![npm version](https://img.shields.io/npm/v/fabri-pix.svg?style=flat)](https://www.npmjs.com/package/fabri-pix)
-[![npm downloads](https://img.shields.io/npm/dw/fabri-pix.svg?style=flat)](https://www.npmjs.com/package/fabri-pix)
+[![npm downloads](https://img.shields.io/npm/dm/fabri-pix.svg?style=flat)](https://www.npmjs.com/package/fabri-pix)
+[![TypeScript](https://img.shields.io/badge/types-TypeScript-3178c6.svg?style=flat)](https://www.npmjs.com/package/fabri-pix)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/vikhyatsingh123/fabri-pix?style=flat)](https://github.com/vikhyatsingh123/fabri-pix)
 
-**FabriPix** is a plug-and-play **React image editor** built on [Fabric.js](http://fabricjs.com/). Use it as a ready-made
-editor, or customize every part of it: which tools are shown, their defaults, texts, icons, styling, layout, the buttons
-it renders, and your own tools. You can also build a completely custom UI on top of its editor core.
+[**Live demo**](https://fabri-pix.vercel.app) · [**Documentation**](https://fabri-pix.vercel.app/docs) ·
+[**API**](https://fabri-pix.vercel.app/docs/api/props) ·
+[**Try it on StackBlitz**](https://stackblitz.com/github/vikhyatsingh123/fabri-pix/tree/main/starter?file=src%2FApp.tsx)
+
+<img src="./example/public/demo.gif" alt="FabriPix React image editor: numbering a step, drawing an arrow, redacting a part, applying a filter and cropping to a square" width="820" />
+
+</div>
+
+```tsx
+import { ImageEditor } from 'fabri-pix';
+import 'fabri-pix/dist/fabri-pix.css';
+
+<ImageEditor src={imageUrl} onSave={({ blob, json }) => upload(blob, json)} />;
+```
+
+---
+
+## 💡 Why FabriPix
+
+-   **Made for React.** A component with props and hooks, not a wrapper around a DOM widget. Works with React 18 and 19.
+-   **Yours to change.** Pick the tools, set their defaults, translate every text, swap icons, theme it with CSS
+    variables or Tailwind classes, move the toolbars, replace any part with your own components, or write new tools.
+-   **Annotation and redaction built in.** Arrows, numbered steps, callouts, shapes, text, free drawing and blur for
+    screenshots, bug reports, documentation and privacy.
+-   **Saves what you need.** The edited image as PNG / JPEG / WebP at full resolution, plus a JSON state to continue
+    editing later.
+-   **Works on phones.** Pinch to zoom, two-finger pan, double tap, and a compact layout for narrow screens.
+-   **TypeScript first** with complete types, and MIT licensed.
+
+Looking for a React-first **alternative to tui-image-editor**, or an image editor with more control than a
+cropper? See the [introduction](https://fabri-pix.vercel.app/docs) and the [live demo](https://fabri-pix.vercel.app).
+
+**Use cases:** screenshot markup for bug reports and support tickets · blurring personal data before upload · product
+and profile photo editing · annotating images in documentation, LMS or CMS tools · image review and feedback flows.
 
 ---
 
@@ -40,7 +79,8 @@ npm install fabri-pix fabric@6
 yarn add fabri-pix fabric@6
 ```
 
-Requires React 18+ and Fabric.js 6.
+Requires React 18+ and Fabric.js 6. Works with Vite, Next.js (as a client component) and other React setups, see
+[Installation](https://fabri-pix.vercel.app/docs/installation).
 
 ---
 
@@ -450,9 +490,14 @@ const highlightTool: ToolDefinition<{ color: string }> = {
 
 ## 🔗 Links
 
--   **NPM**: [https://www.npmjs.com/package/fabri-pix](https://www.npmjs.com/package/fabri-pix)
--   **GitHub Repo**: [https://github.com/vikhyatsingh123/fabri-pix](https://github.com/vikhyatsingh123/fabri-pix)
--   **Upgrading from 2.x**: [MIGRATION.md](./MIGRATION.md)
+-   **Live demo**: [fabri-pix.vercel.app](https://fabri-pix.vercel.app)
+-   **Documentation**: [fabri-pix.vercel.app/docs](https://fabri-pix.vercel.app/docs)
+-   **Starter project**: [starter/](./starter) ([open in StackBlitz](https://stackblitz.com/github/vikhyatsingh123/fabri-pix/tree/main/starter?file=src%2FApp.tsx))
+-   **npm**: [npmjs.com/package/fabri-pix](https://www.npmjs.com/package/fabri-pix)
+-   **GitHub**: [github.com/vikhyatsingh123/fabri-pix](https://github.com/vikhyatsingh123/fabri-pix)
+-   **Changelog**: [RELEASE_NOTES.md](./RELEASE_NOTES.md) · **Upgrading from 2.x**: [MIGRATION.md](./MIGRATION.md)
+
+If FabriPix is useful to you, a ⭐ on [GitHub](https://github.com/vikhyatsingh123/fabri-pix) helps others find it.
 
 ---
 

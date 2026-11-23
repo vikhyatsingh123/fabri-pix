@@ -235,6 +235,14 @@ function LayoutPage() {
 				</p>
 			</Callout>
 
+			<Callout type='tip' title='Narrow editors'>
+				<p>
+					Below 640px of editor width, a menu on the left or right moves above the image and the bars become
+					single rows that scroll sideways. See{' '}
+					<DocLink to='touch-and-mobile#narrow-layout'>the narrow layout</DocLink>.
+				</p>
+			</Callout>
+
 			<H2 id='actions'>Action buttons</H2>
 			<p>
 				<code>actions</code> lists the buttons of the actions bar, in this order. The default is{' '}

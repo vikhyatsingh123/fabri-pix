@@ -18,16 +18,31 @@ export function ViewAndExportPage() {
 
 			<ApiMethod
 				name='setZoom'
-				signature='editor.setZoom(zoom: number): void'
-				params={[{ name: 'zoom', type: 'number', description: 'Clamped to 1 – 4 and rounded to 2 decimals.' }]}
-				example={`editor.setZoom(2);
+				signature='editor.setZoom(zoom: number, point?: { x: number; y: number }): void'
+				params={[
+					{ name: 'zoom', type: 'number', description: 'Clamped to 1 – 4 and rounded to 3 decimals.' },
+					{
+						name: 'point',
+						type: '{ x: number; y: number }',
+						description:
+							'Optional: zoom around this spot instead of the center, in pixels from the top-left corner of the canvas element. That spot stays under the pointer, like a pinch.',
+					},
+				]}
+				example={`editor.setZoom(2);                     // into the center
+editor.setZoom(3, { x: 40, y: 30 });   // around a spot near the top-left corner
 return editor.getState().zoom;`}
 				run={(editor) => {
 					editor.setZoom(2);
+					editor.setZoom(3, { x: 40, y: 30 });
 					return editor.getState().zoom;
 				}}
 			>
-				<p>Zooms into the center of the view. Going back to 1 turns pan mode off.</p>
+				<p>
+					Zooms into the center of the view, or around <code>point</code>. A zoomed-in view is kept covering
+					the canvas (it never moves the photo out of view). Going back to 1 shows the whole photo again and
+					turns pan mode off. Pinching and ⌘/Ctrl + wheel use this, see{' '}
+					<DocLink to='touch-and-mobile'>Phones, tablets &amp; gestures</DocLink>.
+				</p>
 			</ApiMethod>
 
 			<ApiMethod
@@ -70,6 +85,32 @@ return editor.getState().zoom;`}
 			</ApiMethod>
 
 			<H2 id='pan'>Pan</H2>
+
+			<ApiMethod
+				name='panBy'
+				signature='editor.panBy(dx: number, dy: number): void'
+				params={[
+					{
+						name: 'dx',
+						type: 'number',
+						description: 'Pixels to move the view to the right (negative: left).',
+					},
+					{ name: 'dy', type: 'number', description: 'Pixels to move the view down (negative: up).' },
+				]}
+				example={`editor.setZoom(2);       // panning needs zoom > 1
+editor.panBy(-120, -60); // shows more of the bottom right
+return editor.canvas.viewportTransform.slice(4);`}
+				run={(editor) => {
+					editor.setZoom(2);
+					editor.panBy(-120, -60);
+					return editor.canvas!.viewportTransform.slice(4).map(Math.round);
+				}}
+			>
+				<p>
+					Moves the zoomed-in view, e.g. from your own arrow buttons. Does nothing at zoom 1, and stops at the
+					edges of the photo. Two fingers and the wheel pan the same way.
+				</p>
+			</ApiMethod>
 
 			<ApiMethod
 				name='setPanning'

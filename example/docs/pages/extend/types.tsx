@@ -94,6 +94,8 @@ interface ImageEditorOptions {
   exportOptions?: ExportOptions;
   historyLimit?: number;
   keyboardShortcuts?: boolean | Partial<Record<EditorShortcut, string[] | null>>;
+  /** pinch zoom, two-finger pan, ⌘/Ctrl + wheel zoom, wheel pan (default true) */
+  gestures?: boolean;
   onReady?: (editor: ImageEditorController) => void;
   onSave?: (result: SaveResult) => void;
   onChange?: (json: Record<string, any>) => void;

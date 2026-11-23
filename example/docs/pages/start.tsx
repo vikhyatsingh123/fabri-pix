@@ -1290,8 +1290,16 @@ function Troubleshooting() {
 
 			<H3 id='mobile'>Does it work on phones and tablets?</H3>
 			<p>
-				The editor works with a mouse, trackpad and pen. Touch gestures and a compact toolbar for narrow screens
-				are planned for a later version.
+				Yes. Every tool works with a finger, pinch zooms, two fingers pan, and a double tap works like a double
+				click. When the editor is narrower than 640px its bars become single rows that scroll sideways. See{' '}
+				<DocLink to='touch-and-mobile'>Phones, tablets &amp; gestures</DocLink>.
+			</p>
+
+			<H3 id='page-zooms'>Pinching zooms the whole page instead of the image</H3>
+			<p>
+				The editor only handles pinches that start on the image. Check that <code>gestures</code> is not{' '}
+				<code>false</code>, and that the viewport meta tag of your page is set (
+				<code>{'<meta name="viewport" content="width=device-width, initial-scale=1">'}</code>).
 			</p>
 
 			<H2 id='more-help'>Still stuck?</H2>

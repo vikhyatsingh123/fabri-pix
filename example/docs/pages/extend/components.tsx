@@ -557,6 +557,9 @@ export default function ComponentsPage() {
 			<H3 id='dropdown'>Dropdown</H3>
 			<p>
 				A trigger with a popup. It closes on a click outside and on <code>Escape</code>; opening is up to you.
+				The popup is rendered into the editor root (a React portal) and positioned next to the trigger, so a
+				toolbar that scrolls sideways on narrow screens does not cut it off. It stays inside the editor&rsquo;s
+				width.
 			</p>
 			<PropTable
 				rows={[

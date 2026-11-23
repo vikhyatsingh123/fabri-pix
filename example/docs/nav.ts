@@ -87,6 +87,12 @@ export const docsNav: DocSection[] = [
 				keywords: 'keys hotkeys copy paste duplicate undo',
 			},
 			{
+				slug: 'touch-and-mobile',
+				title: 'Phones, tablets & gestures',
+				group: 'customize',
+				keywords: 'touch mobile phone tablet ipad pinch zoom pan gestures trackpad wheel responsive narrow',
+			},
+			{
 				slug: 'filters',
 				title: 'Filters & adjustments',
 				group: 'customize',

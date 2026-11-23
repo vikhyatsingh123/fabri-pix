@@ -3,7 +3,9 @@
  * @description Small UI building blocks used by the editor, replaceable through the `components` prop
  */
 
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+import { createPortal } from 'react-dom';
 
 import { useEditorUI } from './context';
 import type { ButtonProps, ColorPickerProps, EditorSlot, NumberInputProps, SelectProps, SliderProps } from './types';
@@ -282,11 +284,50 @@ export interface DropdownProps {
 	placement?: 'top' | 'bottom';
 }
 
-/** a trigger with a popup which closes when clicking outside */
+/** where the popup goes: measured from the trigger, relative to the popup's containing block (the editor root) */
+const placeDropdown = (
+	trigger: HTMLElement,
+	content: HTMLElement,
+	placement: 'top' | 'bottom',
+): { left: number; top: number } | null => {
+	const parent = content.offsetParent as HTMLElement | null;
+	if (!parent) {
+		return null;
+	}
+	const triggerRect = trigger.getBoundingClientRect();
+	const usesPage = parent === content.ownerDocument.body && getComputedStyle(parent).position === 'static';
+	const parentRect = usesPage
+		? { left: -window.scrollX, top: -window.scrollY, width: document.documentElement.clientWidth }
+		: (() => {
+				const rect = parent.getBoundingClientRect();
+				return {
+					left: rect.left + parent.clientLeft - parent.scrollLeft,
+					top: rect.top + parent.clientTop - parent.scrollTop,
+					width: parent.clientWidth,
+				};
+			})();
+	const gap = 4;
+	const top =
+		placement === 'top'
+			? triggerRect.top - parentRect.top - content.offsetHeight - gap
+			: triggerRect.bottom - parentRect.top + gap;
+	// stays inside the editor horizontally
+	const maxLeft = Math.max(0, parentRect.width - content.offsetWidth);
+	const left = Math.min(Math.max(0, triggerRect.left - parentRect.left), maxLeft);
+	return { left, top };
+};
+
+/**
+ * A trigger with a popup which closes when clicking outside. The popup is rendered into the editor root (a portal), so
+ * a bar that scrolls sideways on narrow screens does not cut it off.
+ */
 export const Dropdown: React.FC<DropdownProps> = (props) => {
 	const { open, onOpenChange, trigger, children, placement = 'top' } = props;
 	const ui = useEditorUI();
 	const containerRef = useRef<HTMLDivElement | null>(null);
+	const contentRef = useRef<HTMLDivElement | null>(null);
+	const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
+	const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 	const onOpenChangeRef = useRef(onOpenChange);
 	onOpenChangeRef.current = onOpenChange;
 
@@ -294,8 +335,13 @@ export const Dropdown: React.FC<DropdownProps> = (props) => {
 		if (!open) {
 			return;
 		}
-		const handleClickOutside = (event: MouseEvent) => {
-			if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+		const handleClickOutside = (event: PointerEvent) => {
+			const target = event.target as Node;
+			if (
+				containerRef.current &&
+				!containerRef.current.contains(target) &&
+				!contentRef.current?.contains(target)
+			) {
 				onOpenChangeRef.current(false);
 			}
 		};
@@ -304,19 +350,62 @@ export const Dropdown: React.FC<DropdownProps> = (props) => {
 				onOpenChangeRef.current(false);
 			}
 		};
-		document.addEventListener('mousedown', handleClickOutside);
+		document.addEventListener('pointerdown', handleClickOutside);
 		document.addEventListener('keydown', handleKeyDown);
 		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
+			document.removeEventListener('pointerdown', handleClickOutside);
 			document.removeEventListener('keydown', handleKeyDown);
 		};
 	}, [open]);
+
+	useLayoutEffect(() => {
+		if (open) {
+			setPortalTarget(containerRef.current?.closest<HTMLElement>('.fp-root') ?? document.body);
+		}
+	}, [open]);
+
+	// follows the trigger when the toolbar scrolls, the page resizes or the content changes size (lazy emoji picker)
+	useLayoutEffect(() => {
+		const container = containerRef.current;
+		const content = contentRef.current;
+		if (!open || !container || !content) {
+			setPosition(null);
+			return;
+		}
+		const update = () => setPosition(placeDropdown(container, content, placement));
+		update();
+		const observer = new ResizeObserver(update);
+		observer.observe(content);
+		window.addEventListener('resize', update);
+		window.addEventListener('scroll', update, true);
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('resize', update);
+			window.removeEventListener('scroll', update, true);
+		};
+	}, [open, placement, portalTarget]);
 
 	const content = ui.slot('dropdownContent', `fp-dropdown-content--${placement}`);
 	return (
 		<div ref={containerRef} {...ui.slot('dropdown')}>
 			{trigger}
-			{open && <div {...content}>{children}</div>}
+			{open &&
+				portalTarget &&
+				createPortal(
+					<div
+						ref={contentRef}
+						className={content.className}
+						style={{
+							...content.style,
+							...(position
+								? { left: position.left, top: position.top, bottom: 'auto' }
+								: { visibility: 'hidden' }),
+						}}
+					>
+						{children}
+					</div>,
+					portalTarget,
+				)}
 		</div>
 	);
 };

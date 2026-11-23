@@ -1095,3 +1095,62 @@ h3:hover > .anchor,
 .demo-editor .fp-root {
 	--fp-stage-min-height: 200px;
 }
+
+/* ---------------------------------------------------------------- search */
+
+.docs-search-wrap {
+	position: relative;
+}
+
+.docs-search-key {
+	position: absolute;
+	top: 9px;
+	right: 10px;
+	pointer-events: none;
+}
+
+.search-results {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.docs-nav .search-results a {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 8px 10px;
+}
+
+.search-result-page {
+	color: var(--text-faint);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.search-result-title {
+	color: var(--text);
+	font-weight: 600;
+}
+
+.search-result-snippet {
+	display: -webkit-box;
+	overflow: hidden;
+	color: var(--text-muted);
+	font-size: 12.5px;
+	line-height: 1.5;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+}
+
+.search-results mark {
+	border-radius: 3px;
+	background: var(--highlight);
+	color: var(--text);
+}
+
+.docs-nav .search-results a.active {
+	background: var(--accent-soft);
+}

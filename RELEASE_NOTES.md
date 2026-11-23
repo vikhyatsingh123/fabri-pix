@@ -22,6 +22,21 @@ JSON saved with 2.x still loads.
 -   💾 **Saved images are cropped and at full resolution**, no matter how far you are zoomed in.
 -   📦 **Smaller install and app bundle.** The emoji picker (~62 KB gzipped) is only downloaded when it is opened.
 
+## Phones, tablets and trackpads
+
+-   **Touch gestures.** Pinch to zoom, move two fingers to pan, double tap to edit texts and finish paths. A pinch never
+    draws or moves anything. Turn the gestures off with `gestures={false}`.
+-   **Trackpad and wheel.** ⌘/Ctrl + scroll (or a trackpad pinch) zooms around the pointer, scrolling pans while zoomed in.
+-   **Compact layout for narrow editors.** Below 640px of editor width, the menu moves above the image and every bar is
+    one row that scrolls sideways, with a fade on the side that has more. It follows the editor's width (a container
+    query), so it also applies to an editor in a narrow sidebar.
+-   **Finger-sized buttons** on touch screens, and the emoji picker no longer opens the keyboard over itself.
+-   Popups (shape, icon and emoji pickers, history) are rendered into the editor root and placed next to their button,
+    so scrolling bars never cut them off.
+-   New controller methods: `setZoom(zoom, point)` zooms around a point, `panBy(dx, dy)` moves the zoomed-in view. The
+    view can no longer be panned away from the photo.
+-   The canvas now uses pointer events (Fabric's `enablePointerEvents`).
+
 ## New tools
 
 -   🔄 **Rotate & Flip** menu: rotate by 90° or to any angle with a slider, flip horizontally / vertically. Annotations

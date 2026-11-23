@@ -139,6 +139,18 @@ const toolProps: PropRow[] = [
 			</p>
 		),
 	},
+	{
+		name: 'gestures',
+		type: 'boolean',
+		default: 'true',
+		description: (
+			<p>
+				Pinch to zoom and two-finger pan on touch screens, ⌘/Ctrl + wheel (or a trackpad pinch) to zoom and the
+				wheel to pan while zoomed in. <code>false</code> turns them off; double taps still work as double
+				clicks. See <DocLink to='touch-and-mobile'>Phones, tablets &amp; gestures</DocLink>.
+			</p>
+		),
+	},
 ];
 
 const callbackProps: PropRow[] = [

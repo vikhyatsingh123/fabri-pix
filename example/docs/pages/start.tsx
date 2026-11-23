@@ -635,13 +635,13 @@ function LoadingImages() {
 						name: 'onReady',
 						type: '(editor: ImageEditorController) => void',
 						description:
-							'The editor finished loading the image (and initialState) and can be used. Called again for every new src. It is also called after a failed load (with an empty canvas), so check onError for failures.',
+							'The editor finished loading the image (and initialState) and can be used. Called again for every new src. Not called when the image fails to load.',
 					},
 					{
 						name: 'onError',
 						type: '(error: unknown) => void',
 						description:
-							'Loading or exporting failed, e.g. a 404 or a CORS error. Without it (and without an error listener) the error is logged to the console.',
+							'Loading or exporting failed, e.g. a 404 or a CORS error. After a failed load the editor stays empty and disabled until another src loads. Without onError (and without an error listener) the error is logged to the console.',
 					},
 				]}
 			/>

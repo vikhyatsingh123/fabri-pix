@@ -235,7 +235,8 @@ function CustomComponentsPage() {
 					{
 						name: 'value',
 						type: 'string | undefined',
-						description: "Current color, can be any CSS color ('#f00', 'transparent'…).",
+						description:
+							"Current color, can be any CSS color ('#f00', 'transparent'…). The built-in picker keeps the alpha of a partly transparent color when a new one is picked.",
 					},
 					{
 						name: 'onChange',

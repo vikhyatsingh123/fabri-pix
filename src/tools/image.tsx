@@ -77,8 +77,13 @@ export const CropPanel: React.FC<ToolPanelProps<CropOptions>> = (props) => {
 	const { Button } = ui.components;
 	const { labels, icons } = ui;
 
+	// the built-in "Custom" / "Square" ratios follow `labels`, ratios with their own label keep it
 	const ratioLabel = (ratio: CropRatio) =>
-		ratio.value === null ? labels.ratioCustom : ratio.value === 1 ? labels.ratioSquare : ratio.label;
+		ratio.value === null && ratio.label === 'Custom'
+			? labels.ratioCustom
+			: ratio.value === 1 && ratio.label === 'Square'
+				? labels.ratioSquare
+				: ratio.label;
 
 	return (
 		<>
@@ -466,8 +471,8 @@ export const FilterPanel: React.FC<ToolPanelProps> = (props) => {
 						</div>
 					);
 				})}
-			{Object.keys(active).length > 0 && (
-				<Button danger onClick={() => editor.clearImageFilters()}>
+			{editor.getFilterDefinitions().some((filter) => filter.group !== 'adjust' && active[filter.id]) && (
+				<Button danger onClick={() => editor.clearImageFilters({ group: 'filter' })}>
 					{ui.labels.clearFilters}
 				</Button>
 			)}
@@ -518,12 +523,7 @@ export const AdjustPanel: React.FC<ToolPanelProps> = (props) => {
 				}),
 			)}
 			{adjustments.some((filter) => active[filter.id]) && (
-				<Button
-					onClick={() => {
-						adjustments.forEach((filter) => editor.setImageFilter(filter.id, null, { commit: false }));
-						editor.commit();
-					}}
-				>
+				<Button onClick={() => editor.clearImageFilters({ group: 'adjust' })}>
 					{ui.labels.resetAdjustments}
 				</Button>
 			)}

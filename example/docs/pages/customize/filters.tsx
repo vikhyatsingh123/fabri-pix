@@ -95,6 +95,7 @@ editor.current.setImageFilter('grayscale', {});                 // turn on with 
 editor.current.setImageFilter('pixelate', { value: 8 });        // with options
 editor.current.setImageFilter('tint', { color: '#00aaff' });    // options are merged with the defaults
 editor.current.setImageFilter('grayscale', null);               // turn off
+editor.current.clearImageFilters({ group: 'filter' });         // remove the filters, keep adjustments
 editor.current.clearImageFilters();                              // remove all, adjustments included
 editor.current.getImageFilters();                                // { pixelate: { value: 8 }, … }
 
@@ -236,8 +237,11 @@ function FiltersPage() {
 			<Callout>
 				<p>
 					Each call records an undo step unless you pass <code>{'{ commit: false }'}</code>. The Clear button
-					of the Filter panel and <code>clearImageFilters()</code> remove <em>all</em> filters, adjustments
-					included. Reset (the action button) removes them too.
+					of the Filter panel removes only the filters (
+					<code>{"clearImageFilters({ group: 'filter' })"}</code>
+					), &ldquo;Reset adjustments&rdquo; only the adjustments (<code>{"{ group: 'adjust' }"}</code>).{' '}
+					<code>clearImageFilters()</code> without a group removes both, and so does Reset (the action
+					button).
 				</p>
 			</Callout>
 

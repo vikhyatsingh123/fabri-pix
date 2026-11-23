@@ -56,6 +56,24 @@ export const toHexColor = (value?: string): string => {
 	return '#000000';
 };
 
+/** alpha of a partly transparent color (rgba() / #rrggbbaa), `null` for opaque or fully transparent colors */
+const partialAlpha = (value?: string): number | null => {
+	const color = value?.trim() ?? '';
+	const rgba = color.match(/^rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([\d.]+)\s*\)$/i);
+	const hex = color.match(/^#[0-9a-f]{6}([0-9a-f]{2})$/i);
+	const alpha = rgba ? Number(rgba[1]) : hex ? parseInt(hex[1], 16) / 255 : 1;
+	return alpha > 0 && alpha < 1 ? Math.round(alpha * 1000) / 1000 : null;
+};
+
+/** the picked #rrggbb color with the alpha of the previous color, so that a translucent fill stays translucent */
+const withAlpha = (hex: string, alpha: number | null) => {
+	if (alpha === null) {
+		return hex;
+	}
+	const [r, g, b] = [1, 3, 5].map((index) => parseInt(hex.slice(index, index + 2), 16));
+	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
 	const { value, onChange, onChangeComplete, 'aria-label': ariaLabel } = props;
 	const ui = useEditorUI();
@@ -64,6 +82,8 @@ export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const onChangeCompleteRef = useRef(onChangeComplete);
 	onChangeCompleteRef.current = onChangeComplete;
+	const alphaRef = useRef(partialAlpha(value));
+	alphaRef.current = partialAlpha(value);
 
 	useEffect(() => {
 		setColor(toHexColor(value));
@@ -74,7 +94,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
 	useEffect(() => {
 		const input = inputRef.current;
 		const handleNativeChange = (event: Event) => {
-			onChangeCompleteRef.current?.((event.target as HTMLInputElement).value);
+			onChangeCompleteRef.current?.(withAlpha((event.target as HTMLInputElement).value, alphaRef.current));
 		};
 
 		input?.addEventListener('change', handleNativeChange);
@@ -86,7 +106,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const newColor = event.target.value;
 		setColor(newColor);
-		onChange(newColor);
+		onChange(withAlpha(newColor, alphaRef.current));
 	};
 
 	return (

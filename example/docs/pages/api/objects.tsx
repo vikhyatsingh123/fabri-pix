@@ -50,9 +50,9 @@ const shapeRows = [
 	[
 		c('emoji'),
 		<>
-			{c('text')} ('😀'), {c('left')}, {c('top')}, {c('scaleX')} / {c('scaleY')}
+			{c('text')} ('😀'), {c('left')}, {c('top')}, {c('fontSize')} (40), {c('scaleX')} / {c('scaleY')}
 		</>,
-		'Change the size with scaleX / scaleY.',
+		'Size it with fontSize (or scale).',
 	],
 	[
 		c('icon'),
@@ -100,7 +100,7 @@ const shapeRows = [
 			{c('left')}, {c('top')}, {c('fill')} ('#ff0000'), {c('stroke')} ('#0386b5'), {c('strokeWidth')} (2),{' '}
 			{c('scaleX')} / {c('scaleY')}, {c('test')}: {'{ text, fill, fontSize, fontStyle, fontWeight, textAlign }'}
 		</>,
-		'A callout with a text. The text options are nested in test.',
+		'A callout with a text, 100 × 50 at scale 1 (size it with scaleX / scaleY). The text options are nested in test.',
 	],
 	[
 		c('custom_shape'),
@@ -114,16 +114,25 @@ const shapeRows = [
 	[
 		c('arrow'),
 		<>
-			<strong>{c('objects')}</strong>: the line and head of the block arrow, see the example below
+			{c('left')}, {c('top')}, {c('color')} ('#ff0000'), {c('angle')}, {c('scaleX')} / {c('scaleY')}
 		</>,
-		'The Shapes → Arrow tool.',
+		'The Shapes → Arrow tool: a block arrow pointing right (rotate it with angle).',
 	],
 	[
 		c('steps_creator'),
 		<>
-			<strong>{c('objects')}</strong>: the frame and the numbered circle, see the example below
+			{c('left')}, {c('top')}, {c('number')} (1), {c('width')} / {c('height')} (0), {c('backgroundColor')}{' '}
+			('#ff0000'), {c('borderColor')} ('#ff0000'), {c('fontColor')} ('#ffffff'), {c('fontSize')} (20),{' '}
+			{c('strokeWidth')} (2)
 		</>,
-		'The Steps tool.',
+		'The Steps tool: a numbered badge. With a width and height it also draws a frame, with the badge at its top-left corner.',
+	],
+	[
+		c('draw'),
+		<>
+			<strong>{c('path')}</strong> (SVG path data, required), {c('stroke')} ('#ff0000'), {c('strokeWidth')} (2)
+		</>,
+		'A free drawing, like the Draw tool makes.',
 	],
 ];
 
@@ -217,11 +226,10 @@ return editor.getState().history.index;`}
 			<H3 id='shape-types'>Shape types and their data</H3>
 			<p>Defaults in brackets. Values are in scene units; colors are any CSS color.</p>
 			<Table head={['Type', 'Data', 'Notes']} rows={shapeRows} />
-			<Callout type='warning' title='Not for addShape'>
+			<Callout type='note' title='Not for addShape'>
 				<p>
-					<code>draw</code> (free drawing) is created by Fabric's brush while the user draws and can only be
-					restored from JSON; <code>addShape('draw', …)</code> adds nothing. Draw a <code>line_path</code>{' '}
-					instead. <code>crop_rectangle</code> and the <code>temp_*</code> types are editing UI of the tools.
+					<code>crop_rectangle</code> and the <code>temp_*</code> types are editing UI of the tools; crop with
+					the Crop tool instead.
 				</p>
 			</Callout>
 
@@ -242,28 +250,23 @@ await editor.addShape('comment_box', {
 });`}
 			/>
 			<CodeBlock
-				title='Block arrow and numbered step (the structures the built-in tools use)'
-				code={`// Shapes → Arrow, pointing right, 'left' / 'top' place the whole arrow
-await editor.addShape('arrow', {
-  left: 100, top: 100,
-  objects: [
-    { left: -36, top: -2.5, x1: -25, x2: 25, y1: 0, y2: 0, stroke: '#ff0000', strokeWidth: 4, fill: 'transparent', angle: 0 },
-    { left: 36, top: -10.5, width: 20, height: 20, fill: '#ff0000', angle: 90 },
-  ],
-});
+				title='Block arrow, numbered steps, free drawing'
+				code={`// Shapes → Arrow, pointing down
+await editor.addShape('arrow', { left: 100, top: 100, color: '#2563eb', angle: 90 });
 
-// Steps: a frame from (200, 150) to (360, 250) with step "1" at its top-left corner
-await editor.addShape('steps_creator', {
-  left: 200, top: 150, fill: 'transparent',
-  objects: [
-    { left: 200, top: 150, width: 160, height: 100, fill: 'transparent', stroke: '#ff0000', strokeWidth: 2 },
-    { objects: [
-      { left: 0, top: 0, fill: '#ff0000' },
-      { text: '1', fill: '#ffffff', fontSize: 20, angle: 0 },
-    ] },
-  ],
-});`}
+// a numbered badge
+await editor.addShape('steps_creator', { left: 200, top: 150, number: 1 });
+
+// step 2 with a frame from (300, 150) to (460, 250), the badge at its top-left corner
+await editor.addShape('steps_creator', { left: 300, top: 150, width: 160, height: 100, number: 2 });
+
+// a free drawing from SVG path data
+await editor.addShape('draw', { path: 'M 50 300 Q 150 200 250 300 T 450 300', stroke: '#db2777', strokeWidth: 4 });`}
 			/>
+			<p>
+				The saved (nested) form of <code>arrow</code> and <code>steps_creator</code> that you find in the JSON
+				works with <code>addShape</code> too.
+			</p>
 
 			<ApiMethod
 				name='addImage'

@@ -35,14 +35,16 @@ function MissingPage() {
 
 function NotFound() {
 	return (
-		<header className='doc-header'>
-			<p className='doc-eyebrow'>404</p>
-			<h1>Page not found</h1>
-			<p className='doc-lead'>
-				This page does not exist. Pick a topic from the menu or start with the{' '}
-				<Link to='/docs'>introduction</Link>.
-			</p>
-		</header>
+		<>
+			<header className='doc-header'>
+				<p className='doc-eyebrow'>404</p>
+				<h1>Page not found</h1>
+				<p className='doc-lead'>
+					This page does not exist. Pick a topic from the menu or start with the{' '}
+					<Link to='/docs'>introduction</Link>.
+				</p>
+			</header>
+		</>
 	);
 }
 
@@ -99,6 +101,7 @@ function Sidebar(props: { current: string; onNavigate: () => void }) {
 	);
 }
 
+/** "On this page": the h2 / h3 headings of the rendered article, highlighting the one in view */
 function TableOfContents(props: { articleRef: React.RefObject<HTMLElement | null>; slug: string }) {
 	const { articleRef, slug } = props;
 	const [headings, setHeadings] = useState<{ id: string; text: string; level: number }[]>([]);

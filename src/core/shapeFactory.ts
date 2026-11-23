@@ -392,6 +392,7 @@ const addEmoji = ({ canvas, isNewShape, canvasData }: { canvas: CanvasRef; isNew
 		cornerStyle: 'circle',
 		editable: false,
 		fill: '#000',
+		...(canvasData.fontSize ? { fontSize: canvasData.fontSize } : {}),
 		left: canvasData.left,
 		scaleX: canvasData.scaleX,
 		scaleY: canvasData.scaleY,

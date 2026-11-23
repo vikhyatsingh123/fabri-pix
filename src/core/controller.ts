@@ -125,6 +125,38 @@ const matchesShortcut = (event: KeyboardEvent, combination: string, ignoreShift 
 
 const roundZoom = (value: number) => Math.round(value * 100) / 100;
 
+/**
+ * Compares configuration values by content: arrays and plain objects recursively, everything else (functions,
+ * components, class instances) by identity. React elements (icons) are compared by type and props.
+ */
+const isEquivalent = (a: unknown, b: unknown, depth = 0): boolean => {
+	if (Object.is(a, b)) {
+		return true;
+	}
+	if (depth > 8 || typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) {
+		return false;
+	}
+	if (Array.isArray(a) || Array.isArray(b)) {
+		return (
+			Array.isArray(a) &&
+			Array.isArray(b) &&
+			a.length === b.length &&
+			a.every((item, index) => isEquivalent(item, b[index], depth + 1))
+		);
+	}
+	const prototypeA = Object.getPrototypeOf(a);
+	if (prototypeA !== Object.getPrototypeOf(b) || (prototypeA !== Object.prototype && prototypeA !== null)) {
+		return false;
+	}
+	// react elements carry internal bookkeeping (_owner, _store) which differs between renders
+	const keys = (value: object) => Object.keys(value).filter((key) => !key.startsWith('_'));
+	const keysA = keys(a);
+	const keysB = keys(b);
+	return (
+		keysA.length === keysB.length && keysA.every((key) => isEquivalent((a as any)[key], (b as any)[key], depth + 1))
+	);
+};
+
 export class ImageEditorController {
 	/** the fabric canvas, `null` until the editor canvas is mounted */
 	canvas: Canvas | null = null;
@@ -141,6 +173,7 @@ export class ImageEditorController {
 	private visibleToolIds: Set<string> | null = null;
 	private menus: MenuDefinition[] = [];
 	private shapes = new Map<string, ShapeDefinition>();
+	private registeredShapes: ShapeDefinition[] = [];
 	private filterDefinitions: FilterDefinition<any>[] = [];
 
 	private toolSession: ToolSession | null = null;
@@ -178,20 +211,21 @@ export class ImageEditorController {
 	setOptions(options: ImageEditorOptions) {
 		const previous = this.options;
 		this.options = options;
-		if (
-			previous.tools !== options.tools ||
-			previous.menus !== options.menus ||
-			previous.shapes !== options.shapes ||
-			previous.filters !== options.filters ||
-			previous.defaults !== options.defaults
-		) {
+		// arrays / objects written inline are new on every render, only a different content reconfigures the editor
+		const changed = (key: 'tools' | 'menus' | 'shapes' | 'filters' | 'defaults') =>
+			previous[key] !== options[key] && !isEquivalent(previous[key], options[key]);
+		const defaultsChanged = changed('defaults');
+		if (changed('tools') || changed('menus') || changed('shapes') || changed('filters') || defaultsChanged) {
 			this.configure();
 			const activeTool = this.state.activeTool;
 			if (activeTool && !this.isToolVisible(activeTool)) {
 				this.setActiveTool(null);
 			}
+			const toolOptions = defaultsChanged
+				? this.applyChangedDefaults(previous.defaults, options.defaults)
+				: this.state.toolOptions;
 			this.setState({
-				toolOptions: this.createInitialToolOptions(this.state.toolOptions),
+				toolOptions: this.createInitialToolOptions(toolOptions),
 				activeMenu: this.menus.some((menu) => menu.id === this.state.activeMenu)
 					? this.state.activeMenu
 					: (this.menus[0]?.id ?? null),
@@ -218,7 +252,12 @@ export class ImageEditorController {
 			? new Set(this.options.tools.map((tool) => (typeof tool === 'string' ? tool : tool.id)))
 			: null;
 
-		this.shapes = new Map([...builtInShapes, ...(this.options.shapes ?? [])].map((shape) => [shape.type, shape]));
+		this.shapes = new Map(
+			[...builtInShapes, ...(this.options.shapes ?? []), ...this.registeredShapes].map((shape) => [
+				shape.type,
+				shape,
+			]),
+		);
 		const customFilters = this.options.filters ?? [];
 		this.filterDefinitions = [
 			...builtInFilters.map((filter) => customFilters.find((custom) => custom.id === filter.id) ?? filter),
@@ -262,6 +301,21 @@ export class ImageEditorController {
 		}
 
 		return resolved.filter((menu) => menu.tools.length > 0);
+	}
+
+	/** tool options with the values from `defaults` which changed, other options the user changed are kept */
+	private applyChangedDefaults(previous: ImageEditorOptions['defaults'], next: ImageEditorOptions['defaults']) {
+		const toolOptions: Record<string, ToolOptions> = { ...this.state.toolOptions };
+		Object.entries(next ?? {}).forEach(([id, values]) => {
+			const changedValues = Object.fromEntries(
+				Object.entries(values ?? {}).filter(([key, value]) => !isEquivalent(previous?.[id]?.[key], value)),
+			);
+			if (toolOptions[id] && Object.keys(changedValues).length > 0) {
+				toolOptions[id] = { ...toolOptions[id], ...changedValues };
+				this.optionListeners.get(id)?.forEach((listener) => listener(toolOptions[id]));
+			}
+		});
+		return toolOptions;
 	}
 
 	private createInitialToolOptions(current: Readonly<Record<string, ToolOptions>>) {
@@ -440,6 +494,9 @@ export class ImageEditorController {
 						return;
 					}
 					this.reportError(error);
+					// nothing to edit: the editor stays not ready (and `ready` is not emitted) until another image loads
+					this.setState({ loading: false });
+					return;
 				}
 			}
 
@@ -849,6 +906,7 @@ export class ImageEditorController {
 
 	/** registers (or replaces) a shape definition */
 	registerShape(shape: ShapeDefinition) {
+		this.registeredShapes = [...this.registeredShapes.filter((item) => item.type !== shape.type), shape];
 		this.shapes.set(shape.type, shape);
 	}
 
@@ -1080,8 +1138,13 @@ export class ImageEditorController {
 			console.warn(`fabri-pix: shape "${type}" can't be created`);
 			return;
 		}
-		await shape.create({ id: generateId(), ...data }, { editor: this, canvas });
-		// some shapes are only recorded by their tool once drawing is finished, record programmatic ones right away
+		// one history entry per shape: creating some shapes adds, selects and adjusts several objects
+		this.historySuspended++;
+		try {
+			await shape.create({ id: generateId(), ...data }, { editor: this, canvas });
+		} finally {
+			this.historySuspended--;
+		}
 		this.commit();
 	}
 
@@ -1548,13 +1611,24 @@ export class ImageEditorController {
 		this.notifyObjectChanged({ commit });
 	}
 
-	/** removes all filters */
-	clearImageFilters({ commit = true } = {}) {
+	/**
+	 * Removes the filters. `group: 'filter'` removes only those of the Filter menu, `group: 'adjust'` only the
+	 * adjustments (brightness...), without a group all of them.
+	 */
+	clearImageFilters({ commit = true, group }: { commit?: boolean; group?: 'filter' | 'adjust' } = {}) {
 		const image = this.getBackground();
 		if (!image) {
 			return;
 		}
-		this.applyFilterState(image, {});
+		const state = group
+			? Object.fromEntries(
+					Object.entries(this.getImageFilters()).filter(([id]) => {
+						const definition = this.filterDefinitions.find((filter) => filter.id === id);
+						return (definition?.group ?? 'filter') !== group;
+					}),
+				)
+			: {};
+		this.applyFilterState(image, state);
 		this.refreshBlurPatches();
 		this.notifyObjectChanged({ commit });
 	}

@@ -252,7 +252,7 @@ export interface ImageEditorOptions {
 	 * built-in tool replaces it. Defaults to all built-in tools.
 	 */
 	tools?: (string | ToolDefinition<any>)[];
-	/** menus (tabs) and the tools they contain, defaults to Annotate / Crop / Redact */
+	/** menus (tabs) and the tools they contain, defaults to Annotate / Crop / Rotate / Resize / Adjust / Filter / Redact */
 	menus?: MenuDefinition[];
 	/** default options per tool id, e.g. `{ text: { fontSize: 32 } }` */
 	defaults?: Record<string, ToolOptions>;

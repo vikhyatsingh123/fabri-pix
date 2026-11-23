@@ -441,8 +441,6 @@ export const commentTool: ToolDefinition<CommentOptions> = {
 			},
 			scaleX: 1,
 			scaleY: 1,
-			width: 200,
-			height: 100,
 			strokeWidth: options.strokeWidth,
 			stroke: options.stroke,
 		});

@@ -18,6 +18,7 @@ it renders, and your own tools. You can also build a completely custom UI on top
 -   🎚️ **Adjust**: brightness, contrast, saturation, vibrance, hue, gamma; 📐 **Resize** the output (with or without
     keeping the aspect ratio)
 -   🔒 **Redact** (blur) sensitive parts, 🔍 **Zoom** and ✋ **Pan**
+-   📱 **Touch and mobile**: pinch to zoom, two-finger pan, double tap, and a compact layout for narrow editors
 -   ⌨️ **Keyboard shortcuts**, 📋 **copy / cut / paste / duplicate** (also images from the clipboard), 🗂️ **layer order**
 -   🖌️ **Object styles**: opacity, shadow, dashed strokes, rounded corners
 -   ↩️ **Undo / Redo** with an 🕒 **edit history** panel
@@ -83,6 +84,7 @@ export default function App() {
 | `exportOptions`     | `{ format, quality, multiplier, maxPixels }` | Image export settings (default: PNG at the original resolution)                                         |
 | `historyLimit`      | `number`                                    | Maximum undo steps (default `50`)                                                                       |
 | `keyboardShortcuts` | `boolean \| Partial<Record<EditorShortcut, string[] \| null>>` | Keyboard shortcuts, see [Keyboard shortcuts](#-keyboard-shortcuts) (default: on) |
+| `gestures`          | `boolean`                                   | Pinch zoom, two-finger pan, ⌘/Ctrl + wheel zoom, wheel pan, see [Phones and tablets](#-phones-tablets-and-gestures) (default: on) |
 | `onSave`            | `({ blob, json }) => void`                  | Called by the Save button. Without it the image is downloaded                                           |
 | `onCancel`          | `() => void`                                | Shows a Cancel button                                                                                   |
 | `onExportJson`      | `(json) => void`                            | Called by the Export JSON button. Without it the JSON is downloaded                                     |
@@ -256,6 +258,27 @@ Layout parts can be replaced or hidden the same way: `components={{ Header: MyHe
 
 ---
 
+## 📱 Phones, tablets and gestures
+
+Every tool works with a finger, pen, mouse or trackpad, nothing has to be configured:
+
+| Input                                   | Does                                                          |
+| --------------------------------------- | ------------------------------------------------------------- |
+| One finger                              | Uses the active tool, like the mouse                          |
+| Two fingers                             | Pinch to zoom (1× – 4×), move to pan the zoomed-in view       |
+| Double tap                              | Double click: edit a text, step or callout, finish a path     |
+| ⌘/Ctrl + scroll, trackpad pinch         | Zoom around the pointer                                       |
+| Scroll while zoomed in                  | Pan                                                           |
+
+Turn the pinch / pan / wheel gestures off with `gestures={false}`. From code: `editor.setZoom(zoom, { x, y })` zooms
+around a point, `editor.panBy(dx, dy)` moves the view.
+
+When the **editor** is narrower than 640px (a container query, so it also applies in a narrow sidebar), the menu moves
+above the image and every bar becomes one row that scrolls sideways. Change it with your own
+`@container fp-root (max-width: 640px) { ... }` rules. On touch screens buttons are at least 40px high.
+
+---
+
 ## ⌨️ Keyboard shortcuts
 
 | Action                                    | Default                 |
@@ -311,7 +334,7 @@ editor.current.canvas; // the Fabric.js canvas for anything else
 | --------------------------------------------------------- | --------------------------------------------------- |
 | `setActiveTool(id \| null)`, `toggleTool(id)`, `setMenu(id)` | Tools and menus                                   |
 | `undo()`, `redo()`, `goToHistory(index)`, `canUndo()`, `canRedo()` | History                                     |
-| `zoomIn()`, `zoomOut()`, `setZoom(zoom)`, `fitToView()`, `setPanning(on)` | View                                  |
+| `zoomIn()`, `zoomOut()`, `setZoom(zoom, point?)`, `panBy(dx, dy)`, `fitToView()`, `setPanning(on)` | View |
 | `addShape(type, data)`, `addImage(src)`, `updateObject(object, props)`, `deleteObject(object)`, `deleteSelection()`, `clearAnnotations()`, `reset()` | Objects |
 | `rotateImage(degrees)`, `setImageRotation(degrees)`, `flipImage('horizontal' \| 'vertical')`, `getImageRotation()`, `getImageFlip()` | Rotate / flip the photo (annotations follow) |
 | `setImageFilter(id, options \| null)`, `getImageFilters()`, `clearImageFilters({ group? })` | Filters and adjustments |

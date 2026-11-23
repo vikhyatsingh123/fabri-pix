@@ -102,6 +102,56 @@ export const EditorCanvas: React.FC<{ className?: string; style?: CSSProperties 
 	);
 };
 
+/**
+ * For bars that scroll sideways (narrow editors): marks which ends have more content (`data-fp-scroll-start` /
+ * `data-fp-scroll-end`, faded by the default styles), and scrolls the active button into view when `activeKey` changes.
+ */
+const useScrollingBar = (ref: React.RefObject<HTMLElement | null>, activeKey?: unknown) => {
+	useEffect(() => {
+		const bar = ref.current;
+		if (!bar) {
+			return;
+		}
+		const update = () => {
+			const overflowing = bar.scrollWidth > bar.clientWidth + 1;
+			bar.toggleAttribute('data-fp-scroll-start', overflowing && bar.scrollLeft > 1);
+			bar.toggleAttribute(
+				'data-fp-scroll-end',
+				overflowing && bar.scrollLeft + bar.clientWidth < bar.scrollWidth - 1,
+			);
+		};
+		update();
+		bar.addEventListener('scroll', update, { passive: true });
+		const resizeObserver = new ResizeObserver(update);
+		resizeObserver.observe(bar);
+		const mutationObserver = new MutationObserver(update);
+		mutationObserver.observe(bar, { childList: true, subtree: true });
+		return () => {
+			bar.removeEventListener('scroll', update);
+			resizeObserver.disconnect();
+			mutationObserver.disconnect();
+		};
+	}, [ref]);
+
+	useEffect(() => {
+		const bar = ref.current;
+		if (!bar || bar.scrollWidth <= bar.clientWidth) {
+			return;
+		}
+		const active = bar.querySelector('.fp-button--active, [aria-pressed="true"]');
+		if (!active) {
+			return;
+		}
+		const barRect = bar.getBoundingClientRect();
+		const button = active.getBoundingClientRect();
+		if (button.left < barRect.left) {
+			bar.scrollLeft -= barRect.left - button.left + 24;
+		} else if (button.right > barRect.right) {
+			bar.scrollLeft += button.right - barRect.right + 24;
+		}
+	}, [ref, activeKey]);
+};
+
 /** menu tabs (Annotate, Crop, Rotate...), hidden when there is only one menu */
 export const MenuBar: React.FC = () => {
 	const editor = useImageEditor();
@@ -109,13 +159,15 @@ export const MenuBar: React.FC = () => {
 	const ui = useEditorUI();
 	const { Button } = ui.components;
 	const menus = editor.getMenus();
+	const ref = useRef<HTMLElement | null>(null);
+	useScrollingBar(ref, state.activeMenu);
 
 	if (menus.length <= 1) {
 		return null;
 	}
 
 	return (
-		<nav {...ui.slot('menu', `fp-menu--${ui.layout.menu}`)}>
+		<nav ref={ref} {...ui.slot('menu', `fp-menu--${ui.layout.menu}`)}>
 			{menus.map((menu) => (
 				<Button
 					key={menu.id}
@@ -234,6 +286,8 @@ export const Toolbar: React.FC = () => {
 	const state = useEditorState();
 	const ui = useEditorUI();
 	const menu = editor.getMenu(state.activeMenu);
+	const ref = useRef<HTMLDivElement | null>(null);
+	useScrollingBar(ref, `${state.activeMenu}/${state.activeTool}`);
 
 	if (!menu) {
 		return null;
@@ -245,7 +299,7 @@ export const Toolbar: React.FC = () => {
 	}
 
 	return (
-		<div role='toolbar' {...ui.slot('toolbar')}>
+		<div ref={ref} role='toolbar' {...ui.slot('toolbar')}>
 			{menu.tools.map((item) =>
 				typeof item === 'string' ? (
 					<ToolButton key={item} toolId={item} />
@@ -455,9 +509,11 @@ export const ContextPanel: React.FC = () => {
 	const Panel = tool?.OptionsPanel;
 	// editing UI (e.g. the crop rectangle) has its own controls
 	const hasObjects = selection.some((object) => !editor.getShape((object as any).shapeType)?.transient);
+	const ref = useRef<HTMLDivElement | null>(null);
+	useScrollingBar(ref);
 
 	return (
-		<div {...ui.slot('contextPanel')}>
+		<div ref={ref} {...ui.slot('contextPanel')}>
 			{tool && Panel && (
 				<Panel
 					// a new panel for every object, so that pending edits of the previous one are committed

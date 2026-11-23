@@ -269,6 +269,11 @@ export interface ImageEditorOptions {
 	 * the browser's clipboard events, set them to `null` to disable them.
 	 */
 	keyboardShortcuts?: boolean | Partial<Record<EditorShortcut, string[] | null>>;
+	/**
+	 * Touch and trackpad gestures on the canvas (default: on): pinch to zoom and two-finger pan, ⌘/Ctrl + wheel (or a
+	 * trackpad pinch) to zoom, the wheel to pan while zoomed in. Double taps work as double clicks either way.
+	 */
+	gestures?: boolean;
 	onReady?: (editor: ImageEditorController) => void;
 	/** called by `editor.save()` (the Save button), the image is downloaded when not provided */
 	onSave?: (result: SaveResult) => void;

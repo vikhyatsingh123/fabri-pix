@@ -233,6 +233,8 @@ export const EmojiToolButton: React.FC<ToolButtonProps> = (props) => {
 			<Suspense fallback={<div className='fp-loading'>{ui.labels.loading}</div>}>
 				<EmojiPicker
 					skinTonesDisabled
+					// on touch screens a focused search field would open the keyboard over the picker
+					autoFocusSearch={!window.matchMedia?.('(pointer: coarse)').matches}
 					onEmojiClick={(emojiData) => {
 						setOpen(false);
 						setOptions({ emoji: emojiData.emoji });

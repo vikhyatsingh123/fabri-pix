@@ -98,3 +98,19 @@
 	font-size: 14px;
 	font-weight: 600;
 }
+
+/* phones, tablets & gestures: an editor of a chosen width */
+.cz-phone-stage {
+	display: flex;
+	justify-content: center;
+	overflow-x: auto;
+	padding: 12px 0;
+	border-radius: 10px;
+	background: var(--bg-tint);
+}
+
+.cz-phone {
+	flex: none;
+	max-width: 100%;
+	transition: width 0.2s;
+}

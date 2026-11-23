@@ -1,19 +1,21 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
+import {
+	lazy,
+	Suspense,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type ComponentType,
+	type ReactNode,
+} from 'react';
 
 import './docs.css';
 import { ArrowRightIcon } from '../icons';
-import { Link, scrollToHash } from '../router';
-import { allPages, docsNav, docsPath, type DocPage, type PageGroup } from './nav';
-
-type PageModule = { pages: Record<string, ComponentType> };
-
-// every group of pages is its own chunk
-const groupLoaders: Record<PageGroup, () => Promise<PageModule>> = {
-	start: () => import('./pages/start'),
-	customize: () => import('./pages/customize'),
-	extend: () => import('./pages/extend'),
-	api: () => import('./pages/api'),
-};
+import { Link, navigate, scrollToHash } from '../router';
+import { allPages, docsNav, docsPath, type DocPage } from './nav';
+import { groupLoaders } from './pages';
+import { loadSearchIndex, searchDocs, type SearchEntry, type SearchResult } from './search';
 
 const lazyPages = new Map<string, ComponentType>();
 
@@ -48,55 +50,173 @@ function NotFound() {
 	);
 }
 
-function Sidebar(props: { current: string; onNavigate: () => void }) {
-	const { current, onNavigate } = props;
-	const [query, setQuery] = useState('');
-	const normalized = query.trim().toLowerCase();
-	const sections = useMemo(
-		() =>
-			docsNav
-				.map((section) => ({
-					...section,
-					pages: section.pages.filter(
-						(page) =>
-							!normalized ||
-							`${page.title} ${page.keywords ?? ''} ${section.title}`.toLowerCase().includes(normalized),
-					),
-				}))
-				.filter((section) => section.pages.length > 0),
-		[normalized],
+const resultPath = (entry: SearchEntry) => `${docsPath(entry.page.slug)}${entry.anchor ? `#${entry.anchor}` : ''}`;
+
+/** the snippet with the words of the query marked */
+function Highlighted(props: { text: string; query: string }) {
+	const { text, query } = props;
+	const terms = query
+		.toLowerCase()
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+	if (terms.length === 0) {
+		return <>{text}</>;
+	}
+	const parts = text.split(new RegExp(`(${terms.join('|')})`, 'gi'));
+	return <>{parts.map((part, index): ReactNode => (index % 2 === 1 ? <mark key={index}>{part}</mark> : part))}</>;
+}
+
+/** full-text results: the index (every page rendered to text) is built on the first search */
+function SearchResults(props: {
+	query: string;
+	activeIndex: number;
+	onResults: (results: SearchResult[]) => void;
+	onNavigate: () => void;
+}) {
+	const { query, activeIndex, onResults, onNavigate } = props;
+	const [index, setIndex] = useState<SearchEntry[] | null>(null);
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSearchIndex().then((entries) => !cancelled && setIndex(entries));
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	const results = useMemo(() => (index ? searchDocs(index, query) : []), [index, query]);
+	useEffect(() => onResults(results), [results, onResults]);
+
+	if (!index) {
+		return <p className='docs-nav-empty'>Searching…</p>;
+	}
+	if (results.length === 0) {
+		return <p className='docs-nav-empty'>Nothing found for “{query}”.</p>;
+	}
+	return (
+		<ul className='search-results' role='listbox' aria-label='Search results'>
+			{results.map((result, position) => (
+				<li
+					key={`${result.entry.page.slug}#${result.entry.anchor}`}
+					role='option'
+					aria-selected={position === activeIndex}
+				>
+					<Link
+						to={resultPath(result.entry)}
+						className={position === activeIndex ? 'active' : ''}
+						onClick={onNavigate}
+					>
+						<span className='search-result-page'>{result.entry.page.title}</span>
+						<span className='search-result-title'>
+							<Highlighted text={result.entry.heading ?? result.entry.page.title} query={query} />
+						</span>
+						{result.snippet && (
+							<span className='search-result-snippet'>
+								<Highlighted text={result.snippet} query={query} />
+							</span>
+						)}
+					</Link>
+				</li>
+			))}
+		</ul>
 	);
+}
+
+function Sidebar(props: { current: string; onNavigate: () => void; onFocusSearch: () => void }) {
+	const { current, onNavigate, onFocusSearch } = props;
+	const [query, setQuery] = useState('');
+	const [activeIndex, setActiveIndex] = useState(0);
+	const resultsRef = useRef<SearchResult[]>([]);
+	const inputRef = useRef<HTMLInputElement>(null);
+	const searching = query.trim().length >= 2;
+
+	// "/" or ⌘K / Ctrl+K focuses the search
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			const target = event.target as HTMLElement | null;
+			const typing = !!target?.closest('input, textarea, select, [contenteditable="true"]');
+			if (
+				(event.key === '/' && !typing) ||
+				(event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey))
+			) {
+				event.preventDefault();
+				onFocusSearch();
+				inputRef.current?.focus();
+				inputRef.current?.select();
+			}
+		};
+		window.addEventListener('keydown', handleKeyDown);
+		return () => window.removeEventListener('keydown', handleKeyDown);
+	}, [onFocusSearch]);
+
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		const results = resultsRef.current;
+		if (event.key === 'ArrowDown' && results.length > 0) {
+			event.preventDefault();
+			setActiveIndex((index) => Math.min(results.length - 1, index + 1));
+		} else if (event.key === 'ArrowUp' && results.length > 0) {
+			event.preventDefault();
+			setActiveIndex((index) => Math.max(0, index - 1));
+		} else if (event.key === 'Enter' && results[activeIndex]) {
+			event.preventDefault();
+			navigate(resultPath(results[activeIndex].entry));
+			onNavigate();
+		} else if (event.key === 'Escape') {
+			setQuery('');
+		}
+	};
 
 	return (
 		<nav className='docs-nav' aria-label='Documentation'>
-			<input
-				className='docs-search'
-				type='search'
-				placeholder='Search the docs…'
-				aria-label='Search the docs'
-				value={query}
-				onChange={(event) => setQuery(event.target.value)}
-			/>
-			{sections.map((section) => (
-				<div key={section.title} className='docs-nav-section'>
-					<p className='docs-nav-title'>{section.title}</p>
-					<ul>
-						{section.pages.map((page) => (
-							<li key={page.slug}>
-								<Link
-									to={docsPath(page.slug)}
-									className={page.slug === current ? 'active' : ''}
-									aria-current={page.slug === current ? 'page' : undefined}
-									onClick={onNavigate}
-								>
-									{page.title}
-								</Link>
-							</li>
-						))}
-					</ul>
-				</div>
-			))}
-			{sections.length === 0 && <p className='docs-nav-empty'>Nothing found for “{query}”.</p>}
+			<div className='docs-search-wrap'>
+				<input
+					ref={inputRef}
+					className='docs-search'
+					type='search'
+					placeholder='Search the docs…'
+					aria-label='Search the docs'
+					value={query}
+					// the index is built in the background as soon as the search is used
+					onFocus={() => void loadSearchIndex()}
+					onKeyDown={handleKeyDown}
+					onChange={(event) => {
+						setQuery(event.target.value);
+						setActiveIndex(0);
+					}}
+				/>
+				{!query && <kbd className='docs-search-key'>/</kbd>}
+			</div>
+			{searching ? (
+				<SearchResults
+					query={query.trim()}
+					activeIndex={activeIndex}
+					onResults={(results) => {
+						resultsRef.current = results;
+					}}
+					onNavigate={onNavigate}
+				/>
+			) : (
+				docsNav.map((section) => (
+					<div key={section.title} className='docs-nav-section'>
+						<p className='docs-nav-title'>{section.title}</p>
+						<ul>
+							{section.pages.map((page) => (
+								<li key={page.slug}>
+									<Link
+										to={docsPath(page.slug)}
+										className={page.slug === current ? 'active' : ''}
+										aria-current={page.slug === current ? 'page' : undefined}
+										onClick={onNavigate}
+									>
+										{page.title}
+									</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+				))
+			)}
 		</nav>
 	);
 }
@@ -186,6 +306,8 @@ export default function Docs(props: { path: string }) {
 	const section = docsNav.find((item) => item.pages.includes(page as DocPage));
 	const articleRef = useRef<HTMLElement>(null);
 	const [menuOpen, setMenuOpen] = useState(false);
+	// on phones the search lives in the collapsed menu
+	const openMenu = useCallback(() => setMenuOpen(true), []);
 
 	useEffect(() => {
 		document.title = page ? `${page.title} · FabriPix docs` : 'Not found · FabriPix docs';
@@ -208,7 +330,7 @@ export default function Docs(props: { path: string }) {
 					</span>
 					<span aria-hidden='true'>{menuOpen ? '✕' : '☰'}</span>
 				</button>
-				<Sidebar current={slug} onNavigate={() => setMenuOpen(false)} />
+				<Sidebar current={slug} onNavigate={() => setMenuOpen(false)} onFocusSearch={openMenu} />
 			</aside>
 
 			<article className='docs-article' ref={articleRef}>

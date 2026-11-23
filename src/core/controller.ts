@@ -7,6 +7,7 @@
 import { ActiveSelection, Canvas, FabricImage, FabricObject, Point, Rect, Shadow, TMat2D, util } from 'fabric';
 
 import { builtInFilters } from './filters';
+import { attachGestures } from './gestures';
 import { builtInShapes } from './shapes';
 import { applyBlurEffect } from './shapeFactory';
 import { blobToDataUrl, downloadBlob, isTypingTarget } from './dom';
@@ -123,7 +124,8 @@ const matchesShortcut = (event: KeyboardEvent, combination: string, ignoreShift 
 	);
 };
 
-const roundZoom = (value: number) => Math.round(value * 100) / 100;
+// three decimals: small pinch / trackpad steps must still change the zoom
+const roundZoom = (value: number) => Math.round(value * 1000) / 1000;
 
 /**
  * Compares configuration values by content: arrays and plain objects recursively, everything else (functions,
@@ -185,6 +187,8 @@ export class ImageEditorController {
 	private viewSize = { width: 0, height: 0 };
 	private fitZoom = 1;
 	private panState = { dragging: false, x: 0, y: 0 };
+	private gestureZoom = MIN_ZOOM;
+	private detachGestures: (() => void) | null = null;
 
 	constructor(options: ImageEditorOptions = {}, registry: EditorRegistry = { tools: [], menus: [] }) {
 		this.options = options;
@@ -403,8 +407,29 @@ export class ImageEditorController {
 	/** creates the fabric canvas on the given element and loads the image, returns a function that disposes it */
 	attach(element: HTMLCanvasElement): () => void {
 		FabricObject.customProperties = CUSTOM_OBJECT_PROPERTIES;
-		const canvas = new Canvas(element);
+		// pointer events (instead of touch events) let the gesture layer replay a held back touch to fabric
+		const canvas = new Canvas(element, { enablePointerEvents: true });
 		this.canvas = canvas;
+		this.detachGestures = attachGestures(canvas, {
+			enabled: () => this.options.gestures !== false && this.state.ready,
+			pinchStart: () => {
+				this.gestureZoom = this.state.zoom;
+			},
+			pinch: (scale, center, pan) => {
+				this.setZoom(this.gestureZoom * scale, center);
+				this.panBy(pan.x, pan.y);
+			},
+			// zoomed out below "fit" while pinching: center the image again
+			pinchEnd: () => this.state.zoom <= MIN_ZOOM && this.applyViewport(),
+			wheelZoom: (scale, center) => this.setZoom(this.state.zoom * scale, center),
+			wheelPan: (dx, dy) => {
+				if (this.state.zoom <= MIN_ZOOM) {
+					return false;
+				}
+				this.panBy(dx, dy);
+				return true;
+			},
+		});
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		lastInteractedEditor ??= this;
 
@@ -433,6 +458,8 @@ export class ImageEditorController {
 		this.loadToken++;
 		this.deactivateTool('dispose');
 		this.stopPanHandlers();
+		this.detachGestures?.();
+		this.detachGestures = null;
 		window.removeEventListener('keydown', this.handleKeyDown);
 		window.removeEventListener('copy', this.handleCopyEvent);
 		window.removeEventListener('cut', this.handleCutEvent);
@@ -1848,8 +1875,12 @@ export class ImageEditorController {
 		canvas.requestRenderAll();
 	}
 
-	/** user zoom, 1 = fit (1 - 4) */
-	setZoom(zoom: number) {
+	/**
+	 * User zoom, 1 = fit (1 - 4). Zooms around the center of the view, or around `point` (in pixels from the top left
+	 * corner of the canvas element) keeping that spot under the pointer, like a pinch.
+	 */
+	setZoom(zoom: number, point?: { x: number; y: number }) {
+		const canvas = this.canvas;
 		const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, roundZoom(zoom)));
 		if (next === this.state.zoom) {
 			return;
@@ -1858,8 +1889,39 @@ export class ImageEditorController {
 		if (next <= MIN_ZOOM) {
 			this.setPanning(false);
 		}
-		this.applyViewport();
+		if (canvas && point && next > MIN_ZOOM) {
+			canvas.zoomToPoint(new Point(point.x, point.y), this.fitZoom * next);
+			this.clampViewport();
+			canvas.requestRenderAll();
+		} else {
+			this.applyViewport();
+		}
 		this.emit('zoomChange', { zoom: next });
+	}
+
+	/** moves the zoomed in view by the given pixels (no effect at zoom 1, the image is never moved out of view) */
+	panBy(dx: number, dy: number) {
+		const canvas = this.canvas;
+		if (!canvas || this.state.zoom <= MIN_ZOOM) {
+			return;
+		}
+		canvas.relativePan(new Point(dx, dy));
+		this.clampViewport();
+		canvas.requestRenderAll();
+	}
+
+	/** keeps the zoomed in image covering the view */
+	private clampViewport() {
+		const canvas = this.canvas;
+		if (!canvas) {
+			return;
+		}
+		const transform = [...canvas.viewportTransform] as TMat2D;
+		const clamp = (offset: number, content: number, view: number) =>
+			content <= view ? (view - content) / 2 : Math.min(0, Math.max(view - content, offset));
+		transform[4] = clamp(transform[4], this.sceneSize.width * transform[0], canvas.getWidth());
+		transform[5] = clamp(transform[5], this.sceneSize.height * transform[3], canvas.getHeight());
+		canvas.setViewportTransform(transform);
 	}
 
 	zoomIn() {
@@ -1928,10 +1990,9 @@ export class ImageEditorController {
 		if (!this.panState.dragging || !this.canvas) {
 			return;
 		}
-		this.canvas.relativePan(new Point(event.e.clientX - this.panState.x, event.e.clientY - this.panState.y));
+		this.panBy(event.e.clientX - this.panState.x, event.e.clientY - this.panState.y);
 		this.panState.x = event.e.clientX;
 		this.panState.y = event.e.clientY;
-		this.canvas.requestRenderAll();
 	};
 
 	private handlePanMouseUp = () => {

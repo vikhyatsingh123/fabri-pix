@@ -31,11 +31,16 @@
 /* ------------------------------------------------------------------ layout */
 
 :where(.fp-root) {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: var(--fp-gap);
 	box-sizing: border-box;
 	min-width: 0;
+	/* the layout adapts to the width of the editor, not of the window */
+	container: fp-root / inline-size;
+	/* no double-tap zoom / tap delay on the buttons */
+	touch-action: manipulation;
 }
 
 :where(.fp-root *, .fp-root *::before, .fp-root *::after) {
@@ -128,15 +133,16 @@
 }
 
 :where(.fp-dropdown) {
-	position: relative;
 	display: inline-flex;
 	align-items: center;
 }
 
+/* placed by the Dropdown component relative to the editor root, so scrolling bars don't cut it off */
 :where(.fp-dropdown-content) {
 	position: absolute;
 	left: 0;
 	z-index: 10;
+	max-width: 100%;
 }
 
 :where(.fp-dropdown-content--top) {
@@ -253,8 +259,10 @@
 	transition: background-color 0.2s ease-in-out;
 }
 
-:where(.fp-root:not(.fp-unstyled) .fp-button:hover:not(:disabled)) {
-	background: var(--fp-color-hover);
+@media (hover: hover) {
+	:where(.fp-root:not(.fp-unstyled) .fp-button:hover:not(:disabled)) {
+		background: var(--fp-color-hover);
+	}
 }
 
 :where(.fp-root:not(.fp-unstyled) .fp-button--active) {
@@ -299,8 +307,10 @@
 	font-weight: bold;
 }
 
-:where(.fp-root:not(.fp-unstyled) .fp-history-item:hover:not(:disabled)) {
-	background: #ceeffd;
+@media (hover: hover) {
+	:where(.fp-root:not(.fp-unstyled) .fp-history-item:hover:not(:disabled)) {
+		background: #ceeffd;
+	}
 }
 
 :where(.fp-root:not(.fp-unstyled) .fp-history-check) {
@@ -380,4 +390,91 @@
 	min-width: 36px;
 	color: var(--fp-color-muted-text);
 	font-size: 12px;
+}
+
+/* ------------------------------------------------------------------ narrow editors (phones, sidebars) */
+
+@container fp-root (max-width: 640px) {
+	/* the menu goes above the canvas */
+	:where(.fp-body--menu-left, .fp-body--menu-right) {
+		flex-direction: column;
+	}
+
+	:where(.fp-body) {
+		min-height: min(var(--fp-stage-min-height), 55vh);
+	}
+
+	/* one row per bar, scrolled sideways instead of wrapping */
+	:where(.fp-menu, .fp-header, .fp-toolbar, .fp-context-panel, .fp-actions, .fp-filter-list, .fp-object-controls) {
+		flex-direction: row;
+		flex-wrap: nowrap;
+		justify-content: safe center;
+		max-width: 100%;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scrollbar-width: none;
+	}
+
+	:where(
+			.fp-menu,
+			.fp-header,
+			.fp-toolbar,
+			.fp-context-panel,
+			.fp-actions,
+			.fp-filter-list,
+			.fp-object-controls
+		)::-webkit-scrollbar {
+		display: none;
+	}
+
+	:where(.fp-menu, .fp-toolbar, .fp-context-panel, .fp-filter-list) > * {
+		flex-shrink: 0;
+	}
+
+	/* fades the side(s) with more content, so that it is clear the bar scrolls */
+	:where([data-fp-scroll-end]) {
+		mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+	}
+
+	:where([data-fp-scroll-start]) {
+		mask-image: linear-gradient(to left, #000 calc(100% - 40px), transparent);
+	}
+
+	:where([data-fp-scroll-start][data-fp-scroll-end]) {
+		mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+	}
+
+	:where(.fp-button, .fp-field-label) {
+		white-space: nowrap;
+	}
+
+	:where(.fp-root:not(.fp-unstyled) .fp-menu) {
+		gap: 4px;
+	}
+
+	:where(.fp-root:not(.fp-unstyled) .fp-button) {
+		padding: 8px 12px;
+	}
+
+	:where(.fp-root:not(.fp-unstyled) .fp-dropdown-content) {
+		min-width: 0;
+	}
+}
+
+/* ------------------------------------------------------------------ touch screens */
+
+@media (pointer: coarse) {
+	/* finger sized targets */
+	:where(.fp-root:not(.fp-unstyled) .fp-button) {
+		min-height: 40px;
+	}
+
+	:where(.fp-root:not(.fp-unstyled) .fp-color-picker) {
+		width: 32px;
+		height: 32px;
+	}
+
+	:where(.fp-root:not(.fp-unstyled) .fp-number-input, .fp-root:not(.fp-unstyled) .fp-select) {
+		height: 34px;
+	}
 }

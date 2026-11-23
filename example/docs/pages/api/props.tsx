@@ -485,8 +485,10 @@ import 'fabri-pix/dist/fabri-pix.css';
 				</li>
 				<li>
 					<code>tools</code>, <code>menus</code>, <code>defaults</code>, <code>shapes</code>,{' '}
-					<code>filters</code>: applied right away. Pass stable values (constants or <code>useMemo</code>); a
-					new array on every render reconfigures the tools every time.
+					<code>filters</code>: applied right away when their content changes (inline arrays are fine).
+					Changed <code>defaults</code> values update the tool options, other options the user picked are
+					kept. Tool, shape and filter definitions created inside a component are new objects on every render,
+					so define those outside of it.
 				</li>
 				<li>Callbacks, UI props and the theme: applied on the next render.</li>
 				<li>

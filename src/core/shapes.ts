@@ -45,8 +45,6 @@ const createDefaults: Record<string, Record<string, any>> = {
 		fill: '#ff0000',
 		stroke: '#0386b5',
 		strokeWidth: 2,
-		width: 200,
-		height: 100,
 		test: {
 			text: 'Textbox',
 			fill: '#ffffff',
@@ -58,10 +56,84 @@ const createDefaults: Record<string, Record<string, any>> = {
 	},
 };
 
+/**
+ * Simple `addShape` data for objects whose saved form is nested: the block arrow takes `{ left, top, color }`, a step
+ * `{ left, top, number, width, height, backgroundColor, borderColor, fontColor, fontSize, strokeWidth }` (a size
+ * draws a frame with the number at its top left corner). Data in the saved (nested) form is passed through.
+ */
+const simpleCreateData: Record<string, (data: any) => any> = {
+	[ShapeType.ARROW]: (data) => {
+		if (data.objects) {
+			return data;
+		}
+		const { color = '#ff0000', left = 0, top = 0, ...rest } = data;
+		return {
+			angle: 0,
+			fill: 'transparent',
+			scaleX: 1,
+			scaleY: 1,
+			...rest,
+			left,
+			top,
+			objects: [
+				{
+					angle: 0,
+					fill: 'transparent',
+					left: -36,
+					stroke: color,
+					strokeWidth: 4,
+					top: -2.5,
+					x1: -25,
+					x2: 25,
+					y1: 0,
+					y2: 0,
+				},
+				{ width: 20, height: 20, fill: color, left: 36, top: -10.5, angle: 90 },
+			],
+		};
+	},
+	[ShapeType.STEPS_CREATOR]: (data) => {
+		if (data.objects) {
+			return data;
+		}
+		const {
+			left = 0,
+			top = 0,
+			width = 0,
+			height = 0,
+			number = 1,
+			backgroundColor = '#ff0000',
+			borderColor = '#ff0000',
+			fontColor = '#ffffff',
+			fontSize = 20,
+			strokeWidth = 2,
+			...rest
+		} = data;
+		return {
+			angle: 0,
+			scaleX: 1,
+			scaleY: 1,
+			fill: 'transparent',
+			...rest,
+			left,
+			top,
+			objects: [
+				{ left, top, width, height, fill: 'transparent', stroke: borderColor, strokeWidth },
+				{
+					objects: [
+						{ left: 0, top: 0, fill: backgroundColor },
+						{ fill: fontColor, text: String(number), fontSize, angle: 0 },
+					],
+				},
+			],
+		};
+	},
+};
+
 const fromFactory = (type: string): Pick<ShapeDefinition, 'create' | 'restore'> => ({
 	create: (data: any, { editor, canvas }: ShapeContext) => {
 		const defaults = createDefaults[type] ?? {};
-		const values = withoutUndefined(data);
+		const values = withoutUndefined(simpleCreateData[type]?.(data) ?? data);
 		return createShape({
 			canvas: { current: canvas },
 			shapeType: type,
@@ -218,7 +290,30 @@ export const builtInShapes: ShapeDefinition[] = [
 		recordOnAdd: false,
 		getRelatedObjects: relatedById('-blur'),
 	},
-	{ type: ShapeType.DRAW, label: 'Drawing', ...fromFactory(ShapeType.DRAW), recordOnAdd: false },
+	{
+		type: ShapeType.DRAW,
+		label: 'Drawing',
+		...fromFactory(ShapeType.DRAW),
+		// `path`: SVG path data (or fabric path commands) in image coordinates
+		create: (data, { canvas }) => {
+			const { path, stroke = '#ff0000', strokeWidth = 2, ...props } = fabricProps(data);
+			if (!path) {
+				console.warn('fabri-pix: addShape("draw") needs a `path`');
+				return;
+			}
+			const drawing = new Path(path, {
+				fill: '',
+				stroke,
+				strokeWidth,
+				strokeLineCap: 'round',
+				strokeLineJoin: 'round',
+				perPixelTargetFind: true,
+				...props,
+			});
+			addAndSelect(drawing, data, ShapeType.DRAW, canvas);
+		},
+		recordOnAdd: false,
+	},
 	{
 		type: ShapeType.ADVANCED_ARROW,
 		label: 'Arrow',

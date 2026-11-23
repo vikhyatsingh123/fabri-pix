@@ -184,8 +184,15 @@ return editor.getImageFilters();`}
 
 			<ApiMethod
 				name='clearImageFilters'
-				signature='editor.clearImageFilters(settings?: { commit?: boolean }): void'
+				signature="editor.clearImageFilters(settings?: { commit?: boolean; group?: 'filter' | 'adjust' }): void"
 				params={[
+					{
+						name: 'settings.group',
+						type: "'filter' | 'adjust'",
+						default: 'all',
+						description:
+							"'filter' removes only the filters of the Filter menu, 'adjust' only the adjustments (brightness, contrast…). Without it, both are removed.",
+					},
 					{
 						name: 'settings.commit',
 						type: 'boolean',
@@ -193,14 +200,22 @@ return editor.getImageFilters();`}
 						description: 'false: no history entry.',
 					},
 				]}
-				example={`editor.clearImageFilters();
-return editor.getImageFilters();`}
+				example={`editor.setImageFilter('brightness', { value: 0.2 });
+editor.setImageFilter('sepia', {});
+editor.clearImageFilters({ group: 'filter' });
+return editor.getImageFilters(); // { brightness: { value: 0.2 } }`}
 				run={(editor) => {
-					editor.clearImageFilters();
+					editor.setImageFilter('brightness', { value: 0.2 });
+					editor.setImageFilter('sepia', {});
+					editor.clearImageFilters({ group: 'filter' });
 					return editor.getImageFilters();
 				}}
 			>
-				<p>Removes every filter and adjustment.</p>
+				<p>
+					Removes filters as one undo step. The Filter panel&rsquo;s Clear button uses{' '}
+					<code>{"{ group: 'filter' }"}</code>, the Adjust panel&rsquo;s &ldquo;Reset adjustments&rdquo;{' '}
+					<code>{"{ group: 'adjust' }"}</code>.
+				</p>
 			</ApiMethod>
 
 			<ApiMethod

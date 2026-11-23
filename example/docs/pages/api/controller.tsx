@@ -135,9 +135,11 @@ const editor = new ImageEditorController({ src: url, historyLimit: 20 });
 editor.setOptions({ ...editor.getOptions(), historyLimit: 100 });`}
 			>
 				<p>
-					Replaces the options. When <code>tools</code>, <code>menus</code>, <code>shapes</code>,{' '}
-					<code>filters</code> or <code>defaults</code> changed, the tools are reconfigured: a hidden active
-					tool is deactivated and tools that are new get their default options.
+					Replaces the options. When the content of <code>tools</code>, <code>menus</code>,{' '}
+					<code>shapes</code>, <code>filters</code> or <code>defaults</code> changed, the tools are
+					reconfigured: a hidden active tool is deactivated, new tools get their default options and changed{' '}
+					<code>defaults</code> values are applied to the tool options (other options the user changed are
+					kept). Arrays and plain objects are compared by content, functions and components by identity.
 				</p>
 				<Callout type='warning'>
 					<p>
@@ -420,7 +422,12 @@ return { label: shape.label, helper: !!shape.helper, transient: !!shape.transien
 				name='registerShape'
 				signature='editor.registerShape(shape: ShapeDefinition): void'
 				params={[
-					{ name: 'shape', type: 'ShapeDefinition', description: 'Definition to add or replace (by type).' },
+					{
+						name: 'shape',
+						type: 'ShapeDefinition',
+						description:
+							'Definition to add or replace (by type). It stays registered when the editor is reconfigured, and wins over the shapes prop for the same type.',
+					},
 				]}
 				example={`import { Circle } from 'fabric';
 

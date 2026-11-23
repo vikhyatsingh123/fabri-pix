@@ -68,7 +68,6 @@ export const defaultLabels: EditorLabels = {
 	alignCenter: 'Align center',
 	alignRight: 'Align right',
 	stepNumber: 'Step Number',
-	emoji: 'Emoji',
 	initialState: 'Initial State',
 	created: 'Created',
 	modified: 'Modified',

@@ -76,7 +76,7 @@ export default function App() {
 | `initialState`      | `object \| string`                          | JSON from `onSave` / `editor.toJSON()` to continue editing                                              |
 | `crossOrigin`       | `'anonymous' \| 'use-credentials' \| null`  | Used to load `src` (default `'anonymous'`)                                                              |
 | `tools`             | `(string \| ToolDefinition)[]`              | Tools to show (default: all). Custom tool definitions are added, same id replaces a built-in tool       |
-| `menus`             | `MenuDefinition[]`                          | Menus (tabs) and the tools in each (default: Annotate / Crop / Redact)                                  |
+| `menus`             | `MenuDefinition[]`                          | Menus (tabs) and the tools in each (default: Annotate, Crop, Rotate, Resize, Adjust, Filter, Redact)                                  |
 | `defaults`          | `Record<toolId, options>`                   | Default options per tool, e.g. `{ text: { fontSize: 32 } }`                                             |
 | `shapes`            | `ShapeDefinition[]`                         | Additional / replacement object definitions (restore, delete, history behaviour)                       |
 | `filters`           | `FilterDefinition[]`                        | Additional / replacement filters of the Filter menu                                                     |
@@ -314,7 +314,7 @@ editor.current.canvas; // the Fabric.js canvas for anything else
 | `zoomIn()`, `zoomOut()`, `setZoom(zoom)`, `fitToView()`, `setPanning(on)` | View                                  |
 | `addShape(type, data)`, `addImage(src)`, `updateObject(object, props)`, `deleteObject(object)`, `deleteSelection()`, `clearAnnotations()`, `reset()` | Objects |
 | `rotateImage(degrees)`, `setImageRotation(degrees)`, `flipImage('horizontal' \| 'vertical')`, `getImageRotation()`, `getImageFlip()` | Rotate / flip the photo (annotations follow) |
-| `setImageFilter(id, options \| null)`, `getImageFilters()`, `clearImageFilters()` | Filters and adjustments |
+| `setImageFilter(id, options \| null)`, `getImageFilters()`, `clearImageFilters({ group? })` | Filters and adjustments |
 | `setOutputSize({ width, height }, { keepAspect })`, `setOutputScale(x, y?)`, `getOutputSize()`, `getNaturalSize()` | Size of the exported image |
 | `copySelection()`, `cutSelection()`, `paste()`, `duplicateSelection()`, `selectAll()`, `deselect()`, `nudgeSelection(dx, dy)` | Selection and clipboard |
 | `arrangeSelection('forward' \| 'backward' \| 'front' \| 'back')`, `canArrangeSelection(direction)` | Layer order |
@@ -389,19 +389,20 @@ const highlightTool: ToolDefinition<{ color: string }> = {
 	id: 'highlight',
 	label: 'Highlight',
 	icon: <HighlighterIcon />,
-	defaultOptions: { color: 'rgba(255, 230, 0, 0.4)' },
+	defaultOptions: { color: '#ffe600' },
 	shapeTypes: ['highlight'],
 	activate: (context) => {
 		context.setCursor('crosshair');
 		context.on('mouse:down', (event) => {
 			if (context.canvas.findTarget(event.e)) return;
 			const { x, y } = context.canvas.getScenePoint(event.e);
-			const rect = new Rect({ left: x, top: y, width: 160, height: 24, fill: context.options.color });
+			const rect = new Rect({ left: x, top: y, width: 160, height: 24, fill: context.options.color, opacity: 0.4 });
 			rect.set({ shapeType: 'highlight', id: crypto.randomUUID() });
 			context.canvas.add(rect); // recorded in the history automatically
 		});
 	},
 	OptionsPanel: ({ target, options, setOptions, editor }) => (
+		// <input type="color"> only accepts #rrggbb
 		<input
 			type='color'
 			value={options.color}

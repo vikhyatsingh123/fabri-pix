@@ -268,11 +268,12 @@ function ToolsAndMenusPage() {
 			</p>
 			<CodeBlock code={`<ImageEditor src={imageUrl} tools={['text', 'draw', 'arrow', 'crop']} />`} />
 			<ToolPickerDemo />
-			<Callout type='tip' title='Keep the array stable'>
+			<Callout type='tip' title='Inline arrays are fine'>
 				<p>
-					The editor re-reads its configuration when the <code>tools</code> array changes identity. Define it
-					outside your component (or with <code>useMemo</code>) instead of writing a new array literal on
-					every render of a component that re-renders often.
+					The editor compares <code>tools</code> and <code>menus</code> by content, so a new array literal on
+					every render does not reconfigure anything. Only custom tool <em>definitions</em> should be created
+					outside your component (or with <code>useMemo</code>), because a new definition object is a
+					different tool.
 				</p>
 			</Callout>
 

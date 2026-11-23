@@ -22,7 +22,7 @@ const eventRows = [
 	[
 		c('ready'),
 		c('{ editor }'),
-		'The image (and initial state) is loaded. Again after every new image.',
+		'The image (and initial state) is loaded. Again after every new image, not after a failed load.',
 		c('onReady'),
 	],
 	[

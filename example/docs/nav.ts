@@ -1,3 +1,5 @@
+// Structure of the documentation. `group` is the file in ./pages which exports the page (lazy loaded per group).
+
 export type PageGroup = 'start' | 'customize' | 'extend' | 'api';
 
 export interface DocPage {

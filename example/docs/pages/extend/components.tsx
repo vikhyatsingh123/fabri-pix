@@ -430,6 +430,8 @@ export default function ComponentsPage() {
 			<H3 id='color-picker'>ColorPicker</H3>
 			<p>
 				A native color input. Any CSS color can be passed; it is shown as hex (see <code>toHexColor</code>).
+				When the value is partly transparent (e.g. <code>rgba(255, 0, 0, 0.4)</code>), a picked color keeps that
+				transparency and is passed to <code>onChange</code> as <code>rgba()</code>.
 			</p>
 			<PropTable
 				rows={[

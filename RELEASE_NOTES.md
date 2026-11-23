@@ -106,6 +106,14 @@ JSON saved with 2.x still loads.
 -   The step fill colour picker showed the wrong colour.
 -   Colour pickers showed black for colours such as `#fff`, `rgb(...)` or `transparent`.
 -   The pencil cursor was drawn incorrectly.
+-   Each numbered step was recorded as two undo steps.
+-   Colour pickers made a translucent colour (e.g. `rgba(255, 0, 0, 0.4)`) opaque once a new colour was picked; the
+    transparency is now kept.
+-   The Filter menu's **Clear** button also removed the brightness, contrast and other adjustments. It now clears only
+    the filters (`clearImageFilters({ group: 'filter' })`), and **Reset adjustments** only the adjustments.
+-   Custom crop ratios with the value `1` or `null` showed "Square" / "Custom" instead of their own label.
+-   After an image failed to load, `onReady` was still called with an empty canvas. Now only `onError` is called and the
+    editor stays disabled until another image loads.
 
 ### Stability and memory
 
@@ -116,6 +124,13 @@ JSON saved with 2.x still loads.
 -   Each history step stored another copy of the background image, which used a lot of memory with large images.
 -   The stylesheet changed the cursor of every disabled button in your app, not just the editor's.
 -   Fixed React warnings about missing `key` props and uncontrolled inputs.
+-   `tools`, `menus`, `defaults`, `shapes` and `filters` written inline (a new array on every render) reconfigured the
+    editor on every render. They are now compared by content.
+-   Changing the `defaults` prop after the editor was created had no effect. Changed values are now applied, other options
+    the user picked are kept.
+-   Shapes added with `editor.registerShape()` were lost whenever the editor was reconfigured.
+-   `editor.addShape()` now takes simple data for the block arrow (`{ left, top, color }`), numbered steps
+    (`{ left, top, number }`) and free drawings (`{ path }`); `addShape('draw', …)` used to add nothing.
 
 ## Performance
 

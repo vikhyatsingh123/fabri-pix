@@ -236,9 +236,10 @@ const sections: { id: string; title: string; type: string; intro: React.ReactNod
 				default: 'Custom, Square, 3:2, 4:3, 5:4, 7:5, 16:9',
 				description: (
 					<>
-						Ratio buttons of the crop panel. Pass your own list to offer other ratios. The buttons with the
-						values <code>null</code> and <code>1</code> always show the labels <code>ratioCustom</code> and{' '}
-						<code>ratioSquare</code> (translate those through <DocLink to='labels'>labels</DocLink>).
+						Ratio buttons of the crop panel. Pass your own list to offer other ratios, each button shows its{' '}
+						<code>label</code>. The built-in &ldquo;Custom&rdquo; and &ldquo;Square&rdquo; buttons are
+						translated through <code>labels.ratioCustom</code> / <code>labels.ratioSquare</code> (see{' '}
+						<DocLink to='labels'>labels</DocLink>).
 					</>
 				),
 			},
@@ -447,11 +448,12 @@ function ToolOptionsPage() {
 				</li>
 				<li>Options are kept for the lifetime of the editor, also across image changes.</li>
 			</ul>
-			<Callout type='warning' title='defaults is read once per tool'>
+			<Callout type='note' title='Changing defaults later'>
 				<p>
-					The editor takes <code>defaults</code> when a tool is first registered (on mount). Changing the prop
-					later does not overwrite options the editor already has. To change options of a running editor, call{' '}
-					<code>setToolOptions</code> (below) or re-create the editor with a new React <code>key</code>.
+					When the <code>defaults</code> prop changes, the values that changed are applied to the tool options
+					right away. Options the user picked for other keys are kept: changing <code>text.fontSize</code>{' '}
+					does not reset a text color the user chose. To start over with all defaults, re-create the editor
+					with a new React <code>key</code>.
 				</p>
 			</Callout>
 
@@ -519,8 +521,9 @@ function BrushSize() {
 
 			<H2 id='crop-ratios'>Custom crop ratios</H2>
 			<p>
-				A crop panel for portrait photos and banners. The free ratio (<code>null</code>) is labelled with{' '}
-				<code>labels.ratioCustom</code>, a ratio of <code>1</code> with <code>labels.ratioSquare</code>.
+				A crop panel for portrait photos and banners. Every button shows the <code>label</code> you give it;
+				only the built-in &ldquo;Custom&rdquo; and &ldquo;Square&rdquo; labels are replaced by{' '}
+				<code>labels.ratioCustom</code> / <code>labels.ratioSquare</code>.
 			</p>
 			<CodeBlock
 				code={`<ImageEditor

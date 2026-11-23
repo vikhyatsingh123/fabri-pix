@@ -407,10 +407,11 @@ export default function CustomToolsPage() {
 
 			<Callout type='tip' title='Define tools outside your component'>
 				<p>
-					The editor reconfigures itself when the <code>tools</code>, <code>menus</code>,{' '}
-					<code>defaults</code>, <code>shapes</code> or <code>filters</code> array changes identity. Define
-					them at module level or wrap them in <code>useMemo</code>, instead of writing{' '}
-					<code>tools={'{[...]}'}</code> inline.
+					The editor compares <code>tools</code>, <code>menus</code>, <code>defaults</code>,{' '}
+					<code>shapes</code> and <code>filters</code> by their content, so writing the arrays inline is fine.
+					A tool <em>definition</em> object (and its functions) created inside a component is new on every
+					render though, which reconfigures the editor each time. Define tools at module level or with{' '}
+					<code>useMemo</code>.
 				</p>
 			</Callout>
 

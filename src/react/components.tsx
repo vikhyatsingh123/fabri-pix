@@ -102,7 +102,7 @@ export const EditorCanvas: React.FC<{ className?: string; style?: CSSProperties 
 	);
 };
 
-/** menu tabs (Annotate / Crop / Redact), hidden when there is only one menu */
+/** menu tabs (Annotate, Crop, Rotate...), hidden when there is only one menu */
 export const MenuBar: React.FC = () => {
 	const editor = useImageEditor();
 	const state = useEditorState();

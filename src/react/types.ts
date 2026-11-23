@@ -31,7 +31,6 @@ export interface EditorLabels {
 	alignCenter: string;
 	alignRight: string;
 	stepNumber: string;
-	emoji: string;
 	initialState: string;
 	created: string;
 	modified: string;
@@ -232,7 +231,7 @@ export type EditorPosition = 'top' | 'bottom' | 'none';
 export type ObjectControl = 'opacity' | 'shadow' | 'dashed' | 'cornerRadius' | 'layers' | 'duplicate' | 'delete';
 
 export interface EditorLayout {
-	/** menu tabs (Annotate / Crop / Redact), default 'left' */
+	/** menu tabs (Annotate, Crop, Rotate...), default 'left' */
 	menu?: 'left' | 'right' | 'top' | 'bottom' | 'none';
 	/** history and zoom controls, default 'top' */
 	header?: EditorPosition;

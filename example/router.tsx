@@ -13,9 +13,19 @@ const subscribe = (listener: () => void) => {
 	};
 };
 
-const getPath = () => window.location.pathname.replace(/\/+$/, '') || '/';
+const normalizePath = (path: string) => path.replace(/\/+$/, '') || '/';
 
-export const usePath = () => useSyncExternalStore(subscribe, getPath, getPath);
+const getPath = () => normalizePath(window.location.pathname);
+
+// the page rendered at build time (see entry-server.tsx)
+let serverPath = '/';
+
+export const setServerPath = (path: string) => {
+	serverPath = normalizePath(path);
+};
+
+export const usePath = () =>
+	useSyncExternalStore(subscribe, getPath, () => (typeof window === 'undefined' ? serverPath : getPath()));
 
 /** scrolls to the element of the url hash, or to the top */
 export const scrollToHash = (hash = window.location.hash) => {

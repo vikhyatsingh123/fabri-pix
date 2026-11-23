@@ -868,6 +868,11 @@ kbd {
 	margin-top: 28px;
 }
 
+.cta.not-found {
+	max-width: 960px;
+	margin: 64px auto 0;
+}
+
 /* ---------------------------------------------------------------- dialog */
 
 .dialog-backdrop {

@@ -3,21 +3,29 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>FabriPix · React image editor</title>
+		<!-- scripts/prerender.mjs replaces the title and description with the page's own and adds its other tags at the marker -->
+		<title>FabriPix · React image editor component (crop, annotate, filters, redact)</title>
 		<meta
 			name="description"
 			content="A fully customizable React image editor built on Fabric.js: crop, rotate, filters, redact, annotate with shapes, arrows, text and steps."
 		/>
-		<meta property="og:title" content="FabriPix · React image editor" />
-		<meta
-			property="og:description"
-			content="Crop, rotate, filter, redact and annotate images in your React app. Every part is configurable."
-		/>
+		<!--seo-->
+		<script>
+			// the theme before the first paint (the html of the page is rendered at build time)
+			try {
+				var theme = localStorage.getItem('fabri-pix-theme');
+				document.documentElement.dataset.theme =
+					theme === 'dark' || theme === 'light'
+						? theme
+						: matchMedia('(prefers-color-scheme: dark)').matches
+							? 'dark'
+							: 'light';
+			} catch (error) {}
+		</script>
 		<meta name="theme-color" content="#6d5dfc" />
-		<link
-			rel="icon"
-			href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>"
-		/>
+		<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+		<link rel="apple-touch-icon" href="/icon-192.png" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link

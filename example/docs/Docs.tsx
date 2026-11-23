@@ -12,14 +12,19 @@ import {
 
 import './docs.css';
 import { ArrowRightIcon } from '../icons';
+import { docsTitle } from '../seo';
 import { Link, navigate, scrollToHash } from '../router';
 import { allPages, docsNav, docsPath, type DocPage } from './nav';
-import { groupLoaders } from './pages';
+import { groupLoaders, loadedGroup } from './pages';
 import { loadSearchIndex, searchDocs, type SearchEntry, type SearchResult } from './search';
 
 const lazyPages = new Map<string, ComponentType>();
 
 const getPageComponent = (page: DocPage): ComponentType => {
+	const loaded = loadedGroup(page.group);
+	if (loaded) {
+		return loaded.pages[page.slug] ?? MissingPage;
+	}
 	let component = lazyPages.get(page.slug);
 	if (!component) {
 		component = lazy(async () => {
@@ -310,7 +315,7 @@ export default function Docs(props: { path: string }) {
 	const openMenu = useCallback(() => setMenuOpen(true), []);
 
 	useEffect(() => {
-		document.title = page ? `${page.title} · FabriPix docs` : 'Not found · FabriPix docs';
+		document.title = docsTitle(page ? page.title : 'Not found');
 		setMenuOpen(false);
 	}, [page]);
 

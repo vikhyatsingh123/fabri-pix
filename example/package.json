@@ -4,12 +4,12 @@
 	"scripts": {
 		"dev": "vite",
 		"dev:local": "FABRIPIX_SOURCE=local vite",
-		"build": "vite build",
-		"build:local": "FABRIPIX_SOURCE=local vite build",
+		"build": "vite build && vite build --ssr entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
+		"build:local": "FABRIPIX_SOURCE=local yarn build",
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"fabri-pix": "^3.2.0",
+		"fabri-pix": "^3.0.0",
 		"fabric": "^6.6.4",
 		"prism-react-renderer": "2.4.1",
 		"react": "^19.0.0",

@@ -523,27 +523,20 @@ export const stepsTool: ToolDefinition<StepsOptions> = {
 			}
 			const rect = stepRect;
 			stepRect = null;
-			const { x, y } = canvas.getScenePoint(event.e);
+			const end = canvas.getScenePoint(event.e);
 			const options = context.options;
 
-			// the circle is placed at the rectangle corner where the drag ended
-			const corners = rect.getCoords();
-			const cornerOffsets = [
-				[0, 0],
-				[rect.width, 0],
-				[rect.width, rect.height],
-				[0, rect.height],
-			];
-			const cornerIndex = corners.findIndex(
-				(corner) => Math.abs(corner.x - x) <= 2 && Math.abs(corner.y - y) <= 2,
-			);
-			const [circleLeft, circleTop] = cornerOffsets[cornerIndex] ?? [0, 0];
+			// the circle is placed at the rectangle corner where the drag ended. Chosen by the drag direction, not by
+			// the end point: the canvas can be resized between mouse down and up (mouse down deselects an object,
+			// which changes the options panel), so the end point can be off from the rectangle drawn so far
+			const circleLeft = end.x < start.x ? 0 : rect.width;
+			const circleTop = end.y < start.y ? 0 : rect.height;
 
 			canvas.remove(rect);
 			void editor.addShape(ShapeType.STEPS_CREATOR, {
 				angle: 0,
-				left: x,
-				top: y,
+				left: rect.left + circleLeft,
+				top: rect.top + circleTop,
 				scaleX: 1,
 				scaleY: 1,
 				fill: 'transparent',

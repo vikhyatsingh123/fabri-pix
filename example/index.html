@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
@@ -18,11 +18,17 @@
 					theme === 'dark' || theme === 'light'
 						? theme
 						: matchMedia('(prefers-color-scheme: dark)').matches
-							? 'dark'
-							: 'light';
+						? 'dark'
+						: 'light';
 			} catch (error) {}
 		</script>
 		<meta name="theme-color" content="#6d5dfc" />
+		<meta name="robots" content="index, follow" />
+		<link rel="canonical" href="https://fabri-pix.vercel.app/" />
+		<meta property="og:title" content="FabriPix - React Image Editor" />
+		<meta property="og:description" content="A powerful, customizable image editor for React applications." />
+		<meta property="og:url" content="https://fabri-pix.vercel.app/" />
+		<meta property="og:type" content="website" />
 		<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
 		<link rel="apple-touch-icon" href="/icon-192.png" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -32,6 +38,7 @@
 			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
 			rel="stylesheet"
 		/>
+		<meta name="google-site-verification" content="ZrZM8UkXTi7w8iVLj7sdD0S74s6i8yVMm8GSiFUGwm4" />
 	</head>
 	<body>
 		<div id="root"></div>
